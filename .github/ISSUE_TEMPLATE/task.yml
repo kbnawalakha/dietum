@@ -1,0 +1,62 @@
+name: Task
+description: Request a focused Dietum implementation task
+title: "[DIET-000] "
+labels: ["task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for one agent-owned task only. Include dependencies and file ownership so work does not overlap.
+  - type: input
+    id: issue_key
+    attributes:
+      label: Issue Key
+      description: Use the DIET-### format.
+      placeholder: DIET-001
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      description: What should be built or updated?
+      placeholder: Create the application shell.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: List only the work this issue owns.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: List any blocking issues, decisions, or files.
+      placeholder: Depends on ARCHITECTURE.md and DIET-001.
+    validations:
+      required: true
+  - type: textarea
+    id: files
+    attributes:
+      label: Files Owned
+      description: List files or folders this issue may modify.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: What must be true for this issue to be done?
+    validations:
+      required: true
+  - type: textarea
+    id: tests
+    attributes:
+      label: Tests
+      description: What should be run to verify the change?
+    validations:
+      required: false
+
