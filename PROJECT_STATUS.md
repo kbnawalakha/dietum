@@ -6,12 +6,14 @@ Milestone 0 — Repository and Architecture Foundation
 
 - Product scope defined
 - Multi-agent strategy defined
+- Repository coordination setup
+- Initial SwiftUI app shell scaffold
 
 # In Progress
 
-- Repository coordination setup
 - Architecture definition
 - Initial task backlog
+- Xcode project structure has not been verified yet
 
 # Blocked
 
@@ -37,6 +39,7 @@ Milestone 0 — Repository and Architecture Foundation
 
 - No Xcode project structure has been verified yet
 - No automated build workflow exists yet
+- App shell is source-only until an Xcode project is added
 
 # Active Agents
 
@@ -45,4 +48,3 @@ Milestone 0 — Repository and Architecture Foundation
 # Last Updated
 
 2026-07-23
-

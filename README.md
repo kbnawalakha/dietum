@@ -36,7 +36,7 @@ Dietum is a personal-use iPhone nutrition and progress-tracking app. The current
 
 ## Current Development Status
 
-The repository currently contains the coordination and architecture foundation only. No Xcode project structure has been verified yet, and no app features have been implemented in this repository snapshot.
+The repository now contains the coordination foundation plus an initial SwiftUI app shell scaffold. No Xcode project structure has been verified yet, and feature implementation has not begun.
 
 ## How To Open And Run
 
@@ -48,7 +48,7 @@ Automated app tests have not been added yet. When the first test target exists, 
 
 ## Repository Structure
 
-At the moment, the repository is documentation-first:
+At the moment, the repository includes documentation and a lightweight source scaffold:
 
 - `README.md` - project overview and setup notes
 - `PRODUCT_SPEC.md` - product requirements and user-facing scope
@@ -61,9 +61,9 @@ At the moment, the repository is documentation-first:
 - `PULL_REQUEST_GUIDELINES.md` - review and pull request guidance
 - `.github/ISSUE_TEMPLATE/` - GitHub issue templates
 - `.github/pull_request_template.md` - pull request template
+- `Dietum/` - initial SwiftUI app shell and feature folders
 
 ## References
 
 - Product specification: [PRODUCT_SPEC.md](./PRODUCT_SPEC.md)
 - Shared agent instructions: [AGENTS.md](./AGENTS.md)
-
