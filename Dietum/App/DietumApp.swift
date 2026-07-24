@@ -6,8 +6,7 @@ struct DietumApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView(viewModel: RootViewModel(container: container))
+            RootView(viewModel: container.makeRootViewModel())
         }
     }
 }
-

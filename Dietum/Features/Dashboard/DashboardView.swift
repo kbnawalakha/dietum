@@ -2,23 +2,64 @@ import SwiftUI
 
 struct DashboardView: View {
     var body: some View {
-        VStack(spacing: 16) {
-            Text("Daily dashboard")
-                .font(.title2.bold())
+        ScrollView {
+            VStack(alignment: .leading, spacing: AppSpacing.section) {
+                AppHeroCard(
+                    eyebrow: "Local-first nutrition",
+                    title: "Daily dashboard",
+                    message: "Track meals, weight, and progress without leaving the flow of the app."
+                )
 
-            Text("The app shell is ready. Feature work comes next.")
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+                VStack(alignment: .leading, spacing: AppSpacing.item) {
+                    AppSectionHeader(
+                        title: "Today",
+                        message: "A simple shell for targets, reminders, and quick actions."
+                    )
+
+                    LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
+                        AppMetricCard(
+                            title: "Calories",
+                            value: "2,400",
+                            detail: "Target",
+                            symbolName: "flame.fill"
+                        )
+
+                        AppMetricCard(
+                            title: "Meals",
+                            value: "4",
+                            detail: "Planned today",
+                            symbolName: "fork.knife"
+                        )
+
+                        AppMetricCard(
+                            title: "Sleep",
+                            value: "7.5 h",
+                            detail: "Goal range",
+                            symbolName: "bed.double.fill"
+                        )
+                    }
+                }
+
+                AppSurfaceCard {
+                    VStack(alignment: .leading, spacing: AppSpacing.item) {
+                        AppSectionHeader(
+                            title: "Quick start",
+                            message: "Jump into the setup flow or keep the dashboard visible."
+                        )
+
+                        NavigationLink(value: AppRoute.onboarding) {
+                            Label("Open onboarding", systemImage: "arrow.right.circle.fill")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.appProminent)
+                    }
+                }
+            }
+            .padding(.horizontal, AppSpacing.screen)
+            .padding(.top, AppSpacing.screen)
+            .padding(.bottom, AppSpacing.screen * 1.5)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
-        .background(
-            LinearGradient(
-                colors: [Color(red: 0.98, green: 0.95, blue: 0.90), Color(red: 0.93, green: 0.97, blue: 0.95)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
+        .scrollIndicators(.hidden)
+        .appScreenBackground()
     }
 }
-

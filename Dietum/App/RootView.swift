@@ -11,6 +11,17 @@ struct RootView: View {
         NavigationStack(path: $viewModel.path) {
             DashboardView()
                 .navigationTitle("Dietum")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            viewModel.showOnboarding()
+                        } label: {
+                            Label("Setup", systemImage: "sparkles")
+                        }
+                        .buttonStyle(.appToolbar)
+                    }
+                }
                 .navigationDestination(for: AppRoute.self) { route in
                     switch route {
                     case .onboarding:
@@ -26,10 +37,7 @@ struct RootView: View {
 final class RootViewModel: ObservableObject {
     @Published var path: [AppRoute] = []
 
-    private let container: AppContainer
-
-    init(container: AppContainer) {
-        self.container = container
+    func showOnboarding() {
+        path.append(.onboarding)
     }
 }
-

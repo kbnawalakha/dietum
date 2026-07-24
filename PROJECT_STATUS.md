@@ -10,12 +10,14 @@ Milestone 0 — Repository and Architecture Foundation
 - Initial SwiftUI app shell scaffold
 - Buildable Xcode project created
 - `DIET-001` Create application shell
+- Domain model foundation
+- SwiftData foundation
+- Navigation shell foundation
+- Design-system foundation
 
 # In Progress
 
-- Architecture definition
-- Initial task backlog
-- SwiftData integration has not started yet
+- None
 
 # Blocked
 
@@ -23,18 +25,17 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Next Tasks
 
-- DIET-002 Define domain models
-- DIET-003 Configure SwiftData
-- DIET-004 Create navigation shell
-- DIET-005 Add design-system foundation
+- DIET-006 Define meal logging flow
+- DIET-007 Add weekly check-in flow
+- DIET-008 Add progress-photo flow
+- DIET-009 Add nutrition-adjustment flow
 
 # Dependency Tracking
 
-- DIET-001 has no prior dependency and should start the implementation phase.
-- DIET-002 depends on the initial app shell and architecture conventions.
-- DIET-003 depends on the domain model definitions.
-- DIET-004 depends on the app shell and route model shape.
-- DIET-005 depends on the app shell and shared design tokens.
+- DIET-006 depends on the meal model and local persistence boundaries.
+- DIET-007 depends on the weight logging model and dashboard metrics.
+- DIET-008 depends on the local image-storage strategy and photo metadata.
+- DIET-009 depends on trend analysis and user-approved adjustment flow.
 
 # Known Issues
 
@@ -44,6 +45,10 @@ Milestone 0 — Repository and Architecture Foundation
 # Active Agents
 
 - Agent 1: Coordinator
+- Agent 2: Domain Models — completed
+- Agent 3: SwiftData — completed
+- Agent 4: Navigation — completed
+- Agent 5: Design System — completed
 
 # Last Updated
 

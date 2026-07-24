@@ -1,4 +1,8 @@
 import Foundation
+import SwiftUI
 
-enum NavigationPlaceholder {}
-
+extension ButtonStyle where Self == AppToolbarButtonStyle {
+    static var appToolbar: AppToolbarButtonStyle {
+        AppToolbarButtonStyle()
+    }
+}
