@@ -12,7 +12,7 @@ Agent 1: Coordinator
 
 ## Assigned Issue
 
-DIET-007 Add weekly check-in flow
+DIET-008 Add progress-photo flow and DIET-009 Add nutrition-adjustment flow
 
 ## Branch
 
@@ -20,16 +20,18 @@ codex/repo-foundation
 
 ## Work Completed
 
-- Coordinated the weekly check-in slice into parallel data and UI agents
-- Updated the project status to show `DIET-007` as the active task
-- Integrated the weekly check-in navigation, dashboard entry points, and screen shell
-- Wired the weekly check-in screen to the local weight log repository
-- Verified the full iOS simulator build succeeds after the weekly check-in slice
+- Coordinated the progress-photo and nutrition-adjustment slices into parallel feature agents
+- Updated the project status to show the next milestone after weekly check-in
+- Integrated the progress-photo navigation, dashboard entry points, and screen shell
+- Integrated the nutrition-adjustment navigation, dashboard entry points, and screen shell
+- Wired the progress-photo screen to the local photo repository
+- Wired the nutrition-adjustment screen to the deterministic recommendation engine
+- Verified the full iOS simulator build succeeds after the new slices
 
 ## Workstreams
 
-- Weekly Check-In Data | Owner: Agent 2 | Completed
-- Weekly Check-In UI | Owner: Agent 3 | Completed
+- Progress Photo Feature | Owner: Agent 2 | Completed
+- Nutrition Adjustment Feature | Owner: Agent 3 | Completed
 
 ## Files Changed
 
@@ -40,8 +42,17 @@ codex/repo-foundation
 - `Dietum/App/AppRoute.swift`
 - `Dietum/App/DietumApp.swift`
 - `Dietum/App/RootView.swift`
+- `Dietum/Data/Repositories/SwiftDataProgressPhotoRepository.swift`
+- `Dietum/Data/SwiftData/DietumPersistenceStack.swift`
+- `Dietum/Data/SwiftData/Models/StoredProgressPhotoMetadata.swift`
+- `Dietum/Domain/Models/NutritionAdjustmentModels.swift`
 - `Dietum/Domain/Repositories/RepositoryPlaceholder.swift`
+- `Dietum/Domain/Services/NutritionAdjustmentRecommendationService.swift`
 - `Dietum/Features/Dashboard/DashboardView.swift`
+- `Dietum/Features/NutritionAdjustment/NutritionAdjustmentView.swift`
+- `Dietum/Features/NutritionAdjustment/NutritionAdjustmentViewModel.swift`
+- `Dietum/Features/ProgressPhotos/ProgressPhotosView.swift`
+- `Dietum/Features/ProgressPhotos/ProgressPhotosViewModel.swift`
 - `Dietum/Features/CheckIn/WeeklyCheckInView.swift`
 - `Dietum/Features/CheckIn/WeeklyCheckInViewModel.swift`
 - `Dietum.xcodeproj/project.pbxproj`
@@ -58,7 +69,7 @@ codex/repo-foundation
 
 ## Work Remaining
 
-- Continue with progress photos and nutrition adjustment
+- Continue with weight and nutrition progress charts
 - Add automated test targets
 - Add a lightweight build workflow if desired
 
@@ -75,11 +86,13 @@ codex/repo-foundation
 - SwiftData for local persistence
 - Meal analysis starts with a deterministic mock service
 - Weekly check-in writes to the local weight log repository
+- Progress photos use staged mock captures before any camera integration
+- Nutrition adjustment stays approval-gated and deterministic for now
 
 ## Exact Next Step
 
-- Start `DIET-008` for the progress-photo flow
+- Start `DIET-010` for the weight and nutrition progress charts
 
 ## Suggested Next Agent
 
-- Image Storage Agent
+- Charting Agent

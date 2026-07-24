@@ -6,6 +6,7 @@ enum DietumPersistenceStack {
         StoredNutritionTarget.self,
         StoredMealEntry.self,
         StoredMealPhotoMetadata.self,
+        StoredProgressPhotoMetadata.self,
         StoredUserProfile.self,
         StoredWeightEntry.self,
     ])
