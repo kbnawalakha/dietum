@@ -1,9 +1,11 @@
 import SwiftUI
 
 struct RootView: View {
+    let container: AppContainer
     @StateObject private var viewModel: RootViewModel
 
-    init(viewModel: RootViewModel) {
+    init(container: AppContainer, viewModel: RootViewModel) {
+        self.container = container
         _viewModel = StateObject(wrappedValue: viewModel)
     }
 
@@ -22,7 +24,14 @@ struct RootView: View {
                         .buttonStyle(.appToolbar)
                     }
 
-                    ToolbarItem(placement: .topBarTrailing) {
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        Button {
+                            viewModel.showWeeklyCheckIn()
+                        } label: {
+                            Label(AppRoute.weeklyCheckIn.title, systemImage: AppRoute.weeklyCheckIn.systemImage)
+                        }
+                        .buttonStyle(.appToolbar)
+
                         Button {
                             viewModel.showOnboarding()
                         } label: {
@@ -37,6 +46,8 @@ struct RootView: View {
                         OnboardingView()
                     case .mealLogging:
                         MealLoggingView()
+                    case .weeklyCheckIn:
+                        WeeklyCheckInView(viewModel: container.makeWeeklyCheckInViewModel())
                     case .dashboard:
                         DashboardView()
                     }
@@ -50,6 +61,10 @@ final class RootViewModel: ObservableObject {
 
     func showMealLogging() {
         path.append(.mealLogging)
+    }
+
+    func showWeeklyCheckIn() {
+        path.append(.weeklyCheckIn)
     }
 
     func showOnboarding() {

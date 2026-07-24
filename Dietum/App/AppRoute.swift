@@ -3,6 +3,7 @@ import Foundation
 enum AppRoute: Hashable {
     case onboarding
     case mealLogging
+    case weeklyCheckIn
     case dashboard
 
     var title: String {
@@ -11,6 +12,8 @@ enum AppRoute: Hashable {
             return "Setup"
         case .mealLogging:
             return "Log Meal"
+        case .weeklyCheckIn:
+            return "Weekly Check-In"
         case .dashboard:
             return "Dashboard"
         }
@@ -22,6 +25,8 @@ enum AppRoute: Hashable {
             return "sparkles"
         case .mealLogging:
             return "camera.fill"
+        case .weeklyCheckIn:
+            return "calendar.badge.clock"
         case .dashboard:
             return "house.fill"
         }

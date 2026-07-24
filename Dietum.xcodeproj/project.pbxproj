@@ -33,6 +33,8 @@
 		100000000000000000000061 /* MealLoggingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000058 /* MealLoggingView.swift */; };
 		100000000000000000000062 /* MealLoggingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000059 /* MealLoggingViewModel.swift */; };
 		100000000000000000000063 /* MockMealFoodDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000005A /* MockMealFoodDetectionService.swift */; };
+		100000000000000000000066 /* WeeklyCheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000064 /* WeeklyCheckInView.swift */; };
+		100000000000000000000067 /* WeeklyCheckInViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000065 /* WeeklyCheckInViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -64,6 +66,8 @@
 		100000000000000000000058 /* MealLoggingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLoggingView.swift; sourceTree = "<group>"; };
 		100000000000000000000059 /* MealLoggingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLoggingViewModel.swift; sourceTree = "<group>"; };
 		10000000000000000000005A /* MockMealFoodDetectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockMealFoodDetectionService.swift; sourceTree = "<group>"; };
+		100000000000000000000064 /* WeeklyCheckInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyCheckInView.swift; sourceTree = "<group>"; };
+		100000000000000000000065 /* WeeklyCheckInViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyCheckInViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,9 +118,19 @@
 			children = (
 				10000000000000000000002A /* Dashboard */,
 				10000000000000000000002B /* Onboarding */,
+				100000000000000000000068 /* CheckIn */,
 				100000000000000000000038 /* Meals */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		100000000000000000000068 /* CheckIn */ = {
+			isa = PBXGroup;
+			children = (
+				100000000000000000000064 /* WeeklyCheckInView.swift */,
+				100000000000000000000065 /* WeeklyCheckInViewModel.swift */,
+			);
+			path = CheckIn;
 			sourceTree = "<group>";
 		};
 		100000000000000000000034 /* Data */ = {
@@ -348,6 +362,8 @@
 				100000000000000000000061 /* MealLoggingView.swift in Sources */,
 				100000000000000000000062 /* MealLoggingViewModel.swift in Sources */,
 				100000000000000000000063 /* MockMealFoodDetectionService.swift in Sources */,
+				100000000000000000000066 /* WeeklyCheckInView.swift in Sources */,
+				100000000000000000000067 /* WeeklyCheckInViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

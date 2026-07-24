@@ -15,6 +15,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Navigation shell foundation
 - Design-system foundation
 - `DIET-006` Define meal logging flow
+- `DIET-007` Add weekly check-in flow
 
 # In Progress
 
@@ -26,16 +27,16 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Next Tasks
 
-- DIET-007 Add weekly check-in flow
 - DIET-008 Add progress-photo flow
 - DIET-009 Add nutrition-adjustment flow
+- DIET-010 Add weight and nutrition progress charts
 
 # Dependency Tracking
 
 - DIET-006 depends on the meal model and local persistence boundaries.
-- DIET-007 depends on the weight logging model and dashboard metrics.
 - DIET-008 depends on the local image-storage strategy and photo metadata.
 - DIET-009 depends on trend analysis and user-approved adjustment flow.
+- DIET-010 depends on the weekly check-in data and trend summaries.
 
 # Known Issues
 

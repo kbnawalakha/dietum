@@ -36,7 +36,7 @@ Dietum is a personal-use iPhone nutrition and progress-tracking app. The repo no
 
 ## Current Development Status
 
-The repository now contains the coordination foundation, a buildable Xcode project, the initial SwiftUI app shell, the SwiftData foundation, and the first meal-logging slice. The code builds on the iOS simulator and remains local-first.
+The repository now contains the coordination foundation, a buildable Xcode project, the initial SwiftUI app shell, the SwiftData foundation, the meal-logging slice, and the weekly check-in slice. The code builds on the iOS simulator and remains local-first.
 
 ## How To Open And Run
 
@@ -64,6 +64,7 @@ At the moment, the repository includes documentation and a lightweight source sc
 - `Dietum.xcodeproj/` - Xcode project for the iPhone app target
 - `Dietum/` - initial SwiftUI app shell and feature folders
 - `Dietum/Features/Meals/` - meal logging UI shell and mock-analysis flow
+- `Dietum/Features/CheckIn/` - weekly check-in screen and view model
 - `Dietum/Data/` - SwiftData models, persistence stack, and repository adapters
 
 ## References

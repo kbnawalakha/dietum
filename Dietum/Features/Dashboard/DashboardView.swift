@@ -44,11 +44,17 @@ struct DashboardView: View {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
                             title: "Quick start",
-                            message: "Jump into meal logging or open the setup flow from here."
+                            message: "Jump into meal logging, weekly check-in, or open the setup flow from here."
                         )
 
                         NavigationLink(value: AppRoute.mealLogging) {
                             Label("Log a meal", systemImage: "camera.fill")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.appProminent)
+
+                        NavigationLink(value: AppRoute.weeklyCheckIn) {
+                            Label("Start weekly check-in", systemImage: "calendar.badge.clock")
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .buttonStyle(.appProminent)
@@ -58,6 +64,37 @@ struct DashboardView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .buttonStyle(.appProminent)
+                    }
+                }
+
+                AppSurfaceCard {
+                    VStack(alignment: .leading, spacing: AppSpacing.item) {
+                        AppSectionHeader(
+                            title: "Weekly review",
+                            message: "A lightweight snapshot of the latest body-weight trend and notes."
+                        )
+
+                        LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
+                            AppMetricCard(
+                                title: "Latest weight",
+                                value: "72.4 kg",
+                                detail: "From the most recent check-in",
+                                symbolName: "scalemass"
+                            )
+
+                            AppMetricCard(
+                                title: "Trend",
+                                value: "-0.3 kg",
+                                detail: "Over the last 7 days",
+                                symbolName: "chart.line.uptrend.xyaxis"
+                            )
+                        }
+
+                        NavigationLink(value: AppRoute.weeklyCheckIn) {
+                            Label("Review weekly check-in", systemImage: "checkmark.seal.fill")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.appToolbar)
                     }
                 }
             }

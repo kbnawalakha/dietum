@@ -12,7 +12,7 @@ Agent 1: Coordinator
 
 ## Assigned Issue
 
-DIET-006 Define meal logging flow
+DIET-007 Add weekly check-in flow
 
 ## Branch
 
@@ -20,33 +20,30 @@ codex/repo-foundation
 
 ## Work Completed
 
-- Coordinated the next work slice into parallel meal-logging UI and data agents
-- Updated the project status to show `DIET-006` as the active task
-- Integrated the meal logging UI shell and mock-analysis flow
-- Integrated SwiftData scaffolding for meal entries and meal-photo metadata
-- Verified the full iOS simulator build succeeds after the meal logging slice
+- Coordinated the weekly check-in slice into parallel data and UI agents
+- Updated the project status to show `DIET-007` as the active task
+- Integrated the weekly check-in navigation, dashboard entry points, and screen shell
+- Wired the weekly check-in screen to the local weight log repository
+- Verified the full iOS simulator build succeeds after the weekly check-in slice
 
 ## Workstreams
 
-- Meal Logging UI | Owner: Agent 2 | Completed
-- Meal Logging Data | Owner: Agent 3 | Completed
+- Weekly Check-In Data | Owner: Agent 2 | Completed
+- Weekly Check-In UI | Owner: Agent 3 | Completed
 
 ## Files Changed
 
 - `PROJECT_STATUS.md`
 - `HANDOFF.md`
+- `README.md`
+- `Dietum/App/AppContainer.swift`
 - `Dietum/App/AppRoute.swift`
+- `Dietum/App/DietumApp.swift`
 - `Dietum/App/RootView.swift`
-- `Dietum/Data/Repositories/SwiftDataMealEntryRepository.swift`
-- `Dietum/Data/Repositories/SwiftDataMealPhotoMetadataRepository.swift`
-- `Dietum/Data/SwiftData/DietumPersistenceStack.swift`
-- `Dietum/Data/SwiftData/Models/StoredMealEntry.swift`
-- `Dietum/Data/SwiftData/Models/StoredMealPhotoMetadata.swift`
-- `Dietum/Domain/Services/ServicePlaceholder.swift`
+- `Dietum/Domain/Repositories/RepositoryPlaceholder.swift`
 - `Dietum/Features/Dashboard/DashboardView.swift`
-- `Dietum/Features/Meals/MealLoggingView.swift`
-- `Dietum/Features/Meals/MealLoggingViewModel.swift`
-- `Dietum/Features/Meals/MockMealFoodDetectionService.swift`
+- `Dietum/Features/CheckIn/WeeklyCheckInView.swift`
+- `Dietum/Features/CheckIn/WeeklyCheckInViewModel.swift`
 - `Dietum.xcodeproj/project.pbxproj`
 
 ## Tests Run
@@ -61,7 +58,7 @@ codex/repo-foundation
 
 ## Work Remaining
 
-- Continue with weekly check-in, progress photos, and nutrition adjustment
+- Continue with progress photos and nutrition adjustment
 - Add automated test targets
 - Add a lightweight build workflow if desired
 
@@ -77,11 +74,12 @@ codex/repo-foundation
 - Local-first iPhone app
 - SwiftData for local persistence
 - Meal analysis starts with a deterministic mock service
+- Weekly check-in writes to the local weight log repository
 
 ## Exact Next Step
 
-- Start `DIET-007` for the weekly check-in flow
+- Start `DIET-008` for the progress-photo flow
 
 ## Suggested Next Agent
 
-- Domain Models Agent
+- Image Storage Agent
