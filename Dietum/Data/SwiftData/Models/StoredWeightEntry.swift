@@ -19,4 +19,13 @@ final class StoredWeightEntry {
         self.weightKilograms = weightKilograms
         self.note = note
     }
+
+    var weightLog: WeightLog {
+        WeightLog(
+            id: id,
+            recordedAt: recordedAt,
+            weightKilograms: weightKilograms,
+            notes: note
+        )
+    }
 }
