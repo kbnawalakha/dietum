@@ -4,7 +4,7 @@ Replace the previous handoff content with the current state at the end of each a
 
 ## Date
 
-2026-07-23
+2026-07-24
 
 ## Agent
 
@@ -23,12 +23,16 @@ codex/repo-foundation
 - Added the coordination docs and decision log
 - Added GitHub issue and pull request templates
 - Created a minimal SwiftUI app shell scaffold under `Dietum/`
+- Added a buildable Xcode project for the iPhone app target
+- Verified the app builds successfully on the iOS simulator
 
 ## Files Changed
 
 - `README.md`
 - `PROJECT_STATUS.md`
 - `HANDOFF.md`
+- `Dietum.xcodeproj/project.pbxproj`
+- `Dietum/Info.plist`
 - `Dietum/App/DietumApp.swift`
 - `Dietum/App/RootView.swift`
 - `Dietum/App/AppContainer.swift`
@@ -45,21 +49,23 @@ codex/repo-foundation
 ## Tests Run
 
 - `git diff --check`
+- `xcodebuild -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator26.5 -destination 'generic/platform=iOS Simulator' build`
 
 ## Test Results
 
 - Passed
+- Xcode build succeeded
 
 ## Work Remaining
 
-- Add an actual Xcode project or workspace so the app shell can build
 - Replace placeholder types with real domain, repository, and service layers
 - Add SwiftData integration and navigation flow implementation
+- Create automated test targets
 
 ## Known Problems
 
-- No Xcode project structure exists yet
 - The current source scaffold is not buildable on its own
+- No automated test target exists yet
 
 ## Important Decisions
 
@@ -69,7 +75,7 @@ codex/repo-foundation
 
 ## Exact Next Step
 
-- Create the Xcode project structure and wire the app shell into a buildable target
+- Create `DIET-002` for the domain model layer and start replacing placeholders with real shared models
 
 ## Suggested Next Agent
 

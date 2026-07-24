@@ -8,12 +8,14 @@ Milestone 0 — Repository and Architecture Foundation
 - Multi-agent strategy defined
 - Repository coordination setup
 - Initial SwiftUI app shell scaffold
+- Buildable Xcode project created
+- `DIET-001` Create application shell
 
 # In Progress
 
 - Architecture definition
 - Initial task backlog
-- Xcode project structure has not been verified yet
+- SwiftData integration has not started yet
 
 # Blocked
 
@@ -21,7 +23,6 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Next Tasks
 
-- DIET-001 Create application shell
 - DIET-002 Define domain models
 - DIET-003 Configure SwiftData
 - DIET-004 Create navigation shell
@@ -37,9 +38,8 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Known Issues
 
-- No Xcode project structure has been verified yet
 - No automated build workflow exists yet
-- App shell is source-only until an Xcode project is added
+- No automated test target exists yet
 
 # Active Agents
 
@@ -47,4 +47,4 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Last Updated
 
-2026-07-23
+2026-07-24
