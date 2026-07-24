@@ -13,11 +13,20 @@ struct RootView: View {
                 .navigationTitle("Dietum")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            viewModel.showMealLogging()
+                        } label: {
+                            Label(AppRoute.mealLogging.title, systemImage: AppRoute.mealLogging.systemImage)
+                        }
+                        .buttonStyle(.appToolbar)
+                    }
+
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             viewModel.showOnboarding()
                         } label: {
-                            Label("Setup", systemImage: "sparkles")
+                            Label(AppRoute.onboarding.title, systemImage: AppRoute.onboarding.systemImage)
                         }
                         .buttonStyle(.appToolbar)
                     }
@@ -26,6 +35,8 @@ struct RootView: View {
                     switch route {
                     case .onboarding:
                         OnboardingView()
+                    case .mealLogging:
+                        MealLoggingView()
                     case .dashboard:
                         DashboardView()
                     }
@@ -36,6 +47,10 @@ struct RootView: View {
 
 final class RootViewModel: ObservableObject {
     @Published var path: [AppRoute] = []
+
+    func showMealLogging() {
+        path.append(.mealLogging)
+    }
 
     func showOnboarding() {
         path.append(.onboarding)

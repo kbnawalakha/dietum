@@ -2,25 +2,28 @@ import Foundation
 
 enum AppRoute: Hashable {
     case onboarding
+    case mealLogging
     case dashboard
-}
 
-extension AppRoute {
     var title: String {
         switch self {
         case .onboarding:
             return "Setup"
+        case .mealLogging:
+            return "Log Meal"
         case .dashboard:
             return "Dashboard"
         }
     }
 
-    var systemImageName: String {
+    var systemImage: String {
         switch self {
         case .onboarding:
-            return "person.crop.square"
+            return "sparkles"
+        case .mealLogging:
+            return "camera.fill"
         case .dashboard:
-            return "rectangle.grid.2x2"
+            return "house.fill"
         }
     }
 }

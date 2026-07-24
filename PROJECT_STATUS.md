@@ -14,6 +14,7 @@ Milestone 0 — Repository and Architecture Foundation
 - SwiftData foundation
 - Navigation shell foundation
 - Design-system foundation
+- `DIET-006` Define meal logging flow
 
 # In Progress
 
@@ -25,7 +26,6 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Next Tasks
 
-- DIET-006 Define meal logging flow
 - DIET-007 Add weekly check-in flow
 - DIET-008 Add progress-photo flow
 - DIET-009 Add nutrition-adjustment flow
@@ -45,10 +45,6 @@ Milestone 0 — Repository and Architecture Foundation
 # Active Agents
 
 - Agent 1: Coordinator
-- Agent 2: Domain Models — completed
-- Agent 3: SwiftData — completed
-- Agent 4: Navigation — completed
-- Agent 5: Design System — completed
 
 # Last Updated
 

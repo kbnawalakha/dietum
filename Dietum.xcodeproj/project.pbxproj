@@ -26,6 +26,13 @@
 		10000000000000000000004D /* SwiftDataNutritionTargetRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000046 /* SwiftDataNutritionTargetRepository.swift */; };
 		10000000000000000000004E /* SwiftDataUserProfileRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000047 /* SwiftDataUserProfileRepository.swift */; };
 		10000000000000000000004F /* SwiftDataWeightEntryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000048 /* SwiftDataWeightEntryRepository.swift */; };
+		100000000000000000000050 /* StoredMealEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000054 /* StoredMealEntry.swift */; };
+		100000000000000000000051 /* StoredMealPhotoMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000055 /* StoredMealPhotoMetadata.swift */; };
+		100000000000000000000052 /* SwiftDataMealEntryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000056 /* SwiftDataMealEntryRepository.swift */; };
+		100000000000000000000053 /* SwiftDataMealPhotoMetadataRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000057 /* SwiftDataMealPhotoMetadataRepository.swift */; };
+		100000000000000000000061 /* MealLoggingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000058 /* MealLoggingView.swift */; };
+		100000000000000000000062 /* MealLoggingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000059 /* MealLoggingViewModel.swift */; };
+		100000000000000000000063 /* MockMealFoodDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000005A /* MockMealFoodDetectionService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +57,13 @@
 		100000000000000000000046 /* SwiftDataNutritionTargetRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataNutritionTargetRepository.swift; sourceTree = "<group>"; };
 		100000000000000000000047 /* SwiftDataUserProfileRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataUserProfileRepository.swift; sourceTree = "<group>"; };
 		100000000000000000000048 /* SwiftDataWeightEntryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataWeightEntryRepository.swift; sourceTree = "<group>"; };
+		100000000000000000000054 /* StoredMealEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredMealEntry.swift; sourceTree = "<group>"; };
+		100000000000000000000055 /* StoredMealPhotoMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredMealPhotoMetadata.swift; sourceTree = "<group>"; };
+		100000000000000000000056 /* SwiftDataMealEntryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataMealEntryRepository.swift; sourceTree = "<group>"; };
+		100000000000000000000057 /* SwiftDataMealPhotoMetadataRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataMealPhotoMetadataRepository.swift; sourceTree = "<group>"; };
+		100000000000000000000058 /* MealLoggingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLoggingView.swift; sourceTree = "<group>"; };
+		100000000000000000000059 /* MealLoggingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLoggingViewModel.swift; sourceTree = "<group>"; };
+		10000000000000000000005A /* MockMealFoodDetectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockMealFoodDetectionService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +114,7 @@
 			children = (
 				10000000000000000000002A /* Dashboard */,
 				10000000000000000000002B /* Onboarding */,
+				100000000000000000000038 /* Meals */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -125,6 +140,8 @@
 		100000000000000000000036 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				100000000000000000000054 /* StoredMealEntry.swift */,
+				100000000000000000000055 /* StoredMealPhotoMetadata.swift */,
 				100000000000000000000043 /* StoredNutritionTarget.swift */,
 				100000000000000000000044 /* StoredUserProfile.swift */,
 				100000000000000000000045 /* StoredWeightEntry.swift */,
@@ -135,6 +152,8 @@
 		100000000000000000000037 /* Repositories */ = {
 			isa = PBXGroup;
 			children = (
+				100000000000000000000056 /* SwiftDataMealEntryRepository.swift */,
+				100000000000000000000057 /* SwiftDataMealPhotoMetadataRepository.swift */,
 				100000000000000000000046 /* SwiftDataNutritionTargetRepository.swift */,
 				100000000000000000000047 /* SwiftDataUserProfileRepository.swift */,
 				100000000000000000000048 /* SwiftDataWeightEntryRepository.swift */,
@@ -156,6 +175,16 @@
 				100000000000000000000014 /* OnboardingView.swift */,
 			);
 			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		100000000000000000000038 /* Meals */ = {
+			isa = PBXGroup;
+			children = (
+				100000000000000000000058 /* MealLoggingView.swift */,
+				100000000000000000000059 /* MealLoggingViewModel.swift */,
+				10000000000000000000005A /* MockMealFoodDetectionService.swift */,
+			);
+			path = Meals;
 			sourceTree = "<group>";
 		};
 		100000000000000000000028 /* Domain */ = {
@@ -306,12 +335,19 @@
 				100000000000000000000032 /* DependencyInjectionPlaceholder.swift in Sources */,
 				100000000000000000000033 /* DesignSystemPlaceholder.swift in Sources */,
 				100000000000000000000049 /* DietumPersistenceStack.swift in Sources */,
+				100000000000000000000050 /* StoredMealEntry.swift in Sources */,
+				100000000000000000000051 /* StoredMealPhotoMetadata.swift in Sources */,
 				10000000000000000000004A /* StoredNutritionTarget.swift in Sources */,
 				10000000000000000000004B /* StoredUserProfile.swift in Sources */,
 				10000000000000000000004C /* StoredWeightEntry.swift in Sources */,
+				100000000000000000000052 /* SwiftDataMealEntryRepository.swift in Sources */,
+				100000000000000000000053 /* SwiftDataMealPhotoMetadataRepository.swift in Sources */,
 				10000000000000000000004D /* SwiftDataNutritionTargetRepository.swift in Sources */,
 				10000000000000000000004E /* SwiftDataUserProfileRepository.swift in Sources */,
 				10000000000000000000004F /* SwiftDataWeightEntryRepository.swift in Sources */,
+				100000000000000000000061 /* MealLoggingView.swift in Sources */,
+				100000000000000000000062 /* MealLoggingViewModel.swift in Sources */,
+				100000000000000000000063 /* MockMealFoodDetectionService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

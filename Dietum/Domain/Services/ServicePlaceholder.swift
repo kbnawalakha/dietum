@@ -22,6 +22,6 @@ struct DetectedMealFood: Identifiable, Codable, Hashable, Sendable {
     }
 }
 
-protocol MealFoodDetectionService {
+protocol MealFoodDetectionService: Sendable {
     func detectFoods(in photo: PhotoMetadata) async throws -> MealFoodDetectionResult
 }

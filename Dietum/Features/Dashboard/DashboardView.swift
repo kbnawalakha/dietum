@@ -44,8 +44,14 @@ struct DashboardView: View {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
                             title: "Quick start",
-                            message: "Jump into the setup flow or keep the dashboard visible."
+                            message: "Jump into meal logging or open the setup flow from here."
                         )
+
+                        NavigationLink(value: AppRoute.mealLogging) {
+                            Label("Log a meal", systemImage: "camera.fill")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.appProminent)
 
                         NavigationLink(value: AppRoute.onboarding) {
                             Label("Open onboarding", systemImage: "arrow.right.circle.fill")

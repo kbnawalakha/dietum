@@ -4,6 +4,8 @@ import SwiftData
 enum DietumPersistenceStack {
     static let schema = Schema([
         StoredNutritionTarget.self,
+        StoredMealEntry.self,
+        StoredMealPhotoMetadata.self,
         StoredUserProfile.self,
         StoredWeightEntry.self,
     ])
