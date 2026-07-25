@@ -20,10 +20,10 @@ codex/repo-foundation
 
 ## Work Completed
 
-- Added a dedicated onboarding view model with profile field groups and implementation phases
-- Expanded the onboarding screen into a milestone planning view that outlines the future profile flow
-- Wired onboarding view creation through the app container and root navigation
-- Updated the repo docs to reflect DIET-011 completion and the onboarding scaffold
+- Added a dedicated onboarding view model with shared draft state and validation
+- Expanded the onboarding screen into an editable draft flow with launch gating
+- Wired onboarding presentation through both the root launch flow and the onboarding route
+- Updated the repo docs to reflect the merged onboarding milestone
 
 ## Workstreams
 
@@ -41,7 +41,7 @@ codex/repo-foundation
 
 ## Tests Run
 
-- `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-dd`
+- `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-merge-build`
 
 ## Test Results
 
@@ -49,22 +49,22 @@ codex/repo-foundation
 
 ## Work Remaining
 
-- No onboarding-scaffold work remains for this milestone
+- No onboarding-UI work remains for this milestone
 
 ## Known Problems
 
-- Unrelated uncommitted files remain in the working tree: `pass`, `pass.pub`, `Dietum.xcodeproj/project.pbxproj`, `Dietum.xcodeproj/project.xcworkspace/`, `Dietum.xcodeproj/xcshareddata/`, and `Dietum/DietumTests/`
+- Unrelated uncommitted files remain in the working tree: `pass`, `pass.pub`, and `Dietum/Features/Onboarding/OnboardingDraft.swift`
 
 ## Important Decisions
 
 - Keep onboarding local-first and aligned with the existing design system
-- Treat DIET-011 as scaffolding and implementation planning, not the full editable profile form
+- Treat DIET-011 as a draft-and-launch milestone, not the full persistence bridge
 - Keep the future profile save path replaceable through the existing app-layer wiring
 
 ## Exact Next Step
 
-- Let the next feature milestone replace the planning cards with the actual editable profile form and persistence flow
+- Let the next feature milestone move the onboarding draft into the persistence layer and turn the draft into a saved profile
 
 ## Suggested Next Agent
 
-- Feature milestone agent for the profile form and save flow
+- Feature milestone agent for the profile save and persistence bridge

@@ -64,7 +64,9 @@ struct RootView: View {
                 .navigationDestination(for: AppRoute.self) { route in
                     switch route {
                     case .onboarding:
-                        OnboardingView(viewModel: container.makeOnboardingViewModel())
+                        container.makeOnboardingView {
+                            viewModel.completeOnboarding()
+                        }
                     case .mealLogging:
                         MealLoggingView()
                     case .weeklyCheckIn:
@@ -79,12 +81,18 @@ struct RootView: View {
                         DashboardView()
                     }
                 }
+                .fullScreenCover(isPresented: $viewModel.shouldPresentOnboarding) {
+                    container.makeOnboardingView {
+                        viewModel.completeOnboarding()
+                    }
+                }
         }
     }
 }
 
 final class RootViewModel: ObservableObject {
     @Published var path: [AppRoute] = []
+    @Published var shouldPresentOnboarding = true
 
     func showMealLogging() {
         path.append(.mealLogging)
@@ -108,5 +116,10 @@ final class RootViewModel: ObservableObject {
 
     func showOnboarding() {
         path.append(.onboarding)
+    }
+
+    func completeOnboarding() {
+        shouldPresentOnboarding = false
+        path.removeAll()
     }
 }

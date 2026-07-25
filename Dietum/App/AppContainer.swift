@@ -41,7 +41,10 @@ struct AppContainer {
         NutritionAdjustmentViewModel()
     }
 
-    func makeOnboardingViewModel() -> OnboardingViewModel {
-        OnboardingViewModel()
+    func makeOnboardingView(onComplete: @escaping () -> Void) -> OnboardingView {
+        OnboardingView(
+            viewModel: OnboardingViewModel(),
+            onComplete: onComplete
+        )
     }
 }
