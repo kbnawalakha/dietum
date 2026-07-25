@@ -8,12 +8,14 @@ struct AppContainer {
     private let modelContainer: ModelContainer
     private let weightLogRepository: any WeightLogRepository
     private let progressPhotoRepository: any ProgressPhotoRepository
+    private let nutritionAdjustmentRecommendationService: any NutritionAdjustmentRecommendationService
 
     init(modelContainer: ModelContainer? = nil) {
         let resolvedContainer = modelContainer ?? (try! DietumPersistenceStack.makeContainer())
         self.modelContainer = resolvedContainer
         self.weightLogRepository = SwiftDataWeightEntryRepository(modelContext: resolvedContainer.mainContext)
         self.progressPhotoRepository = SwiftDataProgressPhotoRepository(modelContext: resolvedContainer.mainContext)
+        self.nutritionAdjustmentRecommendationService = DeterministicNutritionAdjustmentRecommendationService()
     }
 
     func makeRootViewModel() -> RootViewModel {
@@ -26,6 +28,13 @@ struct AppContainer {
 
     func makeProgressPhotosViewModel() -> ProgressPhotosViewModel {
         ProgressPhotosViewModel(progressPhotoRepository: progressPhotoRepository)
+    }
+
+    func makeProgressChartsViewModel() -> ProgressChartsViewModel {
+        ProgressChartsViewModel(
+            weightLogRepository: weightLogRepository,
+            recommendationService: nutritionAdjustmentRecommendationService
+        )
     }
 
     func makeNutritionAdjustmentViewModel() -> NutritionAdjustmentViewModel {

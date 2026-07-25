@@ -65,6 +65,12 @@ struct DashboardView: View {
                         }
                         .buttonStyle(.appProminent)
 
+                        NavigationLink(value: AppRoute.progressCharts) {
+                            Label("Open progress charts", systemImage: "chart.line.uptrend.xyaxis")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.appProminent)
+
                         NavigationLink(value: AppRoute.nutritionAdjustment) {
                             Label("Review calorie adjustment", systemImage: "slider.horizontal.3")
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -82,8 +88,8 @@ struct DashboardView: View {
                 AppSurfaceCard {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
-                            title: "Weekly review",
-                            message: "A lightweight snapshot of the latest body-weight trend and notes."
+                            title: "Progress charts",
+                            message: "Look at weight and nutrition together instead of reading them in isolation."
                         )
 
                         LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
@@ -95,6 +101,13 @@ struct DashboardView: View {
                             )
 
                             AppMetricCard(
+                                title: "Calories",
+                                value: "2,300",
+                                detail: "Recommended target",
+                                symbolName: "flame.fill"
+                            )
+
+                            AppMetricCard(
                                 title: "Trend",
                                 value: "-0.3 kg",
                                 detail: "Over the last 7 days",
@@ -102,8 +115,8 @@ struct DashboardView: View {
                             )
                         }
 
-                        NavigationLink(value: AppRoute.weeklyCheckIn) {
-                            Label("Review weekly check-in", systemImage: "checkmark.seal.fill")
+                        NavigationLink(value: AppRoute.progressCharts) {
+                            Label("Open progress charts", systemImage: "chart.line.uptrend.xyaxis")
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .buttonStyle(.appToolbar)

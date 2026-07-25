@@ -18,6 +18,7 @@ Milestone 0 — Repository and Architecture Foundation
 - `DIET-007` Add weekly check-in flow
 - `DIET-008` Add progress-photo flow
 - `DIET-009` Add nutrition-adjustment flow
+- `DIET-010` Add weight and nutrition progress charts
 
 # In Progress
 
@@ -29,12 +30,12 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Next Tasks
 
-- DIET-010 Add weight and nutrition progress charts
+- None identified
 
 # Dependency Tracking
 
 - DIET-006 depends on the meal model and local persistence boundaries.
-- DIET-010 depends on the weekly check-in data and trend summaries.
+- DIET-010 depended on the weekly check-in data and trend summaries.
 
 # Known Issues
 
@@ -47,4 +48,4 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Last Updated
 
-2026-07-24
+2026-07-25

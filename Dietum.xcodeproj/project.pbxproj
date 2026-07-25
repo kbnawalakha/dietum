@@ -39,6 +39,8 @@
 		100000000000000000000075 /* ProgressPhotosViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000079 /* ProgressPhotosViewModel.swift */; };
 		100000000000000000000076 /* StoredProgressPhotoMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000080 /* StoredProgressPhotoMetadata.swift */; };
 		100000000000000000000077 /* SwiftDataProgressPhotoRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000081 /* SwiftDataProgressPhotoRepository.swift */; };
+		100000000000000000000094 /* ProgressChartsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000092 /* ProgressChartsView.swift */; };
+		100000000000000000000095 /* ProgressChartsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000093 /* ProgressChartsViewModel.swift */; };
 		100000000000000000000082 /* NutritionAdjustmentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000086 /* NutritionAdjustmentModels.swift */; };
 		100000000000000000000083 /* NutritionAdjustmentRecommendationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000087 /* NutritionAdjustmentRecommendationService.swift */; };
 		100000000000000000000084 /* NutritionAdjustmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000088 /* NutritionAdjustmentView.swift */; };
@@ -80,6 +82,8 @@
 		100000000000000000000079 /* ProgressPhotosViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressPhotosViewModel.swift; sourceTree = "<group>"; };
 		100000000000000000000080 /* StoredProgressPhotoMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredProgressPhotoMetadata.swift; sourceTree = "<group>"; };
 		100000000000000000000081 /* SwiftDataProgressPhotoRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataProgressPhotoRepository.swift; sourceTree = "<group>"; };
+		100000000000000000000092 /* ProgressChartsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressChartsView.swift; sourceTree = "<group>"; };
+		100000000000000000000093 /* ProgressChartsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressChartsViewModel.swift; sourceTree = "<group>"; };
 		100000000000000000000086 /* NutritionAdjustmentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionAdjustmentModels.swift; sourceTree = "<group>"; };
 		100000000000000000000087 /* NutritionAdjustmentRecommendationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionAdjustmentRecommendationService.swift; sourceTree = "<group>"; };
 		100000000000000000000088 /* NutritionAdjustmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionAdjustmentView.swift; sourceTree = "<group>"; };
@@ -136,6 +140,7 @@
 				10000000000000000000002B /* Onboarding */,
 				100000000000000000000068 /* CheckIn */,
 				100000000000000000000069 /* ProgressPhotos */,
+				100000000000000000000091 /* Charts */,
 				100000000000000000000090 /* NutritionAdjustment */,
 				100000000000000000000038 /* Meals */,
 			);
@@ -167,6 +172,15 @@
 				100000000000000000000089 /* NutritionAdjustmentViewModel.swift */,
 			);
 			path = NutritionAdjustment;
+			sourceTree = "<group>";
+		};
+		100000000000000000000091 /* Charts */ = {
+			isa = PBXGroup;
+			children = (
+				100000000000000000000092 /* ProgressChartsView.swift */,
+				100000000000000000000093 /* ProgressChartsViewModel.swift */,
+			);
+			path = Charts;
 			sourceTree = "<group>";
 		};
 		100000000000000000000034 /* Data */ = {
@@ -408,6 +422,8 @@
 				100000000000000000000075 /* ProgressPhotosViewModel.swift in Sources */,
 				100000000000000000000076 /* StoredProgressPhotoMetadata.swift in Sources */,
 				100000000000000000000077 /* SwiftDataProgressPhotoRepository.swift in Sources */,
+				100000000000000000000094 /* ProgressChartsView.swift in Sources */,
+				100000000000000000000095 /* ProgressChartsViewModel.swift in Sources */,
 				100000000000000000000082 /* NutritionAdjustmentModels.swift in Sources */,
 				100000000000000000000083 /* NutritionAdjustmentRecommendationService.swift in Sources */,
 				100000000000000000000084 /* NutritionAdjustmentView.swift in Sources */,

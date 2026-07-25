@@ -5,6 +5,7 @@ enum AppRoute: Hashable {
     case mealLogging
     case weeklyCheckIn
     case progressPhotos
+    case progressCharts
     case nutritionAdjustment
     case dashboard
 
@@ -18,6 +19,8 @@ enum AppRoute: Hashable {
             return "Weekly Check-In"
         case .progressPhotos:
             return "Progress Photos"
+        case .progressCharts:
+            return "Progress Charts"
         case .nutritionAdjustment:
             return "Nutrition Adjustment"
         case .dashboard:
@@ -35,6 +38,8 @@ enum AppRoute: Hashable {
             return "calendar.badge.clock"
         case .progressPhotos:
             return "photo.on.rectangle.angled"
+        case .progressCharts:
+            return "chart.line.uptrend.xyaxis"
         case .nutritionAdjustment:
             return "slider.horizontal.3"
         case .dashboard:

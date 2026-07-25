@@ -40,6 +40,13 @@ struct RootView: View {
                         .buttonStyle(.appToolbar)
 
                         Button {
+                            viewModel.showProgressCharts()
+                        } label: {
+                            Label(AppRoute.progressCharts.title, systemImage: AppRoute.progressCharts.systemImage)
+                        }
+                        .buttonStyle(.appToolbar)
+
+                        Button {
                             viewModel.showNutritionAdjustment()
                         } label: {
                             Label(AppRoute.nutritionAdjustment.title, systemImage: AppRoute.nutritionAdjustment.systemImage)
@@ -64,6 +71,8 @@ struct RootView: View {
                         WeeklyCheckInView(viewModel: container.makeWeeklyCheckInViewModel())
                     case .progressPhotos:
                         ProgressPhotosView(viewModel: container.makeProgressPhotosViewModel())
+                    case .progressCharts:
+                        ProgressChartsView(viewModel: container.makeProgressChartsViewModel())
                     case .nutritionAdjustment:
                         NutritionAdjustmentView(viewModel: container.makeNutritionAdjustmentViewModel())
                     case .dashboard:
@@ -87,6 +96,10 @@ final class RootViewModel: ObservableObject {
 
     func showProgressPhotos() {
         path.append(.progressPhotos)
+    }
+
+    func showProgressCharts() {
+        path.append(.progressCharts)
     }
 
     func showNutritionAdjustment() {
