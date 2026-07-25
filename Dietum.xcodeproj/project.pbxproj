@@ -39,13 +39,25 @@
 		100000000000000000000075 /* ProgressPhotosViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000079 /* ProgressPhotosViewModel.swift */; };
 		100000000000000000000076 /* StoredProgressPhotoMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000080 /* StoredProgressPhotoMetadata.swift */; };
 		100000000000000000000077 /* SwiftDataProgressPhotoRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000081 /* SwiftDataProgressPhotoRepository.swift */; };
-		100000000000000000000094 /* ProgressChartsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000092 /* ProgressChartsView.swift */; };
-		100000000000000000000095 /* ProgressChartsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000093 /* ProgressChartsViewModel.swift */; };
 		100000000000000000000082 /* NutritionAdjustmentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000086 /* NutritionAdjustmentModels.swift */; };
 		100000000000000000000083 /* NutritionAdjustmentRecommendationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000087 /* NutritionAdjustmentRecommendationService.swift */; };
 		100000000000000000000084 /* NutritionAdjustmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000088 /* NutritionAdjustmentView.swift */; };
 		100000000000000000000085 /* NutritionAdjustmentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000089 /* NutritionAdjustmentViewModel.swift */; };
+		100000000000000000000094 /* ProgressChartsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000092 /* ProgressChartsView.swift */; };
+		100000000000000000000095 /* ProgressChartsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000093 /* ProgressChartsViewModel.swift */; };
+		1000000000000000000000A5 /* NutritionAdjustmentRecommendationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000A3 /* NutritionAdjustmentRecommendationServiceTests.swift */; };
+		1000000000000000000000A6 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000A4 /* XCTest.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1000000000000000000000AC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 100000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 10000000000000000000000B;
+			remoteInfo = Dietum;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		10000000000000000000000D /* Dietum.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dietum.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -82,12 +94,15 @@
 		100000000000000000000079 /* ProgressPhotosViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressPhotosViewModel.swift; sourceTree = "<group>"; };
 		100000000000000000000080 /* StoredProgressPhotoMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredProgressPhotoMetadata.swift; sourceTree = "<group>"; };
 		100000000000000000000081 /* SwiftDataProgressPhotoRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataProgressPhotoRepository.swift; sourceTree = "<group>"; };
-		100000000000000000000092 /* ProgressChartsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressChartsView.swift; sourceTree = "<group>"; };
-		100000000000000000000093 /* ProgressChartsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressChartsViewModel.swift; sourceTree = "<group>"; };
 		100000000000000000000086 /* NutritionAdjustmentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionAdjustmentModels.swift; sourceTree = "<group>"; };
 		100000000000000000000087 /* NutritionAdjustmentRecommendationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionAdjustmentRecommendationService.swift; sourceTree = "<group>"; };
 		100000000000000000000088 /* NutritionAdjustmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionAdjustmentView.swift; sourceTree = "<group>"; };
 		100000000000000000000089 /* NutritionAdjustmentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionAdjustmentViewModel.swift; sourceTree = "<group>"; };
+		100000000000000000000092 /* ProgressChartsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressChartsView.swift; sourceTree = "<group>"; };
+		100000000000000000000093 /* ProgressChartsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressChartsViewModel.swift; sourceTree = "<group>"; };
+		1000000000000000000000A1 /* DietumTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DietumTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1000000000000000000000A3 /* NutritionAdjustmentRecommendationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionAdjustmentRecommendationServiceTests.swift; sourceTree = "<group>"; };
+		1000000000000000000000A4 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = XCTest.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +113,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1000000000000000000000A8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1000000000000000000000A6 /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -105,6 +128,7 @@
 			isa = PBXGroup;
 			children = (
 				10000000000000000000000D /* Dietum.app */,
+				1000000000000000000000A1 /* DietumTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -118,6 +142,8 @@
 				100000000000000000000034 /* Data */,
 				100000000000000000000028 /* Domain */,
 				100000000000000000000029 /* Support */,
+				1000000000000000000000A2 /* DietumTests */,
+				823EBF8930153B4700C96A81 /* Recovered References */,
 			);
 			path = Dietum;
 			sourceTree = "<group>";
@@ -147,40 +173,90 @@
 			path = Features;
 			sourceTree = "<group>";
 		};
-		100000000000000000000068 /* CheckIn */ = {
+		100000000000000000000028 /* Domain */ = {
 			isa = PBXGroup;
 			children = (
-				100000000000000000000064 /* WeeklyCheckInView.swift */,
-				100000000000000000000065 /* WeeklyCheckInViewModel.swift */,
+				10000000000000000000002C /* Models */,
+				10000000000000000000002D /* Repositories */,
+				10000000000000000000002E /* Services */,
 			);
-			path = CheckIn;
+			path = Domain;
 			sourceTree = "<group>";
 		};
-		100000000000000000000069 /* ProgressPhotos */ = {
+		100000000000000000000029 /* Support */ = {
 			isa = PBXGroup;
 			children = (
-				100000000000000000000078 /* ProgressPhotosView.swift */,
-				100000000000000000000079 /* ProgressPhotosViewModel.swift */,
+				10000000000000000000002F /* DesignSystem */,
+				100000000000000000000030 /* DependencyInjection */,
+				100000000000000000000031 /* Navigation */,
 			);
-			path = ProgressPhotos;
+			path = Support;
 			sourceTree = "<group>";
 		};
-		100000000000000000000090 /* NutritionAdjustment */ = {
+		10000000000000000000002A /* Dashboard */ = {
 			isa = PBXGroup;
 			children = (
-				100000000000000000000088 /* NutritionAdjustmentView.swift */,
-				100000000000000000000089 /* NutritionAdjustmentViewModel.swift */,
+				100000000000000000000013 /* DashboardView.swift */,
 			);
-			path = NutritionAdjustment;
+			path = Dashboard;
 			sourceTree = "<group>";
 		};
-		100000000000000000000091 /* Charts */ = {
+		10000000000000000000002B /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
-				100000000000000000000092 /* ProgressChartsView.swift */,
-				100000000000000000000093 /* ProgressChartsViewModel.swift */,
+				100000000000000000000014 /* OnboardingView.swift */,
 			);
-			path = Charts;
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		10000000000000000000002C /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				100000000000000000000086 /* NutritionAdjustmentModels.swift */,
+				100000000000000000000015 /* DomainModelPlaceholder.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		10000000000000000000002D /* Repositories */ = {
+			isa = PBXGroup;
+			children = (
+				100000000000000000000016 /* RepositoryPlaceholder.swift */,
+			);
+			path = Repositories;
+			sourceTree = "<group>";
+		};
+		10000000000000000000002E /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				100000000000000000000087 /* NutritionAdjustmentRecommendationService.swift */,
+				100000000000000000000017 /* ServicePlaceholder.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		10000000000000000000002F /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				100000000000000000000024 /* DesignSystemPlaceholder.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		100000000000000000000030 /* DependencyInjection */ = {
+			isa = PBXGroup;
+			children = (
+				100000000000000000000023 /* DependencyInjectionPlaceholder.swift */,
+			);
+			path = DependencyInjection;
+			sourceTree = "<group>";
+		};
+		100000000000000000000031 /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				100000000000000000000022 /* NavigationPlaceholder.swift */,
+			);
+			path = Navigation;
 			sourceTree = "<group>";
 		};
 		100000000000000000000034 /* Data */ = {
@@ -227,22 +303,6 @@
 			path = Repositories;
 			sourceTree = "<group>";
 		};
-		10000000000000000000002A /* Dashboard */ = {
-			isa = PBXGroup;
-			children = (
-				100000000000000000000013 /* DashboardView.swift */,
-			);
-			path = Dashboard;
-			sourceTree = "<group>";
-		};
-		10000000000000000000002B /* Onboarding */ = {
-			isa = PBXGroup;
-			children = (
-				100000000000000000000014 /* OnboardingView.swift */,
-			);
-			path = Onboarding;
-			sourceTree = "<group>";
-		};
 		100000000000000000000038 /* Meals */ = {
 			isa = PBXGroup;
 			children = (
@@ -253,74 +313,56 @@
 			path = Meals;
 			sourceTree = "<group>";
 		};
-		100000000000000000000028 /* Domain */ = {
+		100000000000000000000068 /* CheckIn */ = {
 			isa = PBXGroup;
 			children = (
-				10000000000000000000002C /* Models */,
-				10000000000000000000002D /* Repositories */,
-				10000000000000000000002E /* Services */,
+				100000000000000000000064 /* WeeklyCheckInView.swift */,
+				100000000000000000000065 /* WeeklyCheckInViewModel.swift */,
 			);
-			path = Domain;
+			path = CheckIn;
 			sourceTree = "<group>";
 		};
-		10000000000000000000002C /* Models */ = {
+		100000000000000000000069 /* ProgressPhotos */ = {
 			isa = PBXGroup;
 			children = (
-				100000000000000000000086 /* NutritionAdjustmentModels.swift */,
-				100000000000000000000015 /* DomainModelPlaceholder.swift */,
+				100000000000000000000078 /* ProgressPhotosView.swift */,
+				100000000000000000000079 /* ProgressPhotosViewModel.swift */,
 			);
-			path = Models;
+			path = ProgressPhotos;
 			sourceTree = "<group>";
 		};
-		10000000000000000000002D /* Repositories */ = {
+		100000000000000000000090 /* NutritionAdjustment */ = {
 			isa = PBXGroup;
 			children = (
-				100000000000000000000016 /* RepositoryPlaceholder.swift */,
+				100000000000000000000088 /* NutritionAdjustmentView.swift */,
+				100000000000000000000089 /* NutritionAdjustmentViewModel.swift */,
 			);
-			path = Repositories;
+			path = NutritionAdjustment;
 			sourceTree = "<group>";
 		};
-		10000000000000000000002E /* Services */ = {
+		100000000000000000000091 /* Charts */ = {
 			isa = PBXGroup;
 			children = (
-				100000000000000000000087 /* NutritionAdjustmentRecommendationService.swift */,
-				100000000000000000000017 /* ServicePlaceholder.swift */,
+				100000000000000000000092 /* ProgressChartsView.swift */,
+				100000000000000000000093 /* ProgressChartsViewModel.swift */,
 			);
-			path = Services;
+			path = Charts;
 			sourceTree = "<group>";
 		};
-		100000000000000000000029 /* Support */ = {
+		1000000000000000000000A2 /* DietumTests */ = {
 			isa = PBXGroup;
 			children = (
-				10000000000000000000002F /* DesignSystem */,
-				100000000000000000000030 /* DependencyInjection */,
-				100000000000000000000031 /* Navigation */,
+				1000000000000000000000A3 /* NutritionAdjustmentRecommendationServiceTests.swift */,
 			);
-			path = Support;
+			path = DietumTests;
 			sourceTree = "<group>";
 		};
-		10000000000000000000002F /* DesignSystem */ = {
+		823EBF8930153B4700C96A81 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
-				100000000000000000000024 /* DesignSystemPlaceholder.swift */,
+				1000000000000000000000A4 /* XCTest.framework */,
 			);
-			path = DesignSystem;
-			sourceTree = "<group>";
-		};
-		100000000000000000000030 /* DependencyInjection */ = {
-			isa = PBXGroup;
-			children = (
-				100000000000000000000023 /* DependencyInjectionPlaceholder.swift */,
-			);
-			path = DependencyInjection;
-			sourceTree = "<group>";
-		};
-		100000000000000000000031 /* Navigation */ = {
-			isa = PBXGroup;
-			children = (
-				100000000000000000000022 /* NavigationPlaceholder.swift */,
-			);
-			path = Navigation;
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -343,6 +385,24 @@
 			productReference = 10000000000000000000000D /* Dietum.app */;
 			productType = "com.apple.product-type.application";
 		};
+		1000000000000000000000AA /* DietumTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1000000000000000000000AF /* Build configuration list for PBXNativeTarget "DietumTests" */;
+			buildPhases = (
+				1000000000000000000000A7 /* Sources */,
+				1000000000000000000000A8 /* Frameworks */,
+				1000000000000000000000A9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1000000000000000000000AB /* PBXTargetDependency */,
+			);
+			name = DietumTests;
+			productName = DietumTests;
+			productReference = 1000000000000000000000A1 /* DietumTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -358,25 +418,33 @@
 				};
 			};
 			buildConfigurationList = 100000000000000000000002 /* Build configuration list for PBXProject "Dietum" */;
-			compatibilityVersion = "Xcode 26.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = 10000000000000000000000E;
+			mainGroup = 10000000000000000000000E /* Dietum */;
+			preferredProjectObjectVersion = 77;
 			productRefGroup = 10000000000000000000000C /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				10000000000000000000000B /* Dietum */,
+				1000000000000000000000AA /* DietumTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		10000000000000000000000A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1000000000000000000000A9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -431,7 +499,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1000000000000000000000A7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1000000000000000000000A5 /* NutritionAdjustmentRecommendationServiceTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1000000000000000000000AB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 10000000000000000000000B /* Dietum */;
+			targetProxy = 1000000000000000000000AC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		100000000000000000000003 /* Debug */ = {
@@ -439,10 +523,39 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_LANGUAGE = en;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = Dietum/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -453,8 +566,9 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kbnawalakha.Dietum;
 				PRODUCT_NAME = Dietum;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -469,10 +583,38 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_LANGUAGE = en;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = Dietum/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -482,8 +624,10 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kbnawalakha.Dietum;
 				PRODUCT_NAME = Dietum;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
@@ -526,6 +670,48 @@
 			};
 			name = Release;
 		};
+		1000000000000000000000AD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_LANGUAGE = en;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kbnawalakha.DietumTests;
+				PRODUCT_NAME = DietumTests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Dietum.app/Dietum";
+			};
+			name = Debug;
+		};
+		1000000000000000000000AE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_LANGUAGE = en;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kbnawalakha.DietumTests;
+				PRODUCT_NAME = DietumTests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Dietum.app/Dietum";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -543,6 +729,15 @@
 			buildConfigurations = (
 				100000000000000000000006 /* Debug */,
 				100000000000000000000007 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1000000000000000000000AF /* Build configuration list for PBXNativeTarget "DietumTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1000000000000000000000AD /* Debug */,
+				1000000000000000000000AE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

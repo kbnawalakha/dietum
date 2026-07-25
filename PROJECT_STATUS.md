@@ -19,6 +19,8 @@ Milestone 0 — Repository and Architecture Foundation
 - `DIET-008` Add progress-photo flow
 - `DIET-009` Add nutrition-adjustment flow
 - `DIET-010` Add weight and nutrition progress charts
+- `DIET-011` Add user profile onboarding scaffolding and implementation planning
+- Added the XCTest target setup and deterministic nutrition-adjustment unit tests
 - Added and hardened a lightweight GitHub Actions build workflow
 
 # In Progress
@@ -40,11 +42,11 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Known Issues
 
-- No automated test target exists yet
+- Unrelated uncommitted files remain in the working tree: `pass`, `pass.pub`, `Dietum.xcodeproj/project.pbxproj`, `Dietum.xcodeproj/project.xcworkspace/`, `Dietum.xcodeproj/xcshareddata/`, and `Dietum/DietumTests/`
 
 # Active Agents
 
-- Agent 1: Coordinator
+- Agent 3: Onboarding
 
 # Last Updated
 
