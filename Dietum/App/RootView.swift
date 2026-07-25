@@ -64,7 +64,7 @@ struct RootView: View {
                 .navigationDestination(for: AppRoute.self) { route in
                     switch route {
                     case .onboarding:
-                        OnboardingView()
+                        OnboardingView(viewModel: container.makeOnboardingViewModel())
                     case .mealLogging:
                         MealLoggingView()
                     case .weeklyCheckIn:

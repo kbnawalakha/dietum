@@ -40,4 +40,8 @@ struct AppContainer {
     func makeNutritionAdjustmentViewModel() -> NutritionAdjustmentViewModel {
         NutritionAdjustmentViewModel()
     }
+
+    func makeOnboardingViewModel() -> OnboardingViewModel {
+        OnboardingViewModel()
+    }
 }

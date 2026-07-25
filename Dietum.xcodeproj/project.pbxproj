@@ -43,6 +43,7 @@
 		100000000000000000000083 /* NutritionAdjustmentRecommendationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000087 /* NutritionAdjustmentRecommendationService.swift */; };
 		100000000000000000000084 /* NutritionAdjustmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000088 /* NutritionAdjustmentView.swift */; };
 		100000000000000000000085 /* NutritionAdjustmentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000089 /* NutritionAdjustmentViewModel.swift */; };
+		100000000000000000000096 /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000097 /* OnboardingViewModel.swift */; };
 		100000000000000000000094 /* ProgressChartsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000092 /* ProgressChartsView.swift */; };
 		100000000000000000000095 /* ProgressChartsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000093 /* ProgressChartsViewModel.swift */; };
 		1000000000000000000000A5 /* NutritionAdjustmentRecommendationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000A3 /* NutritionAdjustmentRecommendationServiceTests.swift */; };
@@ -67,6 +68,7 @@
 		100000000000000000000012 /* AppRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRoute.swift; sourceTree = "<group>"; };
 		100000000000000000000013 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		100000000000000000000014 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		100000000000000000000097 /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
 		100000000000000000000015 /* DomainModelPlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainModelPlaceholder.swift; sourceTree = "<group>"; };
 		100000000000000000000016 /* RepositoryPlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryPlaceholder.swift; sourceTree = "<group>"; };
 		100000000000000000000017 /* ServicePlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicePlaceholder.swift; sourceTree = "<group>"; };
@@ -205,6 +207,7 @@
 			isa = PBXGroup;
 			children = (
 				100000000000000000000014 /* OnboardingView.swift */,
+				100000000000000000000097 /* OnboardingViewModel.swift */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -492,6 +495,7 @@
 				100000000000000000000077 /* SwiftDataProgressPhotoRepository.swift in Sources */,
 				100000000000000000000094 /* ProgressChartsView.swift in Sources */,
 				100000000000000000000095 /* ProgressChartsViewModel.swift in Sources */,
+				100000000000000000000096 /* OnboardingViewModel.swift in Sources */,
 				100000000000000000000082 /* NutritionAdjustmentModels.swift in Sources */,
 				100000000000000000000083 /* NutritionAdjustmentRecommendationService.swift in Sources */,
 				100000000000000000000084 /* NutritionAdjustmentView.swift in Sources */,

@@ -8,11 +8,11 @@ Replace the previous handoff content with the current state at the end of each a
 
 ## Agent
 
-Agent 2: CI/Build
+Agent 3: Onboarding
 
 ## Assigned Issue
 
-CI/build automation milestone
+DIET-011 user profile onboarding scaffolding and implementation planning
 
 ## Branch
 
@@ -20,48 +20,51 @@ codex/repo-foundation
 
 ## Work Completed
 
-- Hardened the lightweight GitHub Actions workflow for app build verification
-- Kept the change isolated to `.github/workflows/` plus the repo status notes
-- Attempted a local `xcodebuild` verification run for the app target
+- Added a dedicated onboarding view model with profile field groups and implementation phases
+- Expanded the onboarding screen into a milestone planning view that outlines the future profile flow
+- Wired onboarding view creation through the app container and root navigation
+- Updated the repo docs to reflect DIET-011 completion and the onboarding scaffold
 
 ## Workstreams
 
-- CI / Build Verification | Owner: CI/Build | Completed
+- Onboarding / Profile Scaffolding | Owner: Onboarding | Completed
 
 ## Files Changed
 
-- `.github/workflows/build.yml`
+- `Dietum/Features/Onboarding/OnboardingViewModel.swift`
+- `Dietum/Features/Onboarding/OnboardingView.swift`
+- `Dietum/App/AppContainer.swift`
+- `Dietum/App/RootView.swift`
 - `PROJECT_STATUS.md`
+- `README.md`
 - `HANDOFF.md`
 
 ## Tests Run
 
-- `xcodebuild -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-dd build`
+- `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-dd`
 
 ## Test Results
 
-- `xcodebuild` did not complete in this sandbox because SwiftData macro/plugin execution and sandboxed simulator services failed on the local machine
+- `xcodebuild` succeeded on the iOS simulator
 
 ## Work Remaining
 
-- Add automated test targets when the test lane is assigned
+- No onboarding-scaffold work remains for this milestone
 
 ## Known Problems
 
-- No automated test target exists yet
-- `pass` and `pass.pub` remain untracked in the working tree and are unrelated to Dietum
-- `Dietum.xcodeproj/project.pbxproj` and `DietumTests/` contain unrelated uncommitted test-target work from another agent
+- Unrelated uncommitted files remain in the working tree: `pass`, `pass.pub`, `Dietum.xcodeproj/project.pbxproj`, `Dietum.xcodeproj/project.xcworkspace/`, `Dietum.xcodeproj/xcshareddata/`, and `Dietum/DietumTests/`
 
 ## Important Decisions
 
-- Local-first iPhone app
-- SwiftData for local persistence
-- CI should stay minimal and only verify the app build until the test lane exists
+- Keep onboarding local-first and aligned with the existing design system
+- Treat DIET-011 as scaffolding and implementation planning, not the full editable profile form
+- Keep the future profile save path replaceable through the existing app-layer wiring
 
 ## Exact Next Step
 
-- Keep the build workflow as the only CI automation until another agent owns tests
+- Let the next feature milestone replace the planning cards with the actual editable profile form and persistence flow
 
 ## Suggested Next Agent
 
-- Test coverage Agent
+- Feature milestone agent for the profile form and save flow
