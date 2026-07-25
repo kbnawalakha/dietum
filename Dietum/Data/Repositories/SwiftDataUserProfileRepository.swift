@@ -2,22 +2,22 @@ import Foundation
 import SwiftData
 
 @MainActor
-final class SwiftDataUserProfileRepository {
+final class SwiftDataUserProfileRepository: UserProfileRepository {
     private let modelContext: ModelContext
 
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
     }
 
-    func fetchProfile() throws -> StoredUserProfile? {
-        try modelContext.fetch(FetchDescriptor<StoredUserProfile>()).first
+    func fetchUserProfile() async throws -> UserProfile? {
+        try modelContext.fetch(FetchDescriptor<StoredUserProfile>()).first?.userProfile
     }
 
-    func replaceProfile(_ profile: StoredUserProfile) throws {
+    func saveUserProfile(_ profile: UserProfile) async throws {
         let existingProfiles = try modelContext.fetch(FetchDescriptor<StoredUserProfile>())
         existingProfiles.forEach { modelContext.delete($0) }
 
-        modelContext.insert(profile)
+        modelContext.insert(StoredUserProfile(profile))
         try modelContext.save()
     }
 }
