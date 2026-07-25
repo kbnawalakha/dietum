@@ -19,6 +19,7 @@ Milestone 0 — Repository and Architecture Foundation
 - `DIET-008` Add progress-photo flow
 - `DIET-009` Add nutrition-adjustment flow
 - `DIET-010` Add weight and nutrition progress charts
+- Added a lightweight GitHub Actions build workflow
 
 # In Progress
 
@@ -39,7 +40,6 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Known Issues
 
-- No automated build workflow exists yet
 - No automated test target exists yet
 
 # Active Agents
