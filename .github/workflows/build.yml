@@ -3,10 +3,16 @@ name: Build
 on:
   push:
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: dietum-build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-15
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -16,4 +22,4 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
       - name: Verify app build
-        run: xcodebuild -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build build
+        run: xcodebuild -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/dietum-build clean build

@@ -20,9 +20,9 @@ codex/repo-foundation
 
 ## Work Completed
 
-- Added a lightweight GitHub Actions workflow for app build verification
+- Hardened the lightweight GitHub Actions workflow for app build verification
 - Kept the change isolated to `.github/workflows/` plus the repo status notes
-- Verified the Dietum app still builds locally with `xcodebuild`
+- Attempted a local `xcodebuild` verification run for the app target
 
 ## Workstreams
 
@@ -40,7 +40,7 @@ codex/repo-foundation
 
 ## Test Results
 
-- `xcodebuild` succeeded on the iOS simulator
+- `xcodebuild` did not complete in this sandbox because SwiftData macro/plugin execution and sandboxed simulator services failed on the local machine
 
 ## Work Remaining
 
@@ -50,6 +50,7 @@ codex/repo-foundation
 
 - No automated test target exists yet
 - `pass` and `pass.pub` remain untracked in the working tree and are unrelated to Dietum
+- `Dietum.xcodeproj/project.pbxproj` and `DietumTests/` contain unrelated uncommitted test-target work from another agent
 
 ## Important Decisions
 
