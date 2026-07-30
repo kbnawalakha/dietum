@@ -24,7 +24,7 @@ struct MealLoggingView: View {
                         )
 
                         HStack(spacing: AppSpacing.item) {
-                            AppStatusPill(text: viewModel.selectedMealType.rawValue.capitalized, systemImage: "fork.knife")
+                            AppStatusPill(text: viewModel.reviewPillText, systemImage: "fork.knife")
                             Spacer(minLength: 0)
                             Button {
                                 Task {
@@ -37,6 +37,16 @@ struct MealLoggingView: View {
                             .disabled(viewModel.analysisState == .analyzing)
                         }
 
+                        VStack(alignment: .leading, spacing: AppSpacing.small) {
+                            Text("Mock photo")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(AppPalette.textPrimary)
+
+                            Text("Photo placeholder: \(viewModel.draft.photoDescription)")
+                                .font(.subheadline)
+                                .foregroundStyle(AppPalette.textSecondary)
+                        }
+
                         if viewModel.analysisState == .analyzing {
                             HStack(spacing: AppSpacing.item) {
                                 ProgressView()
@@ -45,6 +55,41 @@ struct MealLoggingView: View {
                                     .foregroundStyle(AppPalette.textSecondary)
                             }
                         }
+
+                        if let notes = viewModel.analysisNotes {
+                            Text(notes)
+                                .font(.caption)
+                                .foregroundStyle(AppPalette.textSecondary)
+                        }
+                    }
+                }
+
+                AppSurfaceCard {
+                    VStack(alignment: .leading, spacing: AppSpacing.item) {
+                        AppSectionHeader(
+                            title: "Meal summary",
+                            message: "Quick scan of the current draft before you save it locally."
+                        )
+
+                        LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
+                            AppMetricCard(
+                                title: "Meal type",
+                                value: viewModel.summary.mealType.rawValue.capitalized,
+                                detail: "Selected for this entry",
+                                symbolName: "clock"
+                            )
+
+                            AppMetricCard(
+                                title: "Foods",
+                                value: "\(viewModel.summary.itemCount)",
+                                detail: viewModel.summary.confidenceText,
+                                symbolName: "list.bullet.clipboard"
+                            )
+                        }
+
+                        Text(viewModel.summary.notes)
+                            .font(.subheadline)
+                            .foregroundStyle(AppPalette.textSecondary)
                     }
                 }
 
@@ -56,31 +101,20 @@ struct MealLoggingView: View {
                                 message: "Edit or remove anything the mock analysis got wrong."
                             )
 
-                            ForEach(viewModel.detectedFoods) { food in
-                                VStack(alignment: .leading, spacing: AppSpacing.small) {
-                                    HStack(alignment: .firstTextBaseline) {
-                                        TextField(
-                                            "Food name",
-                                            text: Binding(
-                                                get: { food.name },
-                                                set: { viewModel.updateFood(id: food.id, name: $0) }
-                                            )
-                                        )
-                                        .textFieldStyle(.roundedBorder)
-
-                                        Button(role: .destructive) {
+                            VStack(alignment: .leading, spacing: AppSpacing.item) {
+                                ForEach(viewModel.detectedFoods) { food in
+                                    MealDetectedFoodRow(
+                                        food: food,
+                                        isExpanded: viewModel.selectedItemID == food.id,
+                                        onToggleReview: {
+                                            viewModel.toggleItemReview(food.id)
+                                        },
+                                        onUpdateName: { viewModel.updateFood(id: food.id, name: $0) },
+                                        onUpdateConfidence: { viewModel.updateFoodConfidence(id: food.id, confidence: $0) },
+                                        onRemove: {
                                             viewModel.removeFood(id: food.id)
-                                        } label: {
-                                            Image(systemName: "minus.circle.fill")
                                         }
-                                        .buttonStyle(.appToolbar)
-                                    }
-
-                                    if let confidence = food.confidence {
-                                        Text("Confidence \(Int(confidence * 100))%")
-                                            .font(.caption)
-                                            .foregroundStyle(AppPalette.textSecondary)
-                                    }
+                                    )
                                 }
                             }
 
@@ -102,7 +136,10 @@ struct MealLoggingView: View {
                             message: "Capture quick context before the entry is stored."
                         )
 
-                        Picker("Meal type", selection: $viewModel.selectedMealType) {
+                        Picker("Meal type", selection: Binding(
+                            get: { viewModel.draft.mealType },
+                            set: { viewModel.updateMealType($0) }
+                        )) {
                             Text("Breakfast").tag(MealType.breakfast)
                             Text("Lunch").tag(MealType.lunch)
                             Text("Dinner").tag(MealType.dinner)
@@ -111,14 +148,15 @@ struct MealLoggingView: View {
                         }
                         .pickerStyle(.segmented)
 
-                        TextField("Optional notes", text: $viewModel.notes, axis: .vertical)
-                            .textFieldStyle(.roundedBorder)
+                        TextField("Optional notes", text: Binding(
+                            get: { viewModel.draft.notes },
+                            set: { viewModel.updateNotes($0) }
+                        ), axis: .vertical)
+                        .textFieldStyle(.roundedBorder)
 
-                        if let notes = viewModel.analysisNotes {
-                            Text(notes)
-                                .font(.caption)
-                                .foregroundStyle(AppPalette.textSecondary)
-                        }
+                        Text("Meal detection is a mock estimate. Review and correct before saving.")
+                            .font(.caption)
+                            .foregroundStyle(AppPalette.textSecondary)
 
                         Button {
                             viewModel.saveDraft()
@@ -139,5 +177,70 @@ struct MealLoggingView: View {
         .navigationTitle("Log Meal")
         .navigationBarTitleDisplayMode(.inline)
         .appScreenBackground()
+    }
+}
+
+private struct MealDetectedFoodRow: View {
+    let food: DetectedMealFood
+    let isExpanded: Bool
+    let onToggleReview: () -> Void
+    let onUpdateName: (String) -> Void
+    let onUpdateConfidence: (Double?) -> Void
+    let onRemove: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.small) {
+            HStack(alignment: .firstTextBaseline, spacing: AppSpacing.small) {
+                Button(action: onToggleReview) {
+                    Image(systemName: isExpanded ? "checkmark.circle.fill" : "circle")
+                        .foregroundStyle(AppPalette.accent)
+                }
+                .buttonStyle(.plain)
+
+                TextField(
+                    "Food name",
+                    text: Binding(
+                        get: { food.name },
+                        set: onUpdateName
+                    )
+                )
+                .textFieldStyle(.roundedBorder)
+
+                Button(role: .destructive, action: onRemove) {
+                    Image(systemName: "minus.circle.fill")
+                }
+                .buttonStyle(.appToolbar)
+            }
+
+            HStack(spacing: AppSpacing.small) {
+                if let confidence = food.confidence {
+                    Text("Confidence \(Int(confidence * 100))%")
+                        .font(.caption)
+                        .foregroundStyle(AppPalette.textSecondary)
+                } else {
+                    Text("Confidence not set")
+                        .font(.caption)
+                        .foregroundStyle(AppPalette.textSecondary)
+                }
+
+                Button("Low") { onUpdateConfidence(0.35) }
+                    .buttonStyle(.borderless)
+                    .font(.caption)
+
+                Button("Med") { onUpdateConfidence(0.65) }
+                    .buttonStyle(.borderless)
+                    .font(.caption)
+
+                Button("High") { onUpdateConfidence(0.9) }
+                    .buttonStyle(.borderless)
+                    .font(.caption)
+            }
+
+            if isExpanded {
+                Text("Mark this row as reviewed once the detected name looks right.")
+                    .font(.caption)
+                    .foregroundStyle(AppPalette.textSecondary)
+            }
+        }
     }
 }

@@ -1,72 +1,64 @@
 import Foundation
 import SwiftUI
 
+struct MealLoggingDraft: Hashable, Sendable {
+    var mealType: MealType = .lunch
+    var notes: String = ""
+    var photoDescription: String = "Mock meal photo"
+    var detectedFoods: [DetectedMealFood] = []
+
+    var trimmedNotes: String {
+        notes.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    var isEmpty: Bool {
+        detectedFoods.isEmpty && trimmedNotes.isEmpty
+    }
+}
+
+struct MealLoggingSummary: Hashable, Sendable {
+    var mealType: MealType
+    var itemCount: Int
+    var confidenceText: String
+    var notes: String
+
+    static let empty = MealLoggingSummary(
+        mealType: .custom,
+        itemCount: 0,
+        confidenceText: "No analysis yet",
+        notes: "Run the mock detector to populate a meal draft."
+    )
+}
+
 @MainActor
 final class MealLoggingViewModel: ObservableObject {
     enum AnalysisState: Equatable {
         case idle
         case analyzing
         case ready
+        case needsReview
         case saved
         case failed(String)
     }
 
-    @Published var selectedMealType: MealType = .lunch
-    @Published var notes: String = ""
-    @Published var detectedFoods: [DetectedMealFood] = []
+    @Published var draft: MealLoggingDraft
     @Published var analysisState: AnalysisState = .idle
     @Published var analysisNotes: String?
+    @Published var selectedItemID: DetectedMealFood.ID?
 
     private let detectionService: MealFoodDetectionService
     private let samplePhoto = PhotoMetadata(storageIdentifier: "meal-photo-mock")
 
-    init(detectionService: MealFoodDetectionService = MockMealFoodDetectionService()) {
+    init(
+        draft: MealLoggingDraft = MealLoggingDraft(),
+        detectionService: MealFoodDetectionService = MockMealFoodDetectionService()
+    ) {
+        self.draft = draft
         self.detectionService = detectionService
     }
 
-    func analyzeMockPhoto() async {
-        guard analysisState != .analyzing else {
-            return
-        }
-
-        analysisState = .analyzing
-        analysisNotes = nil
-
-        do {
-            let result = try await detectionService.detectFoods(in: samplePhoto)
-            detectedFoods = result.detectedFoods
-            analysisNotes = result.notes
-            analysisState = .ready
-        } catch {
-            analysisState = .failed("Mock analysis failed. Try again.")
-            analysisNotes = nil
-        }
-    }
-
-    func addFood() {
-        detectedFoods.append(DetectedMealFood(name: "New food"))
-        if case .idle = analysisState {
-            analysisState = .ready
-        }
-    }
-
-    func updateFood(id: DetectedMealFood.ID, name: String) {
-        guard let index = detectedFoods.firstIndex(where: { $0.id == id }) else {
-            return
-        }
-
-        detectedFoods[index].name = name
-    }
-
-    func removeFood(id: DetectedMealFood.ID) {
-        detectedFoods.removeAll { $0.id == id }
-        if detectedFoods.isEmpty, case .ready = analysisState {
-            analysisState = .idle
-        }
-    }
-
-    func saveDraft() {
-        analysisState = .saved
+    var detectedFoods: [DetectedMealFood] {
+        draft.detectedFoods
     }
 
     var headline: String {
@@ -77,6 +69,8 @@ final class MealLoggingViewModel: ObservableObject {
             return "Analyzing the sample meal locally."
         case .ready:
             return "Review the detected foods and make any corrections before saving."
+        case .needsReview:
+            return "Some foods still need attention before the meal can be saved."
         case .saved:
             return "Meal draft saved locally for now."
         case .failed(let message):
@@ -85,6 +79,132 @@ final class MealLoggingViewModel: ObservableObject {
     }
 
     var canSave: Bool {
-        !detectedFoods.isEmpty && analysisState != .analyzing
+        !draft.detectedFoods.isEmpty && analysisState != .analyzing
+    }
+
+    var summary: MealLoggingSummary {
+        guard !draft.detectedFoods.isEmpty else {
+            return .empty
+        }
+
+        let confidenceValues = draft.detectedFoods.compactMap(\.confidence)
+        let averageConfidence = confidenceValues.isEmpty ? nil : confidenceValues.reduce(0, +) / Double(confidenceValues.count)
+        let confidenceText = averageConfidence.map { "\(Int($0 * 100))% average confidence" } ?? "Confidence not available"
+
+        return MealLoggingSummary(
+            mealType: draft.mealType,
+            itemCount: draft.detectedFoods.count,
+            confidenceText: confidenceText,
+            notes: draft.trimmedNotes.isEmpty ? "Add notes after the mock analysis if needed." : draft.trimmedNotes
+        )
+    }
+
+    var reviewPillText: String {
+        switch analysisState {
+        case .idle:
+            return "Awaiting analysis"
+        case .analyzing:
+            return "Analyzing"
+        case .ready:
+            return "Ready to review"
+        case .needsReview:
+            return "Needs review"
+        case .saved:
+            return "Saved"
+        case .failed:
+            return "Error"
+        }
+    }
+
+    func analyzeMockPhoto() async {
+        guard analysisState != .analyzing else {
+            return
+        }
+
+        analysisState = .analyzing
+        analysisNotes = nil
+        selectedItemID = nil
+
+        do {
+            let result = try await detectionService.detectFoods(in: samplePhoto)
+            updateDraft { draft in
+                draft.detectedFoods = result.detectedFoods
+            }
+            analysisNotes = result.notes
+            analysisState = result.detectedFoods.isEmpty ? .needsReview : .ready
+        } catch {
+            analysisState = .failed("Mock analysis failed. Try again.")
+            analysisNotes = nil
+        }
+    }
+
+    func addFood() {
+        updateDraft { draft in
+            draft.detectedFoods.append(DetectedMealFood(name: "New food"))
+        }
+        if case .idle = analysisState {
+            analysisState = .needsReview
+        }
+    }
+
+    func updateMealType(_ mealType: MealType) {
+        updateDraft { draft in
+            draft.mealType = mealType
+        }
+    }
+
+    func updateNotes(_ notes: String) {
+        updateDraft { draft in
+            draft.notes = notes
+        }
+    }
+
+    func updateFood(id: DetectedMealFood.ID, name: String) {
+        updateDraft { draft in
+            guard let index = draft.detectedFoods.firstIndex(where: { $0.id == id }) else {
+                return
+            }
+
+            draft.detectedFoods[index].name = name
+        }
+        selectedItemID = id
+    }
+
+    func updateFoodConfidence(id: DetectedMealFood.ID, confidence: Double?) {
+        updateDraft { draft in
+            guard let index = draft.detectedFoods.firstIndex(where: { $0.id == id }) else {
+                return
+            }
+
+            draft.detectedFoods[index].confidence = confidence
+        }
+    }
+
+    func removeFood(id: DetectedMealFood.ID) {
+        updateDraft { draft in
+            draft.detectedFoods.removeAll { $0.id == id }
+        }
+        if draft.detectedFoods.isEmpty, case .ready = analysisState {
+            analysisState = .needsReview
+        }
+    }
+
+    func toggleItemReview(_ id: DetectedMealFood.ID) {
+        selectedItemID = selectedItemID == id ? nil : id
+        if case .ready = analysisState {
+            analysisState = .needsReview
+        }
+    }
+
+    func saveDraft() {
+        guard canSave else {
+            return
+        }
+
+        analysisState = .saved
+    }
+
+    private func updateDraft(_ mutation: (inout MealLoggingDraft) -> Void) {
+        mutation(&draft)
     }
 }
