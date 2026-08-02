@@ -1,87 +1,94 @@
 import SwiftUI
 
 struct DashboardView: View {
+    @StateObject private var viewModel: DashboardViewModel
+
+    init(viewModel: DashboardViewModel = DashboardViewModel()) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppSpacing.section) {
                 AppHeroCard(
                     eyebrow: "Local-first nutrition",
                     title: "Daily dashboard",
-                    message: "Track meals, weight, and progress without leaving the flow of the app."
+                    message: viewModel.headline
                 )
 
                 VStack(alignment: .leading, spacing: AppSpacing.item) {
                     AppSectionHeader(
                         title: "Today",
-                        message: "A simple shell for targets, reminders, and quick actions."
+                        message: viewModel.todaySummaryText
                     )
 
                     LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
-                        AppMetricCard(
-                            title: "Calories",
-                            value: "2,400",
-                            detail: "Target",
-                            symbolName: "flame.fill"
-                        )
-
-                        AppMetricCard(
-                            title: "Meals",
-                            value: "4",
-                            detail: "Planned today",
-                            symbolName: "fork.knife"
-                        )
-
-                        AppMetricCard(
-                            title: "Sleep",
-                            value: "7.5 h",
-                            detail: "Goal range",
-                            symbolName: "bed.double.fill"
-                        )
+                        ForEach(viewModel.targetCards) { card in
+                            AppMetricCard(
+                                title: card.title,
+                                value: card.value,
+                                detail: card.detail,
+                                symbolName: card.symbolName
+                            )
+                        }
                     }
+
+                    Text(viewModel.reminderStatusText)
+                        .font(.subheadline)
+                        .foregroundStyle(AppPalette.textSecondary)
                 }
 
                 AppSurfaceCard {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
                             title: "Quick start",
-                            message: "Jump into meal logging, weekly check-in, or open the setup flow from here."
+                            message: "Jump into the next step from a single place."
                         )
 
-                        NavigationLink(value: AppRoute.mealLogging) {
-                            Label("Log a meal", systemImage: "camera.fill")
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                        ForEach(viewModel.quickActions) { action in
+                            NavigationLink(value: action.route) {
+                                Label(action.title, systemImage: action.symbolName)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .buttonStyle(.appProminent)
                         }
-                        .buttonStyle(.appProminent)
+                    }
+                }
 
-                        NavigationLink(value: AppRoute.weeklyCheckIn) {
-                            Label("Start weekly check-in", systemImage: "calendar.badge.clock")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .buttonStyle(.appProminent)
+                AppSurfaceCard {
+                    VStack(alignment: .leading, spacing: AppSpacing.item) {
+                        AppSectionHeader(
+                            title: "Readiness",
+                            message: viewModel.readinessSummaryText
+                        )
 
-                        NavigationLink(value: AppRoute.progressPhotos) {
-                            Label("Open progress photos", systemImage: "photo.on.rectangle.angled")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .buttonStyle(.appProminent)
+                        Text(viewModel.readinessDetailText)
+                            .font(.subheadline)
+                            .foregroundStyle(AppPalette.textSecondary)
 
-                        NavigationLink(value: AppRoute.progressCharts) {
-                            Label("Open progress charts", systemImage: "chart.line.uptrend.xyaxis")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .buttonStyle(.appProminent)
+                        VStack(alignment: .leading, spacing: AppSpacing.small) {
+                            ForEach(viewModel.readinessItems) { item in
+                                HStack(alignment: .top, spacing: AppSpacing.small) {
+                                    Image(systemName: item.isComplete ? "checkmark.circle.fill" : "circle")
+                                        .foregroundStyle(item.isComplete ? AppPalette.accent : AppPalette.textSecondary)
 
-                        NavigationLink(value: AppRoute.nutritionAdjustment) {
-                            Label("Review calorie adjustment", systemImage: "slider.horizontal.3")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .buttonStyle(.appProminent)
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(item.title)
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(AppPalette.textPrimary)
 
-                        NavigationLink(value: AppRoute.onboarding) {
-                            Label("Open onboarding", systemImage: "arrow.right.circle.fill")
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                                        Text(item.detail)
+                                            .font(.caption)
+                                            .foregroundStyle(AppPalette.textSecondary)
+                                    }
+
+                                    Spacer(minLength: 0)
+                                }
+                                .accessibilityElement(children: .combine)
+                                .accessibilityLabel(item.title)
+                                .accessibilityValue(item.isComplete ? "Complete" : "Needs attention")
+                            }
                         }
-                        .buttonStyle(.appProminent)
                     }
                 }
 
@@ -89,30 +96,18 @@ struct DashboardView: View {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
                             title: "Progress charts",
-                            message: "Look at weight and nutrition together instead of reading them in isolation."
+                            message: viewModel.progressHeadline
                         )
 
                         LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
-                            AppMetricCard(
-                                title: "Latest weight",
-                                value: "72.4 kg",
-                                detail: "From the most recent check-in",
-                                symbolName: "scalemass"
-                            )
-
-                            AppMetricCard(
-                                title: "Calories",
-                                value: "2,300",
-                                detail: "Recommended target",
-                                symbolName: "flame.fill"
-                            )
-
-                            AppMetricCard(
-                                title: "Trend",
-                                value: "-0.3 kg",
-                                detail: "Over the last 7 days",
-                                symbolName: "chart.line.uptrend.xyaxis"
-                            )
+                            ForEach(viewModel.trendCards) { card in
+                                AppMetricCard(
+                                    title: card.title,
+                                    value: card.value,
+                                    detail: card.detail,
+                                    symbolName: card.symbolName
+                                )
+                            }
                         }
 
                         NavigationLink(value: AppRoute.progressCharts) {
@@ -127,23 +122,18 @@ struct DashboardView: View {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
                             title: "Progress photos",
-                            message: "Track front, back, left, and right images over time."
+                            message: viewModel.photosHeadline
                         )
 
                         LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
-                            AppMetricCard(
-                                title: "Photos",
-                                value: "12",
-                                detail: "Stored locally",
-                                symbolName: "photo.on.rectangle.angled"
-                            )
-
-                            AppMetricCard(
-                                title: "Latest angle",
-                                value: "Front",
-                                detail: "Captured today",
-                                symbolName: "camera.viewfinder"
-                            )
+                            ForEach(viewModel.photoCards) { card in
+                                AppMetricCard(
+                                    title: card.title,
+                                    value: card.value,
+                                    detail: card.detail,
+                                    symbolName: card.symbolName
+                                )
+                            }
                         }
 
                         NavigationLink(value: AppRoute.progressPhotos) {
@@ -158,23 +148,18 @@ struct DashboardView: View {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
                             title: "Nutrition adjustment",
-                            message: "Preview a calorie change and require approval before it is applied."
+                            message: viewModel.nutritionHeadline
                         )
 
                         LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
-                            AppMetricCard(
-                                title: "Current target",
-                                value: "2,400",
-                                detail: "kcal per day",
-                                symbolName: "flame.fill"
-                            )
-
-                            AppMetricCard(
-                                title: "Suggested",
-                                value: "2,300",
-                                detail: "kcal per day",
-                                symbolName: "slider.horizontal.3"
-                            )
+                            ForEach(viewModel.nutritionCards) { card in
+                                AppMetricCard(
+                                    title: card.title,
+                                    value: card.value,
+                                    detail: card.detail,
+                                    symbolName: card.symbolName
+                                )
+                            }
                         }
 
                         NavigationLink(value: AppRoute.nutritionAdjustment) {

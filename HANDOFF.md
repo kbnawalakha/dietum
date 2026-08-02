@@ -4,15 +4,15 @@ Replace the previous handoff content with the current state at the end of each a
 
 ## Date
 
-2026-07-25
+2026-08-02
 
 ## Agent
 
-Agent 3: Onboarding
+Dashboard Integration
 
 ## Assigned Issue
 
-DIET-011 user profile onboarding scaffolding and implementation planning
+DIET-015 Daily Dashboard integration and build verification
 
 ## Branch
 
@@ -20,28 +20,25 @@ codex/repo-foundation
 
 ## Work Completed
 
-- Added a dedicated onboarding view model with shared draft state and validation
-- Expanded the onboarding screen into an editable draft flow with launch gating
-- Wired onboarding presentation through both the root launch flow and the onboarding route
-- Updated the repo docs to reflect the merged onboarding milestone
+- Wired the dashboard view model into the app target so the dashboard lane compiles
+- Confirmed the full app target builds successfully after the dashboard integration fix
+- Updated the repo milestone notes to reflect the latest completed lanes
 
 ## Workstreams
 
-- Onboarding / Profile Scaffolding | Owner: Onboarding | Completed
+- Dashboard Integration | Owner: Dashboard | Completed
 
 ## Files Changed
 
-- `Dietum/Features/Onboarding/OnboardingViewModel.swift`
-- `Dietum/Features/Onboarding/OnboardingView.swift`
-- `Dietum/App/AppContainer.swift`
-- `Dietum/App/RootView.swift`
+- `Dietum.xcodeproj/project.pbxproj`
+- `Dietum/Features/Dashboard/DashboardView.swift`
+- `Dietum/Features/Dashboard/DashboardViewModel.swift`
 - `PROJECT_STATUS.md`
-- `README.md`
 - `HANDOFF.md`
 
 ## Tests Run
 
-- `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-merge-build`
+- `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-next-stage-build`
 
 ## Test Results
 
@@ -49,22 +46,23 @@ codex/repo-foundation
 
 ## Work Remaining
 
-- No onboarding-UI work remains for this milestone
+- No dashboard integration work remains
 
 ## Known Problems
 
-- Unrelated uncommitted files remain in the working tree: `pass`, `pass.pub`, and `Dietum/Features/Onboarding/OnboardingDraft.swift`
+- Unrelated uncommitted files remain in the working tree: `pass`, `pass.pub`, `Dietum/Features/GoalSetup/`, `Dietum/Features/Onboarding/OnboardingDraft.swift`, `Dietum/Features/Onboarding/SleepSetupView.swift`, and `Dietum/Features/Onboarding/SleepSetupViewModel.swift`
+- The dashboard lane is now integrated, but the goal setup and sleep setup folders are still present as untracked additions from their owning lanes
 
 ## Important Decisions
 
-- Keep onboarding local-first and aligned with the existing design system
-- Treat DIET-011 as a draft-and-launch milestone, not the full persistence bridge
-- Keep the future profile save path replaceable through the existing app-layer wiring
+- Keep feature implementation owned by the feature lanes
+- Use the coordination lane only for verification and repo-note integration
+- Avoid rewriting finished feature work unless required to align the shared milestone state
 
 ## Exact Next Step
 
-- Let the next feature milestone move the onboarding draft into the persistence layer and turn the draft into a saved profile
+- Let the next milestone owner continue from the dashboard-integrated shared app state
 
 ## Suggested Next Agent
 
-- Feature milestone agent for the profile save and persistence bridge
+- Next feature milestone owner

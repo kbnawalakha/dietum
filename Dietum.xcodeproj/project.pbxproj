@@ -12,6 +12,7 @@
 		10000000000000000000001A /* AppContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000011 /* AppContainer.swift */; };
 		10000000000000000000001B /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000012 /* AppRoute.swift */; };
 		10000000000000000000001C /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000013 /* DashboardView.swift */; };
+		100000000000000000000099 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000098 /* DashboardViewModel.swift */; };
 		10000000000000000000001D /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000014 /* OnboardingView.swift */; };
 		10000000000000000000001E /* DomainModelPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000015 /* DomainModelPlaceholder.swift */; };
 		10000000000000000000001F /* RepositoryPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000016 /* RepositoryPlaceholder.swift */; };
@@ -67,6 +68,7 @@
 		100000000000000000000011 /* AppContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContainer.swift; sourceTree = "<group>"; };
 		100000000000000000000012 /* AppRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRoute.swift; sourceTree = "<group>"; };
 		100000000000000000000013 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		100000000000000000000098 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
 		100000000000000000000014 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		100000000000000000000097 /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
 		100000000000000000000015 /* DomainModelPlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainModelPlaceholder.swift; sourceTree = "<group>"; };
@@ -199,6 +201,7 @@
 			isa = PBXGroup;
 			children = (
 				100000000000000000000013 /* DashboardView.swift */,
+				100000000000000000000098 /* DashboardViewModel.swift */,
 			);
 			path = Dashboard;
 			sourceTree = "<group>";
@@ -466,6 +469,7 @@
 				10000000000000000000001A /* AppContainer.swift in Sources */,
 				10000000000000000000001B /* AppRoute.swift in Sources */,
 				10000000000000000000001C /* DashboardView.swift in Sources */,
+				100000000000000000000099 /* DashboardViewModel.swift in Sources */,
 				10000000000000000000001D /* OnboardingView.swift in Sources */,
 				10000000000000000000001E /* DomainModelPlaceholder.swift in Sources */,
 				10000000000000000000001F /* RepositoryPlaceholder.swift in Sources */,
