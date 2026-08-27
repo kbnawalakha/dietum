@@ -14,6 +14,12 @@
 		10000000000000000000001C /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000013 /* DashboardView.swift */; };
 		100000000000000000000099 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000098 /* DashboardViewModel.swift */; };
 		10000000000000000000001D /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000014 /* OnboardingView.swift */; };
+		1000000000000000000000BB /* GoalSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000BC /* GoalSetupView.swift */; };
+		1000000000000000000000B5 /* GoalSetupDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B0 /* GoalSetupDraft.swift */; };
+		1000000000000000000000B6 /* GoalSetupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B1 /* GoalSetupViewModel.swift */; };
+		1000000000000000000000B7 /* SleepSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B2 /* SleepSetupView.swift */; };
+		1000000000000000000000B8 /* SleepSetupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B3 /* SleepSetupViewModel.swift */; };
+		1000000000000000000000B9 /* OnboardingDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B4 /* OnboardingDraft.swift */; };
 		10000000000000000000001E /* DomainModelPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000015 /* DomainModelPlaceholder.swift */; };
 		10000000000000000000001F /* RepositoryPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000016 /* RepositoryPlaceholder.swift */; };
 		100000000000000000000020 /* ServicePlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000017 /* ServicePlaceholder.swift */; };
@@ -36,6 +42,7 @@
 		100000000000000000000063 /* MockMealFoodDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000005A /* MockMealFoodDetectionService.swift */; };
 		100000000000000000000066 /* WeeklyCheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000064 /* WeeklyCheckInView.swift */; };
 		100000000000000000000067 /* WeeklyCheckInViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000065 /* WeeklyCheckInViewModel.swift */; };
+		1000000000000000000000BE /* CheckInDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000BF /* CheckInDraft.swift */; };
 		100000000000000000000074 /* ProgressPhotosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000078 /* ProgressPhotosView.swift */; };
 		100000000000000000000075 /* ProgressPhotosViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000079 /* ProgressPhotosViewModel.swift */; };
 		100000000000000000000076 /* StoredProgressPhotoMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000080 /* StoredProgressPhotoMetadata.swift */; };
@@ -71,6 +78,12 @@
 		100000000000000000000098 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
 		100000000000000000000014 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		100000000000000000000097 /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
+		1000000000000000000000B0 /* GoalSetupDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalSetupDraft.swift; sourceTree = "<group>"; };
+		1000000000000000000000B1 /* GoalSetupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalSetupViewModel.swift; sourceTree = "<group>"; };
+		1000000000000000000000BC /* GoalSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalSetupView.swift; sourceTree = "<group>"; };
+		1000000000000000000000B2 /* SleepSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepSetupView.swift; sourceTree = "<group>"; };
+		1000000000000000000000B3 /* SleepSetupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepSetupViewModel.swift; sourceTree = "<group>"; };
+		1000000000000000000000B4 /* OnboardingDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDraft.swift; sourceTree = "<group>"; };
 		100000000000000000000015 /* DomainModelPlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainModelPlaceholder.swift; sourceTree = "<group>"; };
 		100000000000000000000016 /* RepositoryPlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryPlaceholder.swift; sourceTree = "<group>"; };
 		100000000000000000000017 /* ServicePlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicePlaceholder.swift; sourceTree = "<group>"; };
@@ -94,6 +107,7 @@
 		10000000000000000000005A /* MockMealFoodDetectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockMealFoodDetectionService.swift; sourceTree = "<group>"; };
 		100000000000000000000064 /* WeeklyCheckInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyCheckInView.swift; sourceTree = "<group>"; };
 		100000000000000000000065 /* WeeklyCheckInViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyCheckInViewModel.swift; sourceTree = "<group>"; };
+		1000000000000000000000BF /* CheckInDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInDraft.swift; sourceTree = "<group>"; };
 		100000000000000000000078 /* ProgressPhotosView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressPhotosView.swift; sourceTree = "<group>"; };
 		100000000000000000000079 /* ProgressPhotosViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressPhotosViewModel.swift; sourceTree = "<group>"; };
 		100000000000000000000080 /* StoredProgressPhotoMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredProgressPhotoMetadata.swift; sourceTree = "<group>"; };
@@ -168,6 +182,7 @@
 			children = (
 				10000000000000000000002A /* Dashboard */,
 				10000000000000000000002B /* Onboarding */,
+				1000000000000000000000BD /* GoalSetup */,
 				100000000000000000000068 /* CheckIn */,
 				100000000000000000000069 /* ProgressPhotos */,
 				100000000000000000000091 /* Charts */,
@@ -211,8 +226,21 @@
 			children = (
 				100000000000000000000014 /* OnboardingView.swift */,
 				100000000000000000000097 /* OnboardingViewModel.swift */,
+				1000000000000000000000B4 /* OnboardingDraft.swift */,
+				1000000000000000000000B2 /* SleepSetupView.swift */,
+				1000000000000000000000B3 /* SleepSetupViewModel.swift */,
 			);
 			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		1000000000000000000000BD /* GoalSetup */ = {
+			isa = PBXGroup;
+			children = (
+				1000000000000000000000BC /* GoalSetupView.swift */,
+				1000000000000000000000B0 /* GoalSetupDraft.swift */,
+				1000000000000000000000B1 /* GoalSetupViewModel.swift */,
+			);
+			path = GoalSetup;
 			sourceTree = "<group>";
 		};
 		10000000000000000000002C /* Models */ = {
@@ -322,6 +350,7 @@
 		100000000000000000000068 /* CheckIn */ = {
 			isa = PBXGroup;
 			children = (
+				1000000000000000000000BF /* CheckInDraft.swift */,
 				100000000000000000000064 /* WeeklyCheckInView.swift */,
 				100000000000000000000065 /* WeeklyCheckInViewModel.swift */,
 			);
@@ -471,6 +500,12 @@
 				10000000000000000000001C /* DashboardView.swift in Sources */,
 				100000000000000000000099 /* DashboardViewModel.swift in Sources */,
 				10000000000000000000001D /* OnboardingView.swift in Sources */,
+				1000000000000000000000BB /* GoalSetupView.swift in Sources */,
+				1000000000000000000000B5 /* GoalSetupDraft.swift in Sources */,
+				1000000000000000000000B6 /* GoalSetupViewModel.swift in Sources */,
+				1000000000000000000000B7 /* SleepSetupView.swift in Sources */,
+				1000000000000000000000B8 /* SleepSetupViewModel.swift in Sources */,
+				1000000000000000000000B9 /* OnboardingDraft.swift in Sources */,
 				10000000000000000000001E /* DomainModelPlaceholder.swift in Sources */,
 				10000000000000000000001F /* RepositoryPlaceholder.swift in Sources */,
 				100000000000000000000020 /* ServicePlaceholder.swift in Sources */,
@@ -493,6 +528,7 @@
 				100000000000000000000063 /* MockMealFoodDetectionService.swift in Sources */,
 				100000000000000000000066 /* WeeklyCheckInView.swift in Sources */,
 				100000000000000000000067 /* WeeklyCheckInViewModel.swift in Sources */,
+				1000000000000000000000BE /* CheckInDraft.swift in Sources */,
 				100000000000000000000074 /* ProgressPhotosView.swift in Sources */,
 				100000000000000000000075 /* ProgressPhotosViewModel.swift in Sources */,
 				100000000000000000000076 /* StoredProgressPhotoMetadata.swift in Sources */,

@@ -10,17 +10,17 @@ final class WeeklyCheckInViewModel: ObservableObject {
         case failed(String)
     }
 
-    @Published var weeklyWeight: String = ""
-    @Published var energyNotes: String = ""
-    @Published var hungerNotes: String = ""
-    @Published var trainingNotes: String = ""
+    @Published var draft: CheckInDraft
     @Published var recentLogs: [WeightLog] = []
     @Published var saveState: SaveState = .idle
+    @Published private(set) var validationState: CheckInValidationState
 
     private let weightLogRepository: any WeightLogRepository
 
-    init(weightLogRepository: any WeightLogRepository) {
+    init(weightLogRepository: any WeightLogRepository, draft: CheckInDraft = CheckInDraft()) {
         self.weightLogRepository = weightLogRepository
+        self.draft = draft
+        self.validationState = CheckInDraftValidator.validate(draft)
     }
 
     func loadSummary() async {
@@ -28,8 +28,9 @@ final class WeeklyCheckInViewModel: ObservableObject {
     }
 
     func saveCheckIn() async {
-        guard let weight = Double(weeklyWeight.replacingOccurrences(of: ",", with: ".")) else {
-            saveState = .failed("Enter your weekly weight using numbers only.")
+        let validation = validateDraft()
+        guard validation.isValid, let weight = parsedWeeklyWeight else {
+            saveState = .failed(validation.primaryIssue?.message ?? "Enter your weekly weight using numbers only.")
             return
         }
 
@@ -43,10 +44,7 @@ final class WeeklyCheckInViewModel: ObservableObject {
                 notes: notes.isEmpty ? nil : notes
             )
             try await weightLogRepository.saveWeightLog(log)
-            weeklyWeight = ""
-            energyNotes = ""
-            hungerNotes = ""
-            trainingNotes = ""
+            resetDraft()
             await refreshLogs()
             saveState = .saved(Date())
         } catch {
@@ -124,7 +122,7 @@ final class WeeklyCheckInViewModel: ObservableObject {
     }
 
     var canSave: Bool {
-        Double(weeklyWeight.replacingOccurrences(of: ",", with: ".")) != nil && saveState != .loading
+        validationState.isValid && saveState != .loading
     }
 
     var formattedStatus: String? {
@@ -151,11 +149,81 @@ final class WeeklyCheckInViewModel: ObservableObject {
 
     private func makeCombinedNotes() -> String {
         [
-            energyNotes.isEmpty ? nil : "Energy: \(energyNotes)",
-            hungerNotes.isEmpty ? nil : "Hunger: \(hungerNotes)",
-            trainingNotes.isEmpty ? nil : "Training: \(trainingNotes)"
+            draft.trimmedEnergyNotes.isEmpty ? nil : "Energy: \(draft.energyNotes)",
+            draft.trimmedHungerNotes.isEmpty ? nil : "Hunger: \(draft.hungerNotes)",
+            draft.trimmedTrainingNotes.isEmpty ? nil : "Training: \(draft.trainingNotes)"
         ]
         .compactMap { $0 }
         .joined(separator: "\n")
     }
+
+    var noteSummaryText: String {
+        switch draft.noteCount {
+        case 0:
+            return "Add energy, hunger, or training notes to explain the trend."
+        case 1:
+            return "One note captured to support the weekly weight entry."
+        default:
+            return "\(draft.noteCount) notes captured to support the weekly weight entry."
+        }
+    }
+
+    var recentLogSummaryText: String {
+        guard let latest = recentLogs.first else {
+            return "No weekly entries yet. Start with your current weight and a short note."
+        }
+
+        if let previous = recentLogs.dropFirst().first {
+            let delta = latest.weightKilograms - previous.weightKilograms
+            let formattedDelta = String(format: "%.1f", abs(delta))
+            let direction = delta > 0 ? "up" : delta < 0 ? "down" : "flat"
+            return "Latest entry is \(formattedDelta) kg \(direction) from the prior check-in."
+        }
+
+        return "Latest entry: \(String(format: "%.1f", latest.weightKilograms)) kg."
+    }
+
+    var recentLogCards: [WeeklyCheckInLogCard] {
+        recentLogs.prefix(3).map { log in
+            let noteText = log.notes?.trimmingCharacters(in: .whitespacesAndNewlines)
+            return WeeklyCheckInLogCard(
+                dateText: log.recordedAt.formatted(date: .abbreviated, time: .omitted),
+                weightText: String(format: "%.1f kg", log.weightKilograms),
+                noteText: (noteText?.isEmpty == false ? noteText : nil) ?? "No notes added",
+                symbolName: "scalemass"
+            )
+        }
+    }
+
+    var validationMessage: String {
+        validationState.primaryIssue?.message ?? validationState.summaryText
+    }
+
+    func updateDraft(_ mutation: (inout CheckInDraft) -> Void) {
+        mutation(&draft)
+        validationState = CheckInDraftValidator.validate(draft)
+    }
+
+    func resetDraft() {
+        updateDraft { draft in
+            draft = CheckInDraft()
+        }
+    }
+
+    func validateDraft() -> CheckInValidationState {
+        validationState = CheckInDraftValidator.validate(draft)
+        return validationState
+    }
+
+    private var parsedWeeklyWeight: Double? {
+        Double(draft.trimmedWeeklyWeight.replacingOccurrences(of: ",", with: "."))
+    }
+}
+
+struct WeeklyCheckInLogCard: Identifiable, Hashable, Sendable {
+    var id = UUID()
+    var dateText: String
+    var weightText: String
+    var noteText: String
+    var symbolName: String
 }

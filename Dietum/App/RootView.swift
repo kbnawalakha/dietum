@@ -59,6 +59,20 @@ struct RootView: View {
                             Label(AppRoute.onboarding.title, systemImage: AppRoute.onboarding.systemImage)
                         }
                         .buttonStyle(.appToolbar)
+
+                        Button {
+                            viewModel.showGoalSetup()
+                        } label: {
+                            Label(AppRoute.goalSetup.title, systemImage: AppRoute.goalSetup.systemImage)
+                        }
+                        .buttonStyle(.appToolbar)
+
+                        Button {
+                            viewModel.showSleepSetup()
+                        } label: {
+                            Label(AppRoute.sleepSetup.title, systemImage: AppRoute.sleepSetup.systemImage)
+                        }
+                        .buttonStyle(.appToolbar)
                     }
                 }
                 .navigationDestination(for: AppRoute.self) { route in
@@ -67,6 +81,10 @@ struct RootView: View {
                         container.makeOnboardingView {
                             viewModel.completeOnboarding()
                         }
+                    case .goalSetup:
+                        container.makeGoalSetupView()
+                    case .sleepSetup:
+                        container.makeSleepSetupView()
                     case .mealLogging:
                         MealLoggingView()
                     case .weeklyCheckIn:
@@ -116,6 +134,14 @@ final class RootViewModel: ObservableObject {
 
     func showOnboarding() {
         path.append(.onboarding)
+    }
+
+    func showGoalSetup() {
+        path.append(.goalSetup)
+    }
+
+    func showSleepSetup() {
+        path.append(.sleepSetup)
     }
 
     func completeOnboarding() {

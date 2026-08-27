@@ -25,10 +25,14 @@ Milestone 0 — Repository and Architecture Foundation
 - `DIET-015` Implement the Daily Dashboard
 - `DIET-016` Implement Meal Logging
 - `DIET-017` Implement Progress Photo Comparison
+- `DIET-018` Implement Weight Logging
+- `DIET-020` Integrate Goal Setup and Sleep Setup into the app target
 - Merged the onboarding draft UI into the launch flow and wired validation-backed draft state
 - Merged the goal setup slice into the onboarding flow
 - Merged the sleep setup slice into the onboarding flow
+- Merged the weight logging/check-in slice into the app target
 - Merged the dashboard lane into the app target
+- Added app routes and entry points for goal setup and sleep setup
 - Added the XCTest target setup and deterministic nutrition-adjustment unit tests
 - Added and hardened a lightweight GitHub Actions build workflow
 
@@ -42,7 +46,7 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Next Tasks
 
-- None identified
+- `DIET-019` Implement Meal Reminders
 
 # Dependency Tracking
 
@@ -51,7 +55,8 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Known Issues
 
-- Unrelated uncommitted files remain in the working tree: `pass`, `pass.pub`, `Dietum/Features/GoalSetup/`, `Dietum/Features/Onboarding/OnboardingDraft.swift`, `Dietum/Features/Onboarding/SleepSetupView.swift`, and `Dietum/Features/Onboarding/SleepSetupViewModel.swift`
+- Unrelated uncommitted files remain in the working tree: `pass` and `pass.pub`
+- No known app-target compile blockers remain after the latest build verification
 
 # Active Agents
 
@@ -59,4 +64,4 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Last Updated
 
-2026-08-02
+2026-08-27

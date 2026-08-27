@@ -34,7 +34,7 @@ struct WeeklyCheckInView: View {
                             AppMetricCard(
                                 title: "Change",
                                 value: viewModel.trendText,
-                                detail: viewModel.summaryText,
+                                detail: viewModel.recentLogSummaryText,
                                 symbolName: "chart.line.uptrend.xyaxis"
                             )
                         }
@@ -53,7 +53,7 @@ struct WeeklyCheckInView: View {
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(AppPalette.textSecondary)
 
-                            TextField("72.4", text: $viewModel.weeklyWeight)
+                            TextField("72.4", text: $viewModel.draft.weeklyWeight)
                                 .keyboardType(.decimalPad)
                                 .textFieldStyle(.roundedBorder)
                         }
@@ -63,7 +63,7 @@ struct WeeklyCheckInView: View {
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(AppPalette.textSecondary)
 
-                            TextField("How did your energy feel?", text: $viewModel.energyNotes, axis: .vertical)
+                            TextField("How did your energy feel?", text: $viewModel.draft.energyNotes, axis: .vertical)
                                 .textFieldStyle(.roundedBorder)
                         }
 
@@ -72,7 +72,7 @@ struct WeeklyCheckInView: View {
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(AppPalette.textSecondary)
 
-                            TextField("Any changes in appetite?", text: $viewModel.hungerNotes, axis: .vertical)
+                            TextField("Any changes in appetite?", text: $viewModel.draft.hungerNotes, axis: .vertical)
                                 .textFieldStyle(.roundedBorder)
                         }
 
@@ -81,9 +81,13 @@ struct WeeklyCheckInView: View {
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(AppPalette.textSecondary)
 
-                            TextField("Notes from training or recovery", text: $viewModel.trainingNotes, axis: .vertical)
+                            TextField("Notes from training or recovery", text: $viewModel.draft.trainingNotes, axis: .vertical)
                                 .textFieldStyle(.roundedBorder)
                         }
+
+                        Text(viewModel.validationMessage)
+                            .font(.caption)
+                            .foregroundStyle(AppPalette.textSecondary)
 
                         if let status = viewModel.formattedStatus {
                             Text(status)
@@ -107,14 +111,38 @@ struct WeeklyCheckInView: View {
                 AppSurfaceCard {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
-                            title: "What this check-in does",
-                            message: "The flow keeps the data on-device and prepares the groundwork for future trend and adjustment logic."
+                            title: "Recent logs",
+                            message: viewModel.headline
                         )
 
-                        VStack(alignment: .leading, spacing: AppSpacing.small) {
-                            AppChecklistItem(text: "Confirms a weekly weight entry locally")
-                            AppChecklistItem(text: "Captures energy, hunger, and training notes")
-                            AppChecklistItem(text: "Keeps the screen ready for adjustment logic later")
+                        Text(viewModel.noteSummaryText)
+                            .font(.subheadline)
+                            .foregroundStyle(AppPalette.textSecondary)
+
+                        VStack(alignment: .leading, spacing: AppSpacing.item) {
+                            ForEach(viewModel.recentLogCards) { card in
+                                HStack(alignment: .top, spacing: AppSpacing.small) {
+                                    Image(systemName: card.symbolName)
+                                        .foregroundStyle(AppPalette.accent)
+
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(card.dateText)
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(AppPalette.textPrimary)
+
+                                        Text(card.weightText)
+                                            .font(.subheadline)
+                                            .foregroundStyle(AppPalette.textSecondary)
+
+                                        Text(card.noteText)
+                                            .font(.caption)
+                                            .foregroundStyle(AppPalette.textSecondary)
+                                    }
+
+                                    Spacer(minLength: 0)
+                                }
+                                .accessibilityElement(children: .combine)
+                            }
                         }
                     }
                 }

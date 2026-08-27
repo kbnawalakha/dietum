@@ -47,4 +47,12 @@ struct AppContainer {
             onComplete: onComplete
         )
     }
+
+    func makeGoalSetupView() -> GoalSetupView {
+        GoalSetupView(viewModel: GoalSetupViewModel())
+    }
+
+    func makeSleepSetupView() -> SleepSetupView {
+        SleepSetupView(viewModel: SleepSetupViewModel())
+    }
 }
