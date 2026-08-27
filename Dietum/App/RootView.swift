@@ -15,11 +15,18 @@ struct RootView: View {
                 .navigationTitle("Dietum")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
+                    ToolbarItemGroup(placement: .topBarLeading) {
                         Button {
                             viewModel.showMealLogging()
                         } label: {
                             Label(AppRoute.mealLogging.title, systemImage: AppRoute.mealLogging.systemImage)
+                        }
+                        .buttonStyle(.appToolbar)
+
+                        Button {
+                            viewModel.showMealReminders()
+                        } label: {
+                            Label(AppRoute.mealReminders.title, systemImage: AppRoute.mealReminders.systemImage)
                         }
                         .buttonStyle(.appToolbar)
                     }
@@ -87,6 +94,8 @@ struct RootView: View {
                         container.makeSleepSetupView()
                     case .mealLogging:
                         MealLoggingView()
+                    case .mealReminders:
+                        container.makeMealReminderView()
                     case .weeklyCheckIn:
                         WeeklyCheckInView(viewModel: container.makeWeeklyCheckInViewModel())
                     case .progressPhotos:
@@ -114,6 +123,10 @@ final class RootViewModel: ObservableObject {
 
     func showMealLogging() {
         path.append(.mealLogging)
+    }
+
+    func showMealReminders() {
+        path.append(.mealReminders)
     }
 
     func showWeeklyCheckIn() {

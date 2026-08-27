@@ -8,11 +8,11 @@ Replace the previous handoff content with the current state at the end of each a
 
 ## Agent
 
-Integration Lane
+Meals Integration Lane
 
 ## Assigned Issue
 
-DIET-018 Implement Weight Logging and app-target integration follow-through
+DIET-019 Implement Meal Reminders
 
 ## Branch
 
@@ -20,16 +20,15 @@ codex/repo-foundation
 
 ## Work Completed
 
-- Added the shared check-in draft model to the app target and wired the weekly check-in screen to it
-- Fixed the weekly check-in validation and recent-log presentation flow
-- Integrated the goal setup and sleep setup feature folders into the app target
-- Wired the app shell routes and toolbar entry points for goal setup and sleep setup
-- Verified the full app target with a clean simulator build
-- Updated the repo milestone notes to reflect the completed check-in and integration work
+- Added the meal reminder feature files to the app target
+- Wired the meal reminder route into the app shell and dashboard quick actions
+- Added a top-level navigation entry for meal reminders alongside meal logging
+- Verified the app target builds cleanly with the meal reminders module included
+- Updated the repo milestone notes to reflect the completed meal reminders integration
 
 ## Workstreams
 
-- Integration Lane | Owner: Coordination | Completed
+- Meals Integration Lane | Owner: Coordination | Completed
 
 ## Files Changed
 
@@ -37,15 +36,7 @@ codex/repo-foundation
 - `Dietum/App/AppContainer.swift`
 - `Dietum/App/AppRoute.swift`
 - `Dietum/App/RootView.swift`
-- `Dietum/Features/CheckIn/CheckInDraft.swift`
-- `Dietum/Features/CheckIn/WeeklyCheckInView.swift`
-- `Dietum/Features/CheckIn/WeeklyCheckInViewModel.swift`
-- `Dietum/Features/GoalSetup/GoalSetupDraft.swift`
-- `Dietum/Features/GoalSetup/GoalSetupView.swift`
-- `Dietum/Features/GoalSetup/GoalSetupViewModel.swift`
-- `Dietum/Features/Onboarding/OnboardingDraft.swift`
-- `Dietum/Features/Onboarding/SleepSetupView.swift`
-- `Dietum/Features/Onboarding/SleepSetupViewModel.swift`
+- `Dietum/Features/Dashboard/DashboardViewModel.swift`
 - `PROJECT_STATUS.md`
 - `HANDOFF.md`
 
@@ -59,7 +50,7 @@ codex/repo-foundation
 
 ## Work Remaining
 
-- No additional work remains in the current check-in / integration lane
+- No additional work remains in the meal reminders lane
 
 ## Known Problems
 
@@ -67,14 +58,14 @@ codex/repo-foundation
 
 ## Important Decisions
 
-- Keep the integration lane limited to target membership, app wiring, and the minimal feature views needed for reachability
-- Avoid touching dashboard, meals, progress photos, CI, or tests unless target membership requires it
+- Keep the meal reminders surface local-first and reachable from the main shell
+- Avoid touching unrelated features beyond the route and dashboard entry points needed for navigation
 - Leave unrelated pre-existing compile issues for the owning lane
 
 ## Exact Next Step
 
-- Let the next milestone owner continue from the app-integrated shared state
+- No next step identified; the current milestone slice is complete
 
 ## Suggested Next Agent
 
-- Meals feature owner for the reminder milestone
+- None

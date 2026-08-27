@@ -38,6 +38,7 @@ final class DashboardViewModel: ObservableObject {
 
     let quickActions: [DashboardActionItem] = [
         DashboardActionItem(title: "Log a meal", symbolName: "camera.fill", route: .mealLogging),
+        DashboardActionItem(title: "Meal reminders", symbolName: "bell.fill", route: .mealReminders),
         DashboardActionItem(title: "Start weekly check-in", symbolName: "calendar.badge.clock", route: .weeklyCheckIn),
         DashboardActionItem(title: "Open progress photos", symbolName: "photo.on.rectangle.angled", route: .progressPhotos),
         DashboardActionItem(title: "Open progress charts", symbolName: "chart.line.uptrend.xyaxis", route: .progressCharts),

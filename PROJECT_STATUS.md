@@ -26,13 +26,15 @@ Milestone 0 — Repository and Architecture Foundation
 - `DIET-016` Implement Meal Logging
 - `DIET-017` Implement Progress Photo Comparison
 - `DIET-018` Implement Weight Logging
+- `DIET-019` Implement Meal Reminders
 - `DIET-020` Integrate Goal Setup and Sleep Setup into the app target
 - Merged the onboarding draft UI into the launch flow and wired validation-backed draft state
 - Merged the goal setup slice into the onboarding flow
 - Merged the sleep setup slice into the onboarding flow
 - Merged the weight logging/check-in slice into the app target
+- Merged the meal reminders surface into the app target
 - Merged the dashboard lane into the app target
-- Added app routes and entry points for goal setup and sleep setup
+- Added app routes and entry points for goal setup, sleep setup, and meal reminders
 - Added the XCTest target setup and deterministic nutrition-adjustment unit tests
 - Added and hardened a lightweight GitHub Actions build workflow
 
@@ -46,7 +48,7 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Next Tasks
 
-- `DIET-019` Implement Meal Reminders
+- None identified
 
 # Dependency Tracking
 
