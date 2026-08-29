@@ -13,7 +13,7 @@ struct ProgressPhotosView: View {
                 AppHeroCard(
                     eyebrow: "Progress photos",
                     title: "Capture a front, back, left, and right set locally.",
-                    message: "A polished local-first shell for staging progress photos before a future comparison workflow."
+                    message: "Review two entries from the same angle side by side while keeping photo data on this device."
                 )
 
                 AppSurfaceCard {
@@ -96,6 +96,42 @@ struct ProgressPhotosView: View {
                             message: viewModel.comparisonHeadline
                         )
 
+                        Picker("Comparison angle", selection: Binding(
+                            get: { viewModel.comparisonAngle },
+                            set: { viewModel.setComparisonAngle($0) }
+                        )) {
+                            ForEach(ProgressPhotoAngle.allCases, id: \.self) { angle in
+                                Text(angle.displayName).tag(angle)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .accessibilityLabel("Comparison angle")
+
+                        if viewModel.comparisonCandidates.count >= 2 {
+                            ComparisonDateMenu(
+                                title: "Earlier photo",
+                                selectedPhoto: viewModel.comparisonBaseline,
+                                photos: viewModel.comparisonCandidates,
+                                onSelect: viewModel.setComparisonBaseline
+                            )
+
+                            ComparisonDateMenu(
+                                title: "Later photo",
+                                selectedPhoto: viewModel.comparisonLatest,
+                                photos: viewModel.comparisonCandidates,
+                                onSelect: viewModel.setComparisonLatest
+                            )
+
+                            HStack(spacing: AppSpacing.item) {
+                                ComparisonPhotoCard(title: "Earlier", photo: viewModel.comparisonBaseline)
+                                ComparisonPhotoCard(title: "Later", photo: viewModel.comparisonLatest)
+                            }
+                        }
+
+                        Text(viewModel.comparisonSelectionText)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(AppPalette.textPrimary)
+
                         Text(viewModel.comparisonDetail)
                             .font(.subheadline)
                             .foregroundStyle(AppPalette.textSecondary)
@@ -149,6 +185,75 @@ struct ProgressPhotosView: View {
             await viewModel.loadRecentPhotos()
         }
         .appScreenBackground()
+    }
+}
+
+private struct ComparisonDateMenu: View {
+    let title: String
+    let selectedPhoto: ProgressPhotoMetadata?
+    let photos: [ProgressPhotoMetadata]
+    let onSelect: (UUID) -> Void
+
+    var body: some View {
+        Menu {
+            ForEach(photos) { photo in
+                Button {
+                    onSelect(photo.id)
+                } label: {
+                    Text(photo.capturedAt.formatted(date: .abbreviated, time: .omitted))
+                }
+            }
+        } label: {
+            HStack {
+                Label(title, systemImage: "calendar")
+                Spacer()
+                Text(selectedPhoto?.capturedAt.formatted(date: .abbreviated, time: .omitted) ?? "Choose date")
+                    .foregroundStyle(AppPalette.textSecondary)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(AppPalette.accent)
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(AppPalette.textPrimary)
+            .padding(.vertical, AppSpacing.small)
+        }
+        .accessibilityLabel("\(title) comparison date")
+    }
+}
+
+private struct ComparisonPhotoCard: View {
+    let title: String
+    let photo: ProgressPhotoMetadata?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.small) {
+            Image(systemName: "person.crop.rectangle")
+                .font(.title2)
+                .foregroundStyle(AppPalette.accent)
+                .frame(maxWidth: .infinity, minHeight: 84)
+                .background(AppPalette.accentSoft.opacity(0.45))
+                .clipShape(RoundedRectangle(cornerRadius: AppRadius.card / 2, style: .continuous))
+
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(AppPalette.textPrimary)
+
+            if let photo {
+                Text(photo.capturedAt.formatted(date: .abbreviated, time: .omitted))
+                    .font(.caption2)
+                    .foregroundStyle(AppPalette.textSecondary)
+                Text(photo.angle.displayName)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(AppPalette.accent)
+            } else {
+                Text("Not available")
+                    .font(.caption2)
+                    .foregroundStyle(AppPalette.textSecondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(photo.map { "\(title) \($0.angle.displayName) photo from \($0.capturedAt.formatted(date: .abbreviated, time: .omitted))" } ?? "\(title) photo not available")
     }
 }
 

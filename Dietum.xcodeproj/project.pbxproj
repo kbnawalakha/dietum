@@ -49,6 +49,10 @@
 		1000000000000000000000D8 /* MealExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D9 /* MealExportService.swift */; };
 		1000000000000000000000DA /* MealExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000DB /* MealExportViewModel.swift */; };
 		1000000000000000000000DC /* MealExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000DD /* MealExportView.swift */; };
+		1000000000000000000000E0 /* NutritionTrendInsightsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000E1 /* NutritionTrendInsightsModels.swift */; };
+		1000000000000000000000E2 /* NutritionTrendInsightsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000E3 /* NutritionTrendInsightsService.swift */; };
+		1000000000000000000000E4 /* NutritionTrendInsightsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000E5 /* NutritionTrendInsightsViewModel.swift */; };
+		1000000000000000000000E6 /* NutritionTrendInsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000E7 /* NutritionTrendInsightsView.swift */; };
 		100000000000000000000066 /* WeeklyCheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000064 /* WeeklyCheckInView.swift */; };
 		100000000000000000000067 /* WeeklyCheckInViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000065 /* WeeklyCheckInViewModel.swift */; };
 		1000000000000000000000BE /* CheckInDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000BF /* CheckInDraft.swift */; };
@@ -123,6 +127,10 @@
 		1000000000000000000000D9 /* MealExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealExportService.swift; sourceTree = "<group>"; };
 		1000000000000000000000DB /* MealExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealExportViewModel.swift; sourceTree = "<group>"; };
 		1000000000000000000000DD /* MealExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealExportView.swift; sourceTree = "<group>"; };
+		1000000000000000000000E1 /* NutritionTrendInsightsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionTrendInsightsModels.swift; sourceTree = "<group>"; };
+		1000000000000000000000E3 /* NutritionTrendInsightsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionTrendInsightsService.swift; sourceTree = "<group>"; };
+		1000000000000000000000E5 /* NutritionTrendInsightsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionTrendInsightsViewModel.swift; sourceTree = "<group>"; };
+		1000000000000000000000E7 /* NutritionTrendInsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionTrendInsightsView.swift; sourceTree = "<group>"; };
 		100000000000000000000064 /* WeeklyCheckInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyCheckInView.swift; sourceTree = "<group>"; };
 		100000000000000000000065 /* WeeklyCheckInViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyCheckInViewModel.swift; sourceTree = "<group>"; };
 		1000000000000000000000BF /* CheckInDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInDraft.swift; sourceTree = "<group>"; };
@@ -415,6 +423,10 @@
 			children = (
 				100000000000000000000092 /* ProgressChartsView.swift */,
 				100000000000000000000093 /* ProgressChartsViewModel.swift */,
+				1000000000000000000000E1 /* NutritionTrendInsightsModels.swift */,
+				1000000000000000000000E3 /* NutritionTrendInsightsService.swift */,
+				1000000000000000000000E5 /* NutritionTrendInsightsViewModel.swift */,
+				1000000000000000000000E7 /* NutritionTrendInsightsView.swift */,
 			);
 			path = Charts;
 			sourceTree = "<group>";
@@ -570,6 +582,10 @@
 				1000000000000000000000D8 /* MealExportService.swift in Sources */,
 				1000000000000000000000DA /* MealExportViewModel.swift in Sources */,
 				1000000000000000000000DC /* MealExportView.swift in Sources */,
+				1000000000000000000000E0 /* NutritionTrendInsightsModels.swift in Sources */,
+				1000000000000000000000E2 /* NutritionTrendInsightsService.swift in Sources */,
+				1000000000000000000000E4 /* NutritionTrendInsightsViewModel.swift in Sources */,
+				1000000000000000000000E6 /* NutritionTrendInsightsView.swift in Sources */,
 				100000000000000000000066 /* WeeklyCheckInView.swift in Sources */,
 				100000000000000000000067 /* WeeklyCheckInViewModel.swift in Sources */,
 				1000000000000000000000BE /* CheckInDraft.swift in Sources */,

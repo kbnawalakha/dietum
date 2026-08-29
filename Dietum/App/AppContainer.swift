@@ -60,6 +60,14 @@ struct AppContainer {
         MealExportView()
     }
 
+    func makeNutritionTrendInsightsView() -> NutritionTrendInsightsView {
+        NutritionTrendInsightsView(
+            viewModel: NutritionTrendInsightsViewModel(
+                mealEntryRepository: mealEntryRepository
+            )
+        )
+    }
+
     func makeOnboardingView(onComplete: @escaping () -> Void) -> OnboardingView {
         OnboardingView(
             viewModel: OnboardingViewModel(),

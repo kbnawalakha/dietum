@@ -20,6 +20,9 @@ final class ProgressPhotosViewModel: ObservableObject {
     @Published var notes: String = ""
     @Published var stagedPhotos: [ProgressPhotoAngle: PhotoMetadata] = [:]
     @Published var recentPhotos: [ProgressPhotoMetadata] = []
+    @Published var comparisonAngle: ProgressPhotoAngle = .front
+    @Published var comparisonBaselineID: UUID?
+    @Published var comparisonLatestID: UUID?
     @Published var saveState: SaveState = .idle
     @Published var loadState: LoadState = .idle
 
@@ -37,6 +40,7 @@ final class ProgressPhotosViewModel: ObservableObject {
             let start = Calendar.current.date(byAdding: .day, value: -90, to: .now) ?? .now
             let window = DateInterval(start: start, end: .now)
             recentPhotos = try await progressPhotoRepository.fetchProgressPhotos(in: window)
+            updateComparisonSelection()
             loadState = .loaded
         } catch {
             loadState = .failed("Unable to load progress photos right now.")
@@ -124,29 +128,53 @@ final class ProgressPhotosViewModel: ObservableObject {
     }
 
     var comparisonHeadline: String {
-        guard let latest = recentPhotos.first else {
-            return "Capture a full set to start comparing progress over time."
+        guard let comparisonBaseline, let comparisonLatest else {
+            return "Save two \(comparisonAngle.displayName.lowercased()) photos to compare the same pose."
         }
 
-        guard let previousSameAngle = recentPhotos.dropFirst().first(where: { $0.angle == latest.angle }) else {
-            return "Add another \(latest.angle.displayName.lowercased()) photo to compare the same pose."
-        }
-
-        let days = Calendar.current.dateComponents([.day], from: previousSameAngle.capturedAt, to: latest.capturedAt).day ?? 0
+        let days = Calendar.current.dateComponents([.day], from: comparisonBaseline.capturedAt, to: comparisonLatest.capturedAt).day ?? 0
         if days <= 0 {
-            return "The latest \(latest.angle.displayName.lowercased()) photo was captured on the same day as the prior one."
+            return "Your two \(comparisonAngle.displayName.lowercased()) photos were captured on the same day."
         }
 
-        return "The latest \(latest.angle.displayName.lowercased()) photo is \(days) day\(days == 1 ? "" : "s") after the previous one."
+        return "Your \(comparisonAngle.displayName.lowercased()) photos are \(days) day\(days == 1 ? "" : "s") apart."
     }
 
     var comparisonDetail: String {
         guard !recentPhotos.isEmpty else {
-            return "Save a few local entries, then repeat the same angle for a simple side-by-side comparison later."
+            return "Save a local photo set, then repeat an angle to unlock a side-by-side comparison."
         }
 
         let angleCount = Set(recentPhotos.map(\.angle)).count
-        return "\(angleCount) of 4 angles appear in your recent history. Keeping the pose and lighting consistent will make the comparison more useful."
+        guard comparisonBaseline != nil, comparisonLatest != nil else {
+            return "\(angleCount) of 4 angles appear in your local history. Select an angle with two saved entries to compare dates and pose consistently."
+        }
+
+        return "Both images remain on this device. Use the same angle and similar lighting for a more useful visual check."
+    }
+
+    var comparisonCandidates: [ProgressPhotoMetadata] {
+        recentPhotos
+            .filter { $0.angle == comparisonAngle }
+            .sorted { $0.capturedAt < $1.capturedAt }
+    }
+
+    var comparisonBaseline: ProgressPhotoMetadata? {
+        comparisonCandidates.first { $0.id == comparisonBaselineID }
+    }
+
+    var comparisonLatest: ProgressPhotoMetadata? {
+        comparisonCandidates.first { $0.id == comparisonLatestID }
+    }
+
+    var comparisonSelectionText: String {
+        guard let comparisonBaseline, let comparisonLatest else {
+            return "Choose an angle with at least two saved local photos."
+        }
+
+        let first = comparisonBaseline.capturedAt.formatted(date: .abbreviated, time: .omitted)
+        let second = comparisonLatest.capturedAt.formatted(date: .abbreviated, time: .omitted)
+        return "Comparing \(first) with \(second)."
     }
 
     var saveButtonTitle: String {
@@ -207,6 +235,41 @@ final class ProgressPhotosViewModel: ObservableObject {
 
     func stagedPhoto(for angle: ProgressPhotoAngle) -> PhotoMetadata? {
         stagedPhotos[angle]
+    }
+
+    func setComparisonAngle(_ angle: ProgressPhotoAngle) {
+        comparisonAngle = angle
+        updateComparisonSelection()
+    }
+
+    func setComparisonBaseline(_ id: UUID) {
+        comparisonBaselineID = id
+        if comparisonLatestID == id {
+            comparisonLatestID = comparisonCandidates.last(where: { $0.id != id })?.id
+        }
+    }
+
+    func setComparisonLatest(_ id: UUID) {
+        comparisonLatestID = id
+        if comparisonBaselineID == id {
+            comparisonBaselineID = comparisonCandidates.first(where: { $0.id != id })?.id
+        }
+    }
+
+    private func updateComparisonSelection() {
+        let candidates = comparisonCandidates
+        guard !candidates.isEmpty else {
+            comparisonBaselineID = nil
+            comparisonLatestID = nil
+            return
+        }
+
+        if comparisonBaselineID == nil || !candidates.contains(where: { $0.id == comparisonBaselineID }) {
+            comparisonBaselineID = candidates.first?.id
+        }
+        if comparisonLatestID == nil || !candidates.contains(where: { $0.id == comparisonLatestID }) || comparisonLatestID == comparisonBaselineID {
+            comparisonLatestID = candidates.last(where: { $0.id != comparisonBaselineID })?.id
+        }
     }
 
     private func angleOrder(_ angle: ProgressPhotoAngle) -> Int {

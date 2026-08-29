@@ -24,12 +24,14 @@ codex/repo-foundation
 - Added deterministic habit streak and adherence summaries with loading, empty, and error states
 - Added privacy-preserving local JSON export with export-only DTOs and typed errors
 - Added deterministic reminder pattern insights with explicit apply/keep-current controls
+- Added deterministic nutrition trend insights comparing recent and prior logged periods
+- Added improved progress-photo comparison controls with angle and date selection
 - Registered the Phase 2 feature files in the Xcode target
 - Added app routes, container factories, toolbar actions, and dashboard quick actions for habits and export
 
 ## Workstreams
 
-- Meals Integration Lane | Owner: Coordination | Completed
+- Phase 2 Integration Lane | Owner: Coordination | Completed
 
 ## Files Changed
 
@@ -39,6 +41,10 @@ codex/repo-foundation
 - `Dietum/App/RootView.swift`
 - `Dietum/Features/Dashboard/DashboardViewModel.swift`
 - `Dietum/Features/Habits/`
+- `Dietum/Features/Charts/NutritionTrendInsightsModels.swift`
+- `Dietum/Features/Charts/NutritionTrendInsightsService.swift`
+- `Dietum/Features/Charts/NutritionTrendInsightsViewModel.swift`
+- `Dietum/Features/Charts/NutritionTrendInsightsView.swift`
 - `Dietum/Features/Meals/MealExportService.swift`
 - `Dietum/Features/Meals/MealExportViewModel.swift`
 - `Dietum/Features/Meals/MealExportView.swift`
@@ -46,6 +52,8 @@ codex/repo-foundation
 - `Dietum/Features/Meals/MealLoggingViewModel.swift`
 - `Dietum/Features/Meals/MealReminderView.swift`
 - `Dietum/Features/Meals/MealReminderViewModel.swift`
+- `Dietum/Features/ProgressPhotos/ProgressPhotosView.swift`
+- `Dietum/Features/ProgressPhotos/ProgressPhotosViewModel.swift`
 - `PROJECT_STATUS.md`
 - `HANDOFF.md`
 
@@ -59,12 +67,12 @@ codex/repo-foundation
 
 ## Work Remaining
 
-- Improved nutrition trend insights
-- Improved progress photo comparison tools
+- No Phase 2 work remains
 
 ## Known Problems
 
 - SwiftData macro diagnostics can recur when CoreSimulator or the local Swift plugin server is unavailable; the concrete integrated test run passed
+- Progress-photo comparison currently uses metadata placeholders because the existing local photo model exposes storage metadata rather than renderable image assets
 - Unrelated uncommitted files remain in the working tree: `pass` and `pass.pub`
 
 ## Important Decisions
@@ -75,8 +83,8 @@ codex/repo-foundation
 
 ## Exact Next Step
 
-- Assign the remaining Phase 2 ideas to independent feature lanes, then review and integrate their reports
+- Continue with a new product milestone only if the scope expands beyond the current Phase 2 ideas
 
 ## Suggested Next Agent
 
-- Phase 2 trend insights or photo comparison agent
+- None

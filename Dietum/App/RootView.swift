@@ -43,6 +43,13 @@ struct RootView: View {
                             Label(AppRoute.mealExport.title, systemImage: AppRoute.mealExport.systemImage)
                         }
                         .buttonStyle(.appToolbar)
+
+                        Button {
+                            viewModel.showNutritionInsights()
+                        } label: {
+                            Label(AppRoute.nutritionInsights.title, systemImage: AppRoute.nutritionInsights.systemImage)
+                        }
+                        .buttonStyle(.appToolbar)
                     }
 
                     ToolbarItemGroup(placement: .topBarTrailing) {
@@ -114,6 +121,8 @@ struct RootView: View {
                         container.makeHabitAdherenceView()
                     case .mealExport:
                         container.makeMealExportView()
+                    case .nutritionInsights:
+                        container.makeNutritionTrendInsightsView()
                     case .weeklyCheckIn:
                         WeeklyCheckInView(viewModel: container.makeWeeklyCheckInViewModel())
                     case .progressPhotos:
@@ -153,6 +162,10 @@ final class RootViewModel: ObservableObject {
 
     func showMealExport() {
         path.append(.mealExport)
+    }
+
+    func showNutritionInsights() {
+        path.append(.nutritionInsights)
     }
 
     func showWeeklyCheckIn() {
