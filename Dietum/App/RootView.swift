@@ -29,6 +29,20 @@ struct RootView: View {
                             Label(AppRoute.mealReminders.title, systemImage: AppRoute.mealReminders.systemImage)
                         }
                         .buttonStyle(.appToolbar)
+
+                        Button {
+                            viewModel.showHabitAdherence()
+                        } label: {
+                            Label(AppRoute.habitAdherence.title, systemImage: AppRoute.habitAdherence.systemImage)
+                        }
+                        .buttonStyle(.appToolbar)
+
+                        Button {
+                            viewModel.showMealExport()
+                        } label: {
+                            Label(AppRoute.mealExport.title, systemImage: AppRoute.mealExport.systemImage)
+                        }
+                        .buttonStyle(.appToolbar)
                     }
 
                     ToolbarItemGroup(placement: .topBarTrailing) {
@@ -96,6 +110,10 @@ struct RootView: View {
                         MealLoggingView()
                     case .mealReminders:
                         container.makeMealReminderView()
+                    case .habitAdherence:
+                        container.makeHabitAdherenceView()
+                    case .mealExport:
+                        container.makeMealExportView()
                     case .weeklyCheckIn:
                         WeeklyCheckInView(viewModel: container.makeWeeklyCheckInViewModel())
                     case .progressPhotos:
@@ -127,6 +145,14 @@ final class RootViewModel: ObservableObject {
 
     func showMealReminders() {
         path.append(.mealReminders)
+    }
+
+    func showHabitAdherence() {
+        path.append(.habitAdherence)
+    }
+
+    func showMealExport() {
+        path.append(.mealExport)
     }
 
     func showWeeklyCheckIn() {

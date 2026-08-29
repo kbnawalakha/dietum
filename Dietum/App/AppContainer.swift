@@ -6,6 +6,7 @@ struct AppContainer {
     static let live = AppContainer()
 
     private let modelContainer: ModelContainer
+    private let mealEntryRepository: any MealEntryRepository
     private let weightLogRepository: any WeightLogRepository
     private let progressPhotoRepository: any ProgressPhotoRepository
     private let nutritionAdjustmentRecommendationService: any NutritionAdjustmentRecommendationService
@@ -13,6 +14,7 @@ struct AppContainer {
     init(modelContainer: ModelContainer? = nil) {
         let resolvedContainer = modelContainer ?? (try! DietumPersistenceStack.makeContainer())
         self.modelContainer = resolvedContainer
+        self.mealEntryRepository = SwiftDataMealEntryRepository(modelContext: resolvedContainer.mainContext)
         self.weightLogRepository = SwiftDataWeightEntryRepository(modelContext: resolvedContainer.mainContext)
         self.progressPhotoRepository = SwiftDataProgressPhotoRepository(modelContext: resolvedContainer.mainContext)
         self.nutritionAdjustmentRecommendationService = DeterministicNutritionAdjustmentRecommendationService()
@@ -43,6 +45,19 @@ struct AppContainer {
 
     func makeMealReminderView() -> MealReminderView {
         MealReminderView()
+    }
+
+    func makeHabitAdherenceView() -> HabitAdherenceView {
+        HabitAdherenceView(
+            viewModel: HabitAdherenceViewModel(
+                mealRepository: mealEntryRepository,
+                weightLogRepository: weightLogRepository
+            )
+        )
+    }
+
+    func makeMealExportView() -> MealExportView {
+        MealExportView()
     }
 
     func makeOnboardingView(onComplete: @escaping () -> Void) -> OnboardingView {

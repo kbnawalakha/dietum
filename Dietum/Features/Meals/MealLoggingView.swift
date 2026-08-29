@@ -98,16 +98,25 @@ struct MealLoggingView: View {
                         VStack(alignment: .leading, spacing: AppSpacing.item) {
                             AppSectionHeader(
                                 title: "Detected foods",
-                                message: "Edit or remove anything the mock analysis got wrong."
+                                message: "Edit or remove anything the mock analysis got wrong, then confirm each food."
                             )
+
+                            Label(viewModel.reviewStatusText, systemImage: "checkmark.shield")
+                                .font(.subheadline)
+                                .foregroundStyle(AppPalette.textSecondary)
 
                             VStack(alignment: .leading, spacing: AppSpacing.item) {
                                 ForEach(viewModel.detectedFoods) { food in
                                     MealDetectedFoodRow(
                                         food: food,
                                         isExpanded: viewModel.selectedItemID == food.id,
+                                        isReviewed: viewModel.isFoodReviewed(food.id),
+                                        needsAttention: viewModel.foodNeedsAttention(food),
                                         onToggleReview: {
                                             viewModel.toggleItemReview(food.id)
+                                        },
+                                        onToggleReviewed: {
+                                            viewModel.toggleFoodReviewed(food.id)
                                         },
                                         onUpdateName: { viewModel.updateFood(id: food.id, name: $0) },
                                         onUpdateConfidence: { viewModel.updateFoodConfidence(id: food.id, confidence: $0) },
@@ -154,7 +163,7 @@ struct MealLoggingView: View {
                         ), axis: .vertical)
                         .textFieldStyle(.roundedBorder)
 
-                        Text("Meal detection is a mock estimate. Review and correct before saving.")
+                        Text("Meal detection is a mock estimate. Review, correct, and confirm every food before saving.")
                             .font(.caption)
                             .foregroundStyle(AppPalette.textSecondary)
 
@@ -183,7 +192,10 @@ struct MealLoggingView: View {
 private struct MealDetectedFoodRow: View {
     let food: DetectedMealFood
     let isExpanded: Bool
+    let isReviewed: Bool
+    let needsAttention: Bool
     let onToggleReview: () -> Void
+    let onToggleReviewed: () -> Void
     let onUpdateName: (String) -> Void
     let onUpdateConfidence: (Double?) -> Void
     let onRemove: () -> Void
@@ -192,10 +204,11 @@ private struct MealDetectedFoodRow: View {
         VStack(alignment: .leading, spacing: AppSpacing.small) {
             HStack(alignment: .firstTextBaseline, spacing: AppSpacing.small) {
                 Button(action: onToggleReview) {
-                    Image(systemName: isExpanded ? "checkmark.circle.fill" : "circle")
+                    Image(systemName: isExpanded ? "chevron.up.circle.fill" : "chevron.down.circle")
                         .foregroundStyle(AppPalette.accent)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(isExpanded ? "Hide correction details" : "Show correction details")
 
                 TextField(
                     "Food name",
@@ -213,6 +226,14 @@ private struct MealDetectedFoodRow: View {
             }
 
             HStack(spacing: AppSpacing.small) {
+                Image(systemName: isReviewed ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
+                    .foregroundStyle(isReviewed ? .green : (needsAttention ? .orange : AppPalette.accent))
+                    .accessibilityHidden(true)
+
+                Text(isReviewed ? "Confirmed" : (needsAttention ? "Needs attention" : "Not confirmed"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(isReviewed ? .green : (needsAttention ? .orange : AppPalette.textSecondary))
+
                 if let confidence = food.confidence {
                     Text("Confidence \(Int(confidence * 100))%")
                         .font(.caption)
@@ -237,9 +258,15 @@ private struct MealDetectedFoodRow: View {
             }
 
             if isExpanded {
-                Text("Mark this row as reviewed once the detected name looks right.")
+                Text(needsAttention ? "This estimate is uncertain. Correct the name or confidence, then confirm it." : "Confirm this food once the detected name looks right.")
                     .font(.caption)
                     .foregroundStyle(AppPalette.textSecondary)
+
+                Button(action: onToggleReviewed) {
+                    Label(isReviewed ? "Mark as needing review" : "Confirm food", systemImage: isReviewed ? "arrow.uturn.backward" : "checkmark")
+                }
+                .buttonStyle(.appToolbar)
+                .accessibilityHint("Confirmation is required before this meal draft can be saved.")
             }
         }
     }

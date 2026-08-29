@@ -45,6 +45,7 @@ final class MealLoggingViewModel: ObservableObject {
     @Published var analysisState: AnalysisState = .idle
     @Published var analysisNotes: String?
     @Published var selectedItemID: DetectedMealFood.ID?
+    @Published private(set) var reviewedItemIDs: Set<DetectedMealFood.ID> = []
 
     private let detectionService: MealFoodDetectionService
     private let samplePhoto = PhotoMetadata(storageIdentifier: "meal-photo-mock")
@@ -79,7 +80,34 @@ final class MealLoggingViewModel: ObservableObject {
     }
 
     var canSave: Bool {
-        !draft.detectedFoods.isEmpty && analysisState != .analyzing
+        !draft.detectedFoods.isEmpty
+            && analysisState != .analyzing
+            && draft.detectedFoods.allSatisfy { food in
+                !food.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    && reviewedItemIDs.contains(food.id)
+            }
+    }
+
+    var reviewStatusText: String {
+        guard !draft.detectedFoods.isEmpty else {
+            return "Run the mock detector before reviewing foods."
+        }
+
+        let remaining = draft.detectedFoods.count - draft.detectedFoods.filter { reviewedItemIDs.contains($0.id) }.count
+        if remaining == 0 {
+            return "Every detected food has been confirmed."
+        }
+
+        return "\(remaining) food\(remaining == 1 ? "" : "s") still need confirmation before saving."
+    }
+
+    func isFoodReviewed(_ id: DetectedMealFood.ID) -> Bool {
+        reviewedItemIDs.contains(id)
+    }
+
+    func foodNeedsAttention(_ food: DetectedMealFood) -> Bool {
+        food.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || (food.confidence ?? 0) < 0.8
     }
 
     var summary: MealLoggingSummary {
@@ -130,6 +158,7 @@ final class MealLoggingViewModel: ObservableObject {
             updateDraft { draft in
                 draft.detectedFoods = result.detectedFoods
             }
+            reviewedItemIDs = []
             analysisNotes = result.notes
             analysisState = result.detectedFoods.isEmpty ? .needsReview : .ready
         } catch {
@@ -144,6 +173,21 @@ final class MealLoggingViewModel: ObservableObject {
         }
         if case .idle = analysisState {
             analysisState = .needsReview
+        }
+    }
+
+    func toggleFoodReviewed(_ id: DetectedMealFood.ID) {
+        guard let food = draft.detectedFoods.first(where: { $0.id == id }),
+              !food.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            selectedItemID = id
+            analysisState = .needsReview
+            return
+        }
+
+        if reviewedItemIDs.contains(id) {
+            reviewedItemIDs.remove(id)
+        } else {
+            reviewedItemIDs.insert(id)
         }
     }
 
@@ -167,6 +211,8 @@ final class MealLoggingViewModel: ObservableObject {
 
             draft.detectedFoods[index].name = name
         }
+        reviewedItemIDs.remove(id)
+        analysisState = .needsReview
         selectedItemID = id
     }
 
@@ -178,12 +224,15 @@ final class MealLoggingViewModel: ObservableObject {
 
             draft.detectedFoods[index].confidence = confidence
         }
+        reviewedItemIDs.remove(id)
+        analysisState = .needsReview
     }
 
     func removeFood(id: DetectedMealFood.ID) {
         updateDraft { draft in
             draft.detectedFoods.removeAll { $0.id == id }
         }
+        reviewedItemIDs.remove(id)
         if draft.detectedFoods.isEmpty, case .ready = analysisState {
             analysisState = .needsReview
         }
@@ -191,9 +240,6 @@ final class MealLoggingViewModel: ObservableObject {
 
     func toggleItemReview(_ id: DetectedMealFood.ID) {
         selectedItemID = selectedItemID == id ? nil : id
-        if case .ready = analysisState {
-            analysisState = .needsReview
-        }
     }
 
     func saveDraft() {

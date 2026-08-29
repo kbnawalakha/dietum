@@ -13,14 +13,14 @@ struct MealReminderView: View {
                 AppHeroCard(
                     eyebrow: "Meal reminders",
                     title: "Keep the meal plan on schedule.",
-                    message: "A self-contained reminder surface for meal timing, local schedule status, and quick enable or disable checks."
+                    message: "A local-first reminder preview that recommends timing changes only when you explicitly choose them."
                 )
 
                 AppSurfaceCard {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
                             title: "Reminder status",
-                            message: viewModel.reminderSummaryText
+                            message: viewModel.headline
                         )
 
                         AppStatusPill(
@@ -32,7 +32,7 @@ struct MealReminderView: View {
                             .font(.subheadline)
                             .foregroundStyle(AppPalette.textSecondary)
 
-                        HStack(spacing: AppSpacing.item) {
+                        LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
                             AppMetricCard(
                                 title: "Enabled",
                                 value: "\(viewModel.enabledScheduleCount)",
@@ -41,11 +41,21 @@ struct MealReminderView: View {
                             )
 
                             AppMetricCard(
-                                title: "Total",
-                                value: "\(viewModel.reminderSchedules.count)",
-                                detail: "Configured meal reminders",
-                                symbolName: "calendar"
+                                title: "Pattern",
+                                value: viewModel.patternLabelText,
+                                detail: viewModel.patternScoreText,
+                                symbolName: "chart.line.uptrend.xyaxis"
                             )
+                        }
+
+                        Text(viewModel.reminderSummaryText)
+                            .font(.subheadline)
+                            .foregroundStyle(AppPalette.textSecondary)
+
+                        if let statusMessage = viewModel.statusMessage {
+                            Text(statusMessage)
+                                .font(.caption)
+                                .foregroundStyle(AppPalette.textSecondary)
                         }
                     }
                 }
@@ -54,16 +64,67 @@ struct MealReminderView: View {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
                             title: "Upcoming reminder",
-                            message: "The first enabled reminder is shown here so the user can quickly see what comes next."
+                            message: "The next enabled reminder is derived locally from the current pattern."
                         )
 
                         Text(viewModel.nextReminderText)
                             .font(.headline)
                             .foregroundStyle(AppPalette.textPrimary)
 
-                        Text("Reminder delivery stays local and can be adjusted from this surface later.")
+                        Text(viewModel.controlNoteText)
                             .font(.subheadline)
                             .foregroundStyle(AppPalette.textSecondary)
+                    }
+                }
+
+                AppSurfaceCard {
+                    VStack(alignment: .leading, spacing: AppSpacing.item) {
+                        AppSectionHeader(
+                            title: "Recommendation preview",
+                            message: "The insight layer suggests a schedule, but it never applies anything silently."
+                        )
+
+                        VStack(alignment: .leading, spacing: AppSpacing.small) {
+                            Text(viewModel.recommendationTitleText)
+                                .font(.headline)
+                                .foregroundStyle(AppPalette.textPrimary)
+
+                            Text(viewModel.recommendationDetailText)
+                                .font(.subheadline)
+                                .foregroundStyle(AppPalette.textSecondary)
+                        }
+
+                        if viewModel.recommendationReasons.isEmpty {
+                            Text("No timing changes are suggested right now.")
+                                .font(.subheadline)
+                                .foregroundStyle(AppPalette.textSecondary)
+                        } else {
+                            VStack(alignment: .leading, spacing: AppSpacing.small) {
+                                ForEach(viewModel.recommendationReasons, id: \.self) { reason in
+                                    AppChecklistItem(text: reason)
+                                }
+                            }
+                        }
+
+                        HStack(spacing: AppSpacing.item) {
+                            Button {
+                                viewModel.keepCurrentTimes()
+                            } label: {
+                                Label("Keep current", systemImage: "hand.raised.fill")
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .buttonStyle(.appToolbar)
+                            .disabled(!viewModel.canApplyRecommendation)
+
+                            Button {
+                                viewModel.applyRecommendation()
+                            } label: {
+                                Label(viewModel.recommendationActionTitle, systemImage: "sparkles")
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .buttonStyle(.appProminent)
+                            .disabled(!viewModel.canApplyRecommendation)
+                        }
                     }
                 }
 
@@ -103,32 +164,31 @@ private struct MealReminderRow: View {
     let onToggle: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.small) {
-            HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(schedule.mealType.rawValue.capitalized)
-                        .font(.headline)
-                        .foregroundStyle(AppPalette.textPrimary)
+        HStack(alignment: .top, spacing: AppSpacing.item) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(schedule.mealType.rawValue.capitalized)
+                    .font(.headline)
+                    .foregroundStyle(AppPalette.textPrimary)
 
-                    Text(schedule.displayTime)
-                        .font(.subheadline)
-                        .foregroundStyle(AppPalette.textSecondary)
-                }
+                Text(schedule.displayTime)
+                    .font(.subheadline)
+                    .foregroundStyle(AppPalette.textSecondary)
 
-                Spacer(minLength: 0)
-
-                Button {
-                    onToggle()
-                } label: {
-                    Image(systemName: schedule.isEnabled ? "checkmark.circle.fill" : "circle")
-                        .foregroundStyle(schedule.isEnabled ? AppPalette.accent : AppPalette.textSecondary)
-                }
-                .buttonStyle(.plain)
+                Text(schedule.isEnabled ? "Reminder is enabled." : "Reminder is disabled.")
+                    .font(.caption)
+                    .foregroundStyle(AppPalette.textSecondary)
             }
 
-            Text(schedule.isEnabled ? "Reminder is enabled." : "Reminder is disabled.")
-                .font(.caption)
-                .foregroundStyle(AppPalette.textSecondary)
+            Spacer(minLength: 0)
+
+            Button {
+                onToggle()
+            } label: {
+                Image(systemName: schedule.isEnabled ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(schedule.isEnabled ? AppPalette.accent : AppPalette.textSecondary)
+            }
+            .buttonStyle(.plain)
         }
     }
 }

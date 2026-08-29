@@ -37,10 +37,11 @@ Milestone 0 — Repository and Architecture Foundation
 - Added app routes and entry points for goal setup, sleep setup, and meal reminders
 - Added the XCTest target setup and deterministic nutrition-adjustment unit tests
 - Added and hardened a lightweight GitHub Actions build workflow
+- Phase 2 started with advanced meal-photo review safeguards, habit/adherence summaries, local data export, and pattern-based reminder previews
 
 # In Progress
 
-- None
+- Phase 2 integration and verification
 
 # Blocked
 
@@ -48,7 +49,8 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Next Tasks
 
-- None identified
+- Add improved nutrition trend insights
+- Add improved progress photo comparison tools
 
 # Dependency Tracking
 

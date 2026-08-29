@@ -42,6 +42,13 @@
 		100000000000000000000063 /* MockMealFoodDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000005A /* MockMealFoodDetectionService.swift */; };
 		1000000000000000000000C0 /* MealReminderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000C2 /* MealReminderView.swift */; };
 		1000000000000000000000C1 /* MealReminderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000C3 /* MealReminderViewModel.swift */; };
+		1000000000000000000000D0 /* HabitAdherenceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D1 /* HabitAdherenceModels.swift */; };
+		1000000000000000000000D2 /* HabitAdherenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D3 /* HabitAdherenceService.swift */; };
+		1000000000000000000000D4 /* HabitAdherenceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D5 /* HabitAdherenceViewModel.swift */; };
+		1000000000000000000000D6 /* HabitAdherenceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D7 /* HabitAdherenceView.swift */; };
+		1000000000000000000000D8 /* MealExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D9 /* MealExportService.swift */; };
+		1000000000000000000000DA /* MealExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000DB /* MealExportViewModel.swift */; };
+		1000000000000000000000DC /* MealExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000DD /* MealExportView.swift */; };
 		100000000000000000000066 /* WeeklyCheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000064 /* WeeklyCheckInView.swift */; };
 		100000000000000000000067 /* WeeklyCheckInViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000065 /* WeeklyCheckInViewModel.swift */; };
 		1000000000000000000000BE /* CheckInDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000BF /* CheckInDraft.swift */; };
@@ -109,6 +116,13 @@
 		10000000000000000000005A /* MockMealFoodDetectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockMealFoodDetectionService.swift; sourceTree = "<group>"; };
 		1000000000000000000000C2 /* MealReminderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealReminderView.swift; sourceTree = "<group>"; };
 		1000000000000000000000C3 /* MealReminderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealReminderViewModel.swift; sourceTree = "<group>"; };
+		1000000000000000000000D1 /* HabitAdherenceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitAdherenceModels.swift; sourceTree = "<group>"; };
+		1000000000000000000000D3 /* HabitAdherenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitAdherenceService.swift; sourceTree = "<group>"; };
+		1000000000000000000000D5 /* HabitAdherenceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitAdherenceViewModel.swift; sourceTree = "<group>"; };
+		1000000000000000000000D7 /* HabitAdherenceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitAdherenceView.swift; sourceTree = "<group>"; };
+		1000000000000000000000D9 /* MealExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealExportService.swift; sourceTree = "<group>"; };
+		1000000000000000000000DB /* MealExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealExportViewModel.swift; sourceTree = "<group>"; };
+		1000000000000000000000DD /* MealExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealExportView.swift; sourceTree = "<group>"; };
 		100000000000000000000064 /* WeeklyCheckInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyCheckInView.swift; sourceTree = "<group>"; };
 		100000000000000000000065 /* WeeklyCheckInViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyCheckInViewModel.swift; sourceTree = "<group>"; };
 		1000000000000000000000BF /* CheckInDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInDraft.swift; sourceTree = "<group>"; };
@@ -192,6 +206,7 @@
 				100000000000000000000091 /* Charts */,
 				100000000000000000000090 /* NutritionAdjustment */,
 				100000000000000000000038 /* Meals */,
+				1000000000000000000000DE /* Habits */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -349,6 +364,9 @@
 				10000000000000000000005A /* MockMealFoodDetectionService.swift */,
 				1000000000000000000000C2 /* MealReminderView.swift */,
 				1000000000000000000000C3 /* MealReminderViewModel.swift */,
+				1000000000000000000000D9 /* MealExportService.swift */,
+				1000000000000000000000DB /* MealExportViewModel.swift */,
+				1000000000000000000000DD /* MealExportView.swift */,
 			);
 			path = Meals;
 			sourceTree = "<group>";
@@ -370,6 +388,17 @@
 				100000000000000000000079 /* ProgressPhotosViewModel.swift */,
 			);
 			path = ProgressPhotos;
+			sourceTree = "<group>";
+		};
+		1000000000000000000000DE /* Habits */ = {
+			isa = PBXGroup;
+			children = (
+				1000000000000000000000D1 /* HabitAdherenceModels.swift */,
+				1000000000000000000000D3 /* HabitAdherenceService.swift */,
+				1000000000000000000000D5 /* HabitAdherenceViewModel.swift */,
+				1000000000000000000000D7 /* HabitAdherenceView.swift */,
+			);
+			path = Habits;
 			sourceTree = "<group>";
 		};
 		100000000000000000000090 /* NutritionAdjustment */ = {
@@ -534,6 +563,13 @@
 				100000000000000000000063 /* MockMealFoodDetectionService.swift in Sources */,
 				1000000000000000000000C0 /* MealReminderView.swift in Sources */,
 				1000000000000000000000C1 /* MealReminderViewModel.swift in Sources */,
+				1000000000000000000000D0 /* HabitAdherenceModels.swift in Sources */,
+				1000000000000000000000D2 /* HabitAdherenceService.swift in Sources */,
+				1000000000000000000000D4 /* HabitAdherenceViewModel.swift in Sources */,
+				1000000000000000000000D6 /* HabitAdherenceView.swift in Sources */,
+				1000000000000000000000D8 /* MealExportService.swift in Sources */,
+				1000000000000000000000DA /* MealExportViewModel.swift in Sources */,
+				1000000000000000000000DC /* MealExportView.swift in Sources */,
 				100000000000000000000066 /* WeeklyCheckInView.swift in Sources */,
 				100000000000000000000067 /* WeeklyCheckInViewModel.swift in Sources */,
 				1000000000000000000000BE /* CheckInDraft.swift in Sources */,
