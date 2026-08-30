@@ -114,7 +114,7 @@ struct RootView: View {
                     case .sleepSetup:
                         container.makeSleepSetupView()
                     case .mealLogging:
-                        MealLoggingView()
+                        container.makeMealLoggingView()
                     case .mealReminders:
                         container.makeMealReminderView()
                     case .habitAdherence:

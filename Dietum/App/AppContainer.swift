@@ -57,7 +57,19 @@ struct AppContainer {
     }
 
     func makeMealExportView() -> MealExportView {
-        MealExportView()
+        MealExportView(
+            viewModel: MealExportViewModel(
+                snapshotProvider: SwiftDataMealExportSnapshotProvider(
+                    mealEntryRepository: mealEntryRepository
+                )
+            )
+        )
+    }
+
+    func makeMealLoggingView() -> MealLoggingView {
+        MealLoggingView(
+            viewModel: MealLoggingViewModel(mealEntryRepository: mealEntryRepository)
+        )
     }
 
     func makeNutritionTrendInsightsView() -> NutritionTrendInsightsView {

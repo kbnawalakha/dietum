@@ -35,6 +35,10 @@ struct MealExportView: View {
                         Text(viewModel.exportSummaryText)
                             .font(.caption)
                             .foregroundStyle(AppPalette.textSecondary)
+
+                        Text(viewModel.localDataStatusText)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(AppPalette.textPrimary)
                     }
                 }
 
@@ -47,7 +51,7 @@ struct MealExportView: View {
 
                         MealExportOptionRow(
                             title: "Meal draft",
-                            detail: "Current meal type, notes, and photo placeholder description.",
+                            detail: "Locally saved meal entries, nutrition, notes, and photo references.",
                             isOn: Binding(
                                 get: { viewModel.includeMealDraft },
                                 set: { viewModel.includeMealDraft = $0 }
@@ -56,7 +60,7 @@ struct MealExportView: View {
 
                         MealExportOptionRow(
                             title: "Detected foods",
-                            detail: "Mock detection results and confidence values.",
+                            detail: "Food items from the latest locally saved meal; confidence is included only when persisted.",
                             isOn: Binding(
                                 get: { viewModel.includeDetectedFoods },
                                 set: { viewModel.includeDetectedFoods = $0 }
@@ -127,6 +131,9 @@ struct MealExportView: View {
         .navigationTitle("Export")
         .navigationBarTitleDisplayMode(.inline)
         .appScreenBackground()
+        .task {
+            await viewModel.loadLocalData()
+        }
     }
 }
 

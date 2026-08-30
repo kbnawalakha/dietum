@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import UIKit
 
 struct MealLoggingDraft: Hashable, Sendable {
     var mealType: MealType = .lunch
@@ -46,20 +47,39 @@ final class MealLoggingViewModel: ObservableObject {
     @Published var analysisNotes: String?
     @Published var selectedItemID: DetectedMealFood.ID?
     @Published private(set) var reviewedItemIDs: Set<DetectedMealFood.ID> = []
+    @Published private(set) var selectedPhoto: UIImage?
 
     private let detectionService: MealFoodDetectionService
+    private let mealEntryRepository: (any MealEntryRepository)?
     private let samplePhoto = PhotoMetadata(storageIdentifier: "meal-photo-mock")
 
     init(
         draft: MealLoggingDraft = MealLoggingDraft(),
-        detectionService: MealFoodDetectionService = MockMealFoodDetectionService()
+        detectionService: MealFoodDetectionService = MockMealFoodDetectionService(),
+        mealEntryRepository: (any MealEntryRepository)? = nil
     ) {
         self.draft = draft
         self.detectionService = detectionService
+        self.mealEntryRepository = mealEntryRepository
     }
 
     var detectedFoods: [DetectedMealFood] {
         draft.detectedFoods
+    }
+
+    var hasSelectedPhoto: Bool {
+        selectedPhoto != nil
+    }
+
+    func setSelectedPhoto(_ image: UIImage) {
+        selectedPhoto = image
+        updateDraft { draft in
+            draft.photoDescription = "Selected local meal photo"
+        }
+        analysisState = .idle
+        analysisNotes = nil
+        selectedItemID = nil
+        reviewedItemIDs = []
     }
 
     var headline: String {
@@ -242,12 +262,29 @@ final class MealLoggingViewModel: ObservableObject {
         selectedItemID = selectedItemID == id ? nil : id
     }
 
-    func saveDraft() {
+    func saveDraft() async {
         guard canSave else {
             return
         }
 
-        analysisState = .saved
+        guard let mealEntryRepository else {
+            analysisState = .saved
+            return
+        }
+
+        let entry = MealEntry(
+            mealType: draft.mealType,
+            notes: draft.trimmedNotes.isEmpty ? nil : draft.trimmedNotes,
+            photoMetadata: selectedPhoto == nil ? nil : PhotoMetadata(storageIdentifier: "meal-photo-selected"),
+            items: draft.detectedFoods.map { MealItem(name: $0.name) }
+        )
+
+        do {
+            try await mealEntryRepository.saveMealEntry(entry)
+            analysisState = .saved
+        } catch {
+            analysisState = .failed("Meal could not be saved locally. Try again.")
+        }
     }
 
     private func updateDraft(_ mutation: (inout MealLoggingDraft) -> Void) {

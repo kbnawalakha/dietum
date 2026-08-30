@@ -1,9 +1,11 @@
 import Foundation
+import SwiftData
 
 struct MealExportSnapshot: Codable, Hashable, Sendable {
     var createdAt: Date
     var appName: String
     var mealDraft: MealExportDraftPayload?
+    var mealEntries: [MealExportMealEntryPayload]
     var reminderSchedules: [MealExportReminderPayload]
     var detectedFoods: [MealExportDetectedFoodPayload]
     var analysisNotes: String?
@@ -13,6 +15,7 @@ struct MealExportSnapshot: Codable, Hashable, Sendable {
         createdAt: Date = .now,
         appName: String = "Dietum",
         mealDraft: MealExportDraftPayload? = nil,
+        mealEntries: [MealExportMealEntryPayload] = [],
         reminderSchedules: [MealExportReminderPayload] = [],
         detectedFoods: [MealExportDetectedFoodPayload] = [],
         analysisNotes: String? = nil,
@@ -21,10 +24,63 @@ struct MealExportSnapshot: Codable, Hashable, Sendable {
         self.createdAt = createdAt
         self.appName = appName
         self.mealDraft = mealDraft
+        self.mealEntries = mealEntries
         self.reminderSchedules = reminderSchedules
         self.detectedFoods = detectedFoods
         self.analysisNotes = analysisNotes
         self.reminderSummaryText = reminderSummaryText
+    }
+}
+
+struct MealExportMealEntryPayload: Codable, Hashable, Sendable {
+    var id: UUID
+    var loggedAt: Date
+    var mealTypeRawValue: String
+    var title: String?
+    var notes: String?
+    var items: [MealExportMealItemPayload]
+    var nutrition: MealExportNutritionPayload
+
+    init(entry: MealEntry) {
+        self.id = entry.id
+        self.loggedAt = entry.loggedAt
+        self.mealTypeRawValue = entry.mealType.rawValue
+        self.title = entry.title
+        self.notes = entry.notes
+        self.items = entry.items.map(MealExportMealItemPayload.init)
+        self.nutrition = MealExportNutritionPayload(amounts: entry.nutrition)
+    }
+}
+
+struct MealExportMealItemPayload: Codable, Hashable, Sendable {
+    var id: UUID
+    var name: String
+    var quantity: Double?
+    var unit: String?
+    var nutrition: MealExportNutritionPayload
+
+    init(item: MealItem) {
+        self.id = item.id
+        self.name = item.name
+        self.quantity = item.quantity
+        self.unit = item.unit
+        self.nutrition = MealExportNutritionPayload(amounts: item.nutrition)
+    }
+}
+
+struct MealExportNutritionPayload: Codable, Hashable, Sendable {
+    var calories: Int
+    var proteinGrams: Double
+    var carbohydrateGrams: Double
+    var fatGrams: Double
+    var fiberGrams: Double
+
+    init(amounts: NutritionAmounts) {
+        self.calories = amounts.calories
+        self.proteinGrams = amounts.proteinGrams
+        self.carbohydrateGrams = amounts.carbohydrateGrams
+        self.fatGrams = amounts.fatGrams
+        self.fiberGrams = amounts.fiberGrams
     }
 }
 
@@ -64,10 +120,17 @@ struct MealExportDetectedFoodPayload: Codable, Hashable, Sendable {
         self.name = food.name
         self.confidence = food.confidence
     }
+
+    init(item: MealItem) {
+        self.id = item.id
+        self.name = item.name
+        self.confidence = nil
+    }
 }
 
 enum MealExportError: Error, Equatable {
     case noDataToExport
+    case couldNotLoadLocalData
     case couldNotEncode
     case couldNotWriteFile
 
@@ -75,11 +138,79 @@ enum MealExportError: Error, Equatable {
         switch self {
         case .noDataToExport:
             return "There is no meal data ready to export yet."
+        case .couldNotLoadLocalData:
+            return "Dietum could not read the local meal data for export."
         case .couldNotEncode:
             return "Dietum could not prepare the local export file."
         case .couldNotWriteFile:
             return "Dietum could not write the export file to the device."
         }
+    }
+}
+
+protocol MealExportSnapshotProviding: Sendable {
+    @MainActor
+    func loadSnapshot() async throws -> MealExportSnapshot
+}
+
+@MainActor
+final class SwiftDataMealExportSnapshotProvider: MealExportSnapshotProviding {
+    private let modelContainer: ModelContainer?
+    private let mealEntryRepository: (any MealEntryRepository)?
+
+    init(mealEntryRepository: (any MealEntryRepository)? = nil) {
+        if let mealEntryRepository {
+            self.modelContainer = nil
+            self.mealEntryRepository = mealEntryRepository
+            return
+        }
+
+        do {
+            let container = try DietumPersistenceStack.makeContainer()
+            self.modelContainer = container
+            self.mealEntryRepository = SwiftDataMealEntryRepository(modelContext: container.mainContext)
+        } catch {
+            self.modelContainer = nil
+            self.mealEntryRepository = nil
+        }
+    }
+
+    func loadSnapshot() async throws -> MealExportSnapshot {
+        guard let mealEntryRepository else {
+            throw MealExportError.couldNotLoadLocalData
+        }
+
+        do {
+            let entries = try await mealEntryRepository.fetchMealEntries(
+                in: DateInterval(start: .distantPast, end: .distantFuture)
+            )
+            let latestEntry = entries.first
+
+            return MealExportSnapshot(
+                mealDraft: latestEntry.map {
+                    MealExportDraftPayload(
+                        mealType: $0.mealType,
+                        notes: $0.notes ?? "",
+                        photoDescription: $0.photoMetadata == nil ? "No local photo attached" : "Local photo reference"
+                    )
+                },
+                mealEntries: entries.map(MealExportMealEntryPayload.init),
+                detectedFoods: latestEntry?.items.map(MealExportDetectedFoodPayload.init) ?? [],
+                analysisNotes: latestEntry == nil ? nil : "Foods reflect locally saved meal items; detection confidence was not persisted.",
+                reminderSummaryText: "Meal reminder schedules are not persisted in the current local data store."
+            )
+        } catch {
+            throw MealExportError.couldNotLoadLocalData
+        }
+    }
+}
+
+struct StaticMealExportSnapshotProvider: MealExportSnapshotProviding {
+    let snapshot: MealExportSnapshot
+
+    @MainActor
+    func loadSnapshot() async throws -> MealExportSnapshot {
+        snapshot
     }
 }
 
@@ -138,6 +269,7 @@ struct MealLocalExportService: MealExportServicing, @unchecked Sendable {
 
     private func hasExportableContent(_ snapshot: MealExportSnapshot) -> Bool {
         snapshot.mealDraft != nil
+            || !snapshot.mealEntries.isEmpty
             || !snapshot.reminderSchedules.isEmpty
             || !snapshot.detectedFoods.isEmpty
             || !(snapshot.analysisNotes ?? "").isEmpty

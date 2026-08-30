@@ -1,6 +1,36 @@
 import Foundation
 import SwiftData
 
+enum MealEntryPersistenceMapper {
+    static func makeMealEntry(from stored: StoredMealEntry) -> MealEntry {
+        MealEntry(
+            id: stored.id,
+            loggedAt: stored.loggedAt,
+            mealType: MealType(rawValue: stored.mealTypeRawValue) ?? .custom,
+            title: stored.title,
+            notes: stored.notes,
+            photoMetadata: decode(PhotoMetadata.self, from: stored.photoMetadataData),
+            items: decode([MealItem].self, from: stored.itemsData) ?? [],
+            nutrition: NutritionAmounts(
+                calories: stored.nutritionCalories,
+                proteinGrams: stored.nutritionProteinGrams,
+                carbohydrateGrams: stored.nutritionCarbohydrateGrams,
+                fatGrams: stored.nutritionFatGrams,
+                fiberGrams: stored.nutritionFiberGrams
+            )
+        )
+    }
+
+    static func encode<T: Encodable>(_ value: T) -> Data? {
+        try? JSONEncoder().encode(value)
+    }
+
+    private static func decode<T: Decodable>(_ type: T.Type, from data: Data?) -> T? {
+        guard let data else { return nil }
+        return try? JSONDecoder().decode(type, from: data)
+    }
+}
+
 @Model
 final class StoredMealEntry {
     @Attribute(.unique) var id: UUID
@@ -22,8 +52,8 @@ final class StoredMealEntry {
         self.mealTypeRawValue = entry.mealType.rawValue
         self.title = entry.title
         self.notes = entry.notes
-        self.photoMetadataData = Self.encode(entry.photoMetadata)
-        self.itemsData = Self.encode(entry.items) ?? Data()
+        self.photoMetadataData = MealEntryPersistenceMapper.encode(entry.photoMetadata)
+        self.itemsData = MealEntryPersistenceMapper.encode(entry.items) ?? Data()
         self.nutritionCalories = entry.nutrition.calories
         self.nutritionProteinGrams = entry.nutrition.proteinGrams
         self.nutritionCarbohydrateGrams = entry.nutrition.carbohydrateGrams
@@ -32,35 +62,6 @@ final class StoredMealEntry {
     }
 
     var mealEntry: MealEntry {
-        MealEntry(
-            id: id,
-            loggedAt: loggedAt,
-            mealType: MealType(rawValue: mealTypeRawValue) ?? .custom,
-            title: title,
-            notes: notes,
-            photoMetadata: Self.decode(PhotoMetadata.self, from: photoMetadataData),
-            items: Self.decode([MealItem].self, from: itemsData) ?? [],
-            nutrition: NutritionAmounts(
-                calories: nutritionCalories,
-                proteinGrams: nutritionProteinGrams,
-                carbohydrateGrams: nutritionCarbohydrateGrams,
-                fatGrams: nutritionFatGrams,
-                fiberGrams: nutritionFiberGrams
-            )
-        )
-    }
-}
-
-private extension StoredMealEntry {
-    static func encode<T: Encodable>(_ value: T) -> Data? {
-        try? JSONEncoder().encode(value)
-    }
-
-    static func decode<T: Decodable>(_ type: T.Type, from data: Data?) -> T? {
-        guard let data else {
-            return nil
-        }
-
-        return try? JSONDecoder().decode(type, from: data)
+        MealEntryPersistenceMapper.makeMealEntry(from: self)
     }
 }

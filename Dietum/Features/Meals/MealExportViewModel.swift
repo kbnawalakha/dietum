@@ -10,45 +10,34 @@ final class MealExportViewModel: ObservableObject {
         case failed(String)
     }
 
+    enum LocalDataState: Equatable {
+        case idle
+        case loading
+        case loaded
+        case failed(String)
+    }
+
     @Published var exportState: ExportState = .idle
+    @Published var localDataState: LocalDataState = .idle
     @Published var includeDetectedFoods: Bool
     @Published var includeMealDraft: Bool
     @Published var includeReminderSchedules: Bool
     @Published var exportSummaryText: String
 
     private let exportService: MealExportServicing
-    private let mealDraft: MealLoggingDraft
-    private let reminderSchedules: [MealReminderSchedule]
-    private let detectedFoods: [DetectedMealFood]
-    private let analysisNotes: String?
+    private let snapshotProvider: any MealExportSnapshotProviding
+    private var localSnapshot = MealExportSnapshot()
 
     init(
         exportService: MealExportServicing = MealLocalExportService(),
-        mealDraft: MealLoggingDraft = MealLoggingDraft(
-            mealType: .dinner,
-            notes: "Sample meal captured locally for export."
-        ),
-        reminderSchedules: [MealReminderSchedule] = [
-            MealReminderSchedule(mealType: .breakfast, hour: 8),
-            MealReminderSchedule(mealType: .lunch, hour: 13),
-            MealReminderSchedule(mealType: .dinner, hour: 19)
-        ],
-        detectedFoods: [DetectedMealFood] = [
-            DetectedMealFood(name: "Salmon", confidence: 0.96),
-            DetectedMealFood(name: "Rice", confidence: 0.91),
-            DetectedMealFood(name: "Asparagus", confidence: 0.85)
-        ],
-        analysisNotes: String? = "Sample meal detection output prepared locally for export.",
+        snapshotProvider: any MealExportSnapshotProviding = SwiftDataMealExportSnapshotProvider(),
         includeDetectedFoods: Bool = true,
         includeMealDraft: Bool = true,
         includeReminderSchedules: Bool = true,
         exportSummaryText: String = "Export only creates a local file on this device. Nothing is sent to a server."
     ) {
         self.exportService = exportService
-        self.mealDraft = mealDraft
-        self.reminderSchedules = reminderSchedules
-        self.detectedFoods = detectedFoods
-        self.analysisNotes = analysisNotes
+        self.snapshotProvider = snapshotProvider
         self.includeDetectedFoods = includeDetectedFoods
         self.includeMealDraft = includeMealDraft
         self.includeReminderSchedules = includeReminderSchedules
@@ -108,7 +97,38 @@ final class MealExportViewModel: ObservableObject {
     }
 
     var exportButtonDisabled: Bool {
-        exportState == .exporting
+        exportState == .exporting || localDataState != .loaded
+    }
+
+    var localDataStatusText: String {
+        switch localDataState {
+        case .idle:
+            return "Waiting to read local meal data."
+        case .loading:
+            return "Reading local meal data..."
+        case .loaded:
+            let count = localSnapshot.mealEntries.count
+            return "Loaded \(count) saved meal entr\(count == 1 ? "y" : "ies") from this device."
+        case .failed(let message):
+            return message
+        }
+    }
+
+    func loadLocalData() async {
+        guard localDataState != .loading else {
+            return
+        }
+
+        localDataState = .loading
+
+        do {
+            localSnapshot = try await snapshotProvider.loadSnapshot()
+            localDataState = .loaded
+        } catch let error as MealExportError {
+            localDataState = .failed(error.userMessage)
+        } catch {
+            localDataState = .failed(MealExportError.couldNotLoadLocalData.userMessage)
+        }
     }
 
     func exportLocalData() {
@@ -134,15 +154,14 @@ final class MealExportViewModel: ObservableObject {
 
     private var snapshot: MealExportSnapshot {
         MealExportSnapshot(
-            mealDraft: includeMealDraft ? MealExportDraftPayload(
-                mealType: mealDraft.mealType,
-                notes: mealDraft.notes,
-                photoDescription: mealDraft.photoDescription
-            ) : nil,
-            reminderSchedules: includeReminderSchedules ? reminderSchedules.map(MealExportReminderPayload.init) : [],
-            detectedFoods: includeDetectedFoods ? detectedFoods.map(MealExportDetectedFoodPayload.init) : [],
-            analysisNotes: includeDetectedFoods ? analysisNotes : nil,
-            reminderSummaryText: "Meal reminders are configured locally and ready for manual export."
+            createdAt: localSnapshot.createdAt,
+            appName: localSnapshot.appName,
+            mealDraft: includeMealDraft ? localSnapshot.mealDraft : nil,
+            mealEntries: includeMealDraft ? localSnapshot.mealEntries : [],
+            reminderSchedules: includeReminderSchedules ? localSnapshot.reminderSchedules : [],
+            detectedFoods: includeDetectedFoods ? localSnapshot.detectedFoods : [],
+            analysisNotes: includeDetectedFoods ? localSnapshot.analysisNotes : nil,
+            reminderSummaryText: localSnapshot.reminderSummaryText
         )
     }
 }

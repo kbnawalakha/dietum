@@ -4,7 +4,7 @@ Replace the previous handoff content with the current state at the end of each a
 
 ## Date
 
-2026-08-27
+2026-08-30
 
 ## Agent
 
@@ -12,7 +12,7 @@ Phase 2 Integration Lane
 
 ## Assigned Issue
 
-Phase 2 ideas from PRODUCT_SPEC.md
+MVP hardening after Phase 2
 
 ## Branch
 
@@ -28,6 +28,10 @@ codex/repo-foundation
 - Added improved progress-photo comparison controls with angle and date selection
 - Registered the Phase 2 feature files in the Xcode target
 - Added app routes, container factories, toolbar actions, and dashboard quick actions for habits and export
+- Added local photo-library selection and camera capture affordances to meal logging
+- Connected meal logging save to the SwiftData meal-entry repository
+- Added live local meal-entry loading to the export provider and injected it through the app container
+- Added the camera usage description required for device capture
 
 ## Workstreams
 
@@ -50,6 +54,7 @@ codex/repo-foundation
 - `Dietum/Features/Meals/MealExportView.swift`
 - `Dietum/Features/Meals/MealLoggingView.swift`
 - `Dietum/Features/Meals/MealLoggingViewModel.swift`
+- `Dietum/Info.plist`
 - `Dietum/Features/Meals/MealReminderView.swift`
 - `Dietum/Features/Meals/MealReminderViewModel.swift`
 - `Dietum/Features/ProgressPhotos/ProgressPhotosView.swift`
@@ -60,18 +65,24 @@ codex/repo-foundation
 ## Tests Run
 
 - `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-phase2-integrated-tests-2`
+- `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-hardening-build`
+- `git diff --check`
 
 ## Test Results
 
-- `xcodebuild` succeeded; 2 tests passed with 0 failures
+- Previous integrated Phase 2 verification succeeded with 2 tests passed and 0 failures
+- The hardening build reached SwiftData compilation but failed because the local SwiftData macro/plugin server and CoreSimulator services were unavailable in the sandbox
+- `git diff --check` passed
 
 ## Work Remaining
 
-- No Phase 2 work remains
+- Add the remaining deterministic XCTest coverage for export, reminders, and local persistence boundaries
+- Re-run the integrated build and tests on a host with healthy SwiftData and simulator services
 
 ## Known Problems
 
-- SwiftData macro diagnostics can recur when CoreSimulator or the local Swift plugin server is unavailable; the concrete integrated test run passed
+- SwiftData macro diagnostics recurred during hardening verification because CoreSimulator and the local Swift plugin server were unavailable
+- The additional test lane did not complete its new coverage pass; the existing registered nutrition-adjustment test file remains present
 - Progress-photo comparison currently uses metadata placeholders because the existing local photo model exposes storage metadata rather than renderable image assets
 - Unrelated uncommitted files remain in the working tree: `pass` and `pass.pub`
 
@@ -83,7 +94,7 @@ codex/repo-foundation
 
 ## Exact Next Step
 
-- Continue with a new product milestone only if the scope expands beyond the current Phase 2 ideas
+- Finish the pending deterministic test coverage, then re-run the full integrated verification before starting the next product phase
 
 ## Suggested Next Agent
 

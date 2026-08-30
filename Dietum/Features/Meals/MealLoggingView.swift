@@ -1,4 +1,6 @@
 import SwiftUI
+import PhotosUI
+import UIKit
 
 struct MealLoggingView: View {
     @StateObject private var viewModel: MealLoggingViewModel
@@ -37,15 +39,14 @@ struct MealLoggingView: View {
                             .disabled(viewModel.analysisState == .analyzing)
                         }
 
-                        VStack(alignment: .leading, spacing: AppSpacing.small) {
-                            Text("Mock photo")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(AppPalette.textPrimary)
+                        MealPhotoInput(
+                            selectedImage: viewModel.selectedPhoto,
+                            onPhotoSelected: { viewModel.setSelectedPhoto($0) }
+                        )
 
-                            Text("Photo placeholder: \(viewModel.draft.photoDescription)")
-                                .font(.subheadline)
-                                .foregroundStyle(AppPalette.textSecondary)
-                        }
+                        Text(viewModel.hasSelectedPhoto ? "Selected local photo" : "No photo selected. You can use a local photo or the mock sample.")
+                            .font(.subheadline)
+                            .foregroundStyle(AppPalette.textSecondary)
 
                         if viewModel.analysisState == .analyzing {
                             HStack(spacing: AppSpacing.item) {
@@ -168,7 +169,9 @@ struct MealLoggingView: View {
                             .foregroundStyle(AppPalette.textSecondary)
 
                         Button {
-                            viewModel.saveDraft()
+                            Task {
+                                await viewModel.saveDraft()
+                            }
                         } label: {
                             Label("Save meal draft", systemImage: "tray.and.arrow.down.fill")
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -186,6 +189,121 @@ struct MealLoggingView: View {
         .navigationTitle("Log Meal")
         .navigationBarTitleDisplayMode(.inline)
         .appScreenBackground()
+    }
+}
+
+private struct MealPhotoInput: View {
+    let selectedImage: UIImage?
+    let onPhotoSelected: (UIImage) -> Void
+
+    @State private var pickerItem: PhotosPickerItem?
+    @State private var isCameraPresented = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.item) {
+            if let selectedImage {
+                Image(uiImage: selectedImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 180)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .accessibilityLabel("Selected meal photo")
+            } else {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(AppPalette.accentSoft)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 120)
+                    .overlay {
+                        Label("Choose a meal photo", systemImage: "photo.on.rectangle")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(AppPalette.textSecondary)
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("No meal photo selected")
+            }
+
+            HStack(spacing: AppSpacing.item) {
+                PhotosPicker(selection: $pickerItem, matching: .images) {
+                    Label("Choose photo", systemImage: "photo.on.rectangle")
+                }
+                .buttonStyle(.appToolbar)
+
+                Button {
+                    isCameraPresented = true
+                } label: {
+                    Label("Take photo", systemImage: "camera")
+                }
+                .buttonStyle(.appToolbar)
+                .disabled(!cameraCaptureIsAvailable)
+                .accessibilityHint("Camera capture is unavailable in the simulator or on devices without a camera.")
+            }
+        }
+        .onChange(of: pickerItem) { _, newItem in
+            guard let newItem else {
+                return
+            }
+
+            Task {
+                guard let data = try? await newItem.loadTransferable(type: Data.self),
+                      let image = UIImage(data: data) else {
+                    return
+                }
+
+                await MainActor.run {
+                    onPhotoSelected(image)
+                    pickerItem = nil
+                }
+            }
+        }
+        .sheet(isPresented: $isCameraPresented) {
+            CameraImagePicker { image in
+                onPhotoSelected(image)
+                isCameraPresented = false
+            }
+        }
+    }
+
+    private var cameraCaptureIsAvailable: Bool {
+        UIImagePickerController.isSourceTypeAvailable(.camera)
+            && Bundle.main.object(forInfoDictionaryKey: "NSCameraUsageDescription") != nil
+    }
+}
+
+private struct CameraImagePicker: UIViewControllerRepresentable {
+    let onImagePicked: (UIImage) -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onImagePicked: onImagePicked)
+    }
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.delegate = context.coordinator
+        picker.allowsEditing = false
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+
+    final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let onImagePicked: (UIImage) -> Void
+
+        init(onImagePicked: @escaping (UIImage) -> Void) {
+            self.onImagePicked = onImagePicked
+        }
+
+        func imagePickerController(
+            _ picker: UIImagePickerController,
+            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
+        ) {
+            if let image = info[.originalImage] as? UIImage {
+                onImagePicked(image)
+            }
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {}
     }
 }
 
