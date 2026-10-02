@@ -40,6 +40,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Completed Phase 2: advanced meal-photo assistance, nutrition trend insights, habit/adherence summaries, local data export, improved progress-photo comparison, and smarter reminders
 - Completed MVP hardening: local meal-photo input, meal-entry persistence, live local export loading, and repository-backed meal save wiring
 - Verified MVP hardening with a successful app build and XCTest run
+- Added deterministic quality coverage for reminder controls, habit adherence, and local export payloads
 
 # In Progress
 
@@ -51,7 +52,7 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Next Tasks
 
-- Begin the next product phase after MVP hardening is verified
+- Begin the next product phase when new product scope is defined
 
 # Dependency Tracking
 
@@ -63,6 +64,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Unrelated uncommitted files remain in the working tree: `pass` and `pass.pub`
 - Elevated hardening verification completed successfully after the sandbox-only restriction was bypassed
 - Existing progress-photo metadata does not include rendered image assets, so comparison cards use privacy-safe placeholders
+- `Dietum.xcodeproj/project.pbxproj` has an unrelated uncommitted Xcode-generated modification and remains intentionally untouched
 
 # Active Agents
 
@@ -70,4 +72,4 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Last Updated
 
-2026-08-30
+2026-10-01

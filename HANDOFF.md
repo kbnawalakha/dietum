@@ -4,7 +4,7 @@ Replace the previous handoff content with the current state at the end of each a
 
 ## Date
 
-2026-08-30
+2026-10-01
 
 ## Agent
 
@@ -12,7 +12,7 @@ Phase 2 Integration Lane
 
 ## Assigned Issue
 
-MVP hardening after Phase 2
+Quality coverage after MVP hardening
 
 ## Branch
 
@@ -32,6 +32,7 @@ codex/repo-foundation
 - Connected meal logging save to the SwiftData meal-entry repository
 - Added live local meal-entry loading to the export provider and injected it through the app container
 - Added the camera usage description required for device capture
+- Added deterministic XCTest coverage for reminder permission/control behavior, habit streak and coverage calculations, and local export payload round-tripping
 
 ## Workstreams
 
@@ -61,6 +62,7 @@ codex/repo-foundation
 - `Dietum/Features/ProgressPhotos/ProgressPhotosViewModel.swift`
 - `PROJECT_STATUS.md`
 - `HANDOFF.md`
+- `Dietum/DietumTests/NutritionAdjustmentRecommendationServiceTests.swift`
 
 ## Tests Run
 
@@ -68,6 +70,7 @@ codex/repo-foundation
 - `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-hardening-escalated`
 - `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-hardening-escalated-tests`
 - `git diff --check`
+- `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-quality-tests-2`
 
 ## Test Results
 
@@ -75,10 +78,11 @@ codex/repo-foundation
 - The elevated hardening build succeeded, including SwiftData macro expansion
 - The elevated XCTest run succeeded with 2 tests and 0 failures
 - `git diff --check` passed
+- The expanded XCTest run succeeded with 5 tests and 0 failures
 
 ## Work Remaining
 
-- No hardening work remains; the next milestone can begin
+- No quality-hardening work remains; the next product milestone requires new product scope
 
 ## Known Problems
 
@@ -86,6 +90,7 @@ codex/repo-foundation
 - The current test target covers deterministic nutrition-adjustment behavior; broader feature-specific coverage remains optional follow-up work
 - Progress-photo comparison currently uses metadata placeholders because the existing local photo model exposes storage metadata rather than renderable image assets
 - Unrelated uncommitted files remain in the working tree: `pass` and `pass.pub`
+- An unrelated uncommitted Xcode project-file modification remains in the working tree and was not included
 
 ## Important Decisions
 
@@ -95,7 +100,7 @@ codex/repo-foundation
 
 ## Exact Next Step
 
-- Start the next product milestone from the verified `a354920` baseline
+- Start the next product milestone when the product specification defines it
 
 ## Suggested Next Agent
 

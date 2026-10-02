@@ -62,6 +62,75 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(recommendation?.trendAnalysis.trendDirection, .cut)
     }
 
+    func testReminderInsightKeepsNotificationChangesUserControlled() {
+        let service = DeterministicMealReminderInsightService()
+        let insight = service.makeInsight(
+            from: [
+                MealReminderSchedule(mealType: .breakfast, hour: 8),
+                MealReminderSchedule(mealType: .dinner, hour: 19)
+            ],
+            permissionGranted: false,
+            now: Self.day(0)
+        )
+
+        XCTAssertEqual(insight.patternLabel, "Permission needed")
+        XCTAssertEqual(insight.patternScore, 36)
+        XCTAssertEqual(insight.headline, "Notification access still needs approval.")
+        XCTAssertTrue(insight.controlNote.contains("apply button"))
+    }
+
+    func testHabitAdherenceCountsDistinctMealDaysAndCurrentStreak() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let referenceDate = Self.day(0)
+        let service = HabitAdherenceService(calendar: calendar)
+        let snapshot = HabitAdherenceSnapshot(
+            mealEntries: [
+                MealEntry(loggedAt: referenceDate, mealType: .breakfast),
+                MealEntry(loggedAt: referenceDate, mealType: .dinner),
+                MealEntry(loggedAt: Self.day(-1), mealType: .lunch),
+                MealEntry(loggedAt: Self.day(-3), mealType: .snack)
+            ],
+            referenceDate: referenceDate,
+            mealWindowDays: 7
+        )
+
+        let summary = service.buildSummary(from: snapshot)
+
+        XCTAssertEqual(summary.mealDaysLogged, 3)
+        XCTAssertEqual(summary.mealDaysExpected, 7)
+        XCTAssertEqual(summary.mealLoggingStreakDays, 2)
+        XCTAssertEqual(summary.mealCoveragePercent, 43)
+        XCTAssertEqual(summary.latestMealEntryDate, referenceDate)
+    }
+
+    func testLocalExportWritesSavedMealEntryPayload() throws {
+        let createdAt = Self.day(0)
+        let entry = MealEntry(
+            loggedAt: createdAt,
+            mealType: .dinner,
+            notes: "Confirmed locally",
+            items: [MealItem(name: "Rice")]
+        )
+        let snapshot = MealExportSnapshot(
+            createdAt: createdAt,
+            mealEntries: [MealExportMealEntryPayload(entry: entry)]
+        )
+
+        let result = try MealLocalExportService().export(snapshot: snapshot)
+        defer { try? FileManager.default.removeItem(at: result.fileURL) }
+
+        let exportedData = try Data(contentsOf: result.fileURL)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let exportedSnapshot = try decoder.decode(MealExportSnapshot.self, from: exportedData)
+
+        XCTAssertEqual(result.byteCount, exportedData.count)
+        XCTAssertEqual(exportedSnapshot.mealEntries.count, 1)
+        XCTAssertEqual(exportedSnapshot.mealEntries[0].mealTypeRawValue, MealType.dinner.rawValue)
+        XCTAssertEqual(exportedSnapshot.mealEntries[0].items[0].name, "Rice")
+    }
+
     private static func day(_ dayOffset: Double) -> Date {
         Date(timeIntervalSince1970: 1_700_000_000 + (86_400 * dayOffset))
     }
