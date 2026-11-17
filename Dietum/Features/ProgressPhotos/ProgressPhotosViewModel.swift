@@ -34,6 +34,7 @@ final class ProgressPhotosViewModel: ObservableObject {
 
     @Published var notes: String = ""
     @Published var bodyFatPercentageText: String = ""
+    @Published var selectedBodyFatReferenceID: String?
     @Published var stagedPhotos: [ProgressPhotoAngle: PhotoMetadata] = [:]
     @Published var recentPhotos: [ProgressPhotoMetadata] = []
     @Published var comparisonAngle: ProgressPhotoAngle = .front
@@ -112,6 +113,7 @@ final class ProgressPhotosViewModel: ObservableObject {
             stagedPhotos.removeAll()
             notes = ""
             bodyFatPercentageText = ""
+            selectedBodyFatReferenceID = nil
             saveState = .saved(Date())
             await loadRecentPhotos()
         } catch {
@@ -123,6 +125,7 @@ final class ProgressPhotosViewModel: ObservableObject {
         stagedPhotos.removeAll()
         notes = ""
         bodyFatPercentageText = ""
+        selectedBodyFatReferenceID = nil
         saveState = .idle
     }
 
@@ -135,20 +138,31 @@ final class ProgressPhotosViewModel: ObservableObject {
     }
 
     var bodyFatEstimateText: String {
-        guard let bodyFatPercentage else {
-            return "No body-fat estimate entered."
-        }
-
-        let band = BodyFatReferenceBand.guide.first { band in
-            switch band.id {
-            case "lean": return bodyFatPercentage < 10
-            case "active": return bodyFatPercentage < 20
-            case "general": return bodyFatPercentage <= 30
-            default: return true
+        if let bodyFatPercentage {
+            let band = BodyFatReferenceBand.guide.first { band in
+                switch band.id {
+                case "lean": return bodyFatPercentage < 10
+                case "active": return bodyFatPercentage < 20
+                case "general": return bodyFatPercentage <= 30
+                default: return true
+                }
             }
+
+            return "Measured estimate: \(bodyFatPercentage.formatted(.number.precision(.fractionLength(0))))% (\(band?.title ?? "reference range"))."
         }
 
-        return "Entered estimate: \(bodyFatPercentage.formatted(.number.precision(.fractionLength(0))))% (\(band?.title ?? "reference range"))."
+        guard let selectedBodyFatReferenceID,
+              let band = BodyFatReferenceBand.guide.first(where: { $0.id == selectedBodyFatReferenceID }) else {
+            return stagedPhotos.isEmpty
+                ? "Upload a photo set to choose a visual body-fat range."
+                : "Choose the closest visual body-fat range below."
+        }
+
+        return "Visual estimate: \(band.title) (\(band.range))."
+    }
+
+    func selectBodyFatReference(_ band: BodyFatReferenceBand) {
+        selectedBodyFatReferenceID = band.id
     }
 
     var headline: String {

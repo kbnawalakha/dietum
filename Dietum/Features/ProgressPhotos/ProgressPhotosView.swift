@@ -79,7 +79,7 @@ struct ProgressPhotosView: View {
                             .keyboardType(.decimalPad)
                             .accessibilityHint("Enter a measured or manually estimated percentage; it is not calculated from the photo.")
 
-                        Text("Body fat is not inferred from the image. Use a measured or clinician-provided estimate when available.")
+                        Text("Photos cannot provide a clinical measurement on their own. After uploading, choose the closest visual reference range; use a measured value for precise tracking.")
                             .font(.caption)
                             .foregroundStyle(AppPalette.textSecondary)
 
@@ -93,20 +93,28 @@ struct ProgressPhotosView: View {
                                 .foregroundStyle(AppPalette.textPrimary)
 
                             ForEach(BodyFatReferenceBand.guide) { band in
-                                HStack(alignment: .top, spacing: AppSpacing.small) {
-                                    Text(band.range)
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(AppPalette.accent)
-                                        .frame(width: 72, alignment: .leading)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(band.title)
+                                Button {
+                                    viewModel.selectBodyFatReference(band)
+                                } label: {
+                                    HStack(alignment: .top, spacing: AppSpacing.small) {
+                                        Image(systemName: viewModel.selectedBodyFatReferenceID == band.id ? "checkmark.circle.fill" : "circle")
+                                            .foregroundStyle(viewModel.selectedBodyFatReferenceID == band.id ? AppPalette.accent : AppPalette.textSecondary)
+                                        Text(band.range)
                                             .font(.caption.weight(.semibold))
-                                            .foregroundStyle(AppPalette.textPrimary)
-                                        Text(band.detail)
-                                            .font(.caption2)
-                                            .foregroundStyle(AppPalette.textSecondary)
+                                            .foregroundStyle(AppPalette.accent)
+                                            .frame(width: 72, alignment: .leading)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(band.title)
+                                                .font(.caption.weight(.semibold))
+                                                .foregroundStyle(AppPalette.textPrimary)
+                                            Text(band.detail)
+                                                .font(.caption2)
+                                                .foregroundStyle(AppPalette.textSecondary)
+                                        }
                                     }
                                 }
+                                .buttonStyle(.plain)
+                                .disabled(viewModel.stagedPhotos.isEmpty)
                             }
                         }
 

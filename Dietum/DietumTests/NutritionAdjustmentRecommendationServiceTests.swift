@@ -220,7 +220,10 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
 
         viewModel.bodyFatPercentageText = "85"
         XCTAssertNil(viewModel.bodyFatPercentage)
-        XCTAssertEqual(viewModel.bodyFatEstimateText, "No body-fat estimate entered.")
+        XCTAssertEqual(viewModel.bodyFatEstimateText, "Upload a photo set to choose a visual body-fat range.")
+
+        viewModel.selectBodyFatReference(BodyFatReferenceBand.guide[1])
+        XCTAssertEqual(viewModel.bodyFatEstimateText, "Visual estimate: Active range (10-20%).")
     }
 
     @MainActor
