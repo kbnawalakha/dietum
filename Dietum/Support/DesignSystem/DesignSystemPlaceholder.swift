@@ -205,8 +205,30 @@ struct AppProminentButtonStyle: ButtonStyle {
     }
 }
 
+struct AppTextFieldStyle: TextFieldStyle {
+    func _body(configuration: TextField<Self._Label>) -> some View {
+        configuration
+            .font(.body)
+            .foregroundStyle(AppPalette.textPrimary)
+            .tint(AppPalette.accent)
+            .padding(.horizontal, AppSpacing.item)
+            .padding(.vertical, 11)
+            .background(AppPalette.surface.opacity(0.9), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(AppPalette.surfaceBorder, lineWidth: 1)
+            )
+    }
+}
+
 extension ButtonStyle where Self == AppProminentButtonStyle {
     static var appProminent: AppProminentButtonStyle {
         AppProminentButtonStyle()
+    }
+}
+
+extension TextFieldStyle where Self == AppTextFieldStyle {
+    static var appTextField: AppTextFieldStyle {
+        AppTextFieldStyle()
     }
 }

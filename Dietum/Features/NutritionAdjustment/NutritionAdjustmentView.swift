@@ -68,7 +68,7 @@ struct NutritionAdjustmentView: View {
                         )
 
                         TextField("Optional note", text: $viewModel.approvalNotes, axis: .vertical)
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(.appTextField)
                             .accessibilityLabel("Approval note")
 
                         Button {

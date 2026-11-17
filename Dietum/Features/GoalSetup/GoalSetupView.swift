@@ -60,7 +60,7 @@ struct GoalSetupView: View {
 
                         VStack(alignment: .leading, spacing: AppSpacing.item) {
                             TextField("Goal weight (kg)", text: viewModel.binding(for: \.goalWeightKilograms))
-                                .textFieldStyle(.roundedBorder)
+                                .textFieldStyle(.appTextField)
 
                             DatePicker(
                                 "Goal date",
@@ -71,22 +71,22 @@ struct GoalSetupView: View {
 
                             HStack(spacing: AppSpacing.item) {
                                 TextField("Calories", text: viewModel.binding(for: \.dailyCalories))
-                                    .textFieldStyle(.roundedBorder)
+                                    .textFieldStyle(.appTextField)
 
                                 TextField("Protein", text: viewModel.binding(for: \.proteinGrams))
-                                    .textFieldStyle(.roundedBorder)
+                                    .textFieldStyle(.appTextField)
                             }
 
                             HStack(spacing: AppSpacing.item) {
                                 TextField("Carbs", text: viewModel.binding(for: \.carbohydrateGrams))
-                                    .textFieldStyle(.roundedBorder)
+                                    .textFieldStyle(.appTextField)
 
                                 TextField("Fat", text: viewModel.binding(for: \.fatGrams))
-                                    .textFieldStyle(.roundedBorder)
+                                    .textFieldStyle(.appTextField)
                             }
 
                             TextField("Fiber", text: viewModel.binding(for: \.fiberGrams))
-                                .textFieldStyle(.roundedBorder)
+                                .textFieldStyle(.appTextField)
                         }
                     }
                 }

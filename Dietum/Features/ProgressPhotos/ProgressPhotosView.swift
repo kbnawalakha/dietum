@@ -72,10 +72,10 @@ struct ProgressPhotosView: View {
                         )
 
                         TextField("Optional notes", text: $viewModel.notes, axis: .vertical)
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(.appTextField)
 
                         TextField("Optional body-fat estimate (%)", text: $viewModel.bodyFatPercentageText)
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(.appTextField)
                             .keyboardType(.decimalPad)
                             .accessibilityHint("Enter a measured or manually estimated percentage; it is not calculated from the photo.")
 

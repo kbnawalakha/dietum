@@ -60,7 +60,7 @@ struct SleepSetupView: View {
                                     set: { viewModel.updateAverageSleepHours($0) }
                                 )
                             )
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(.appTextField)
 
                             TextField(
                                 "Sleep schedule",
@@ -70,7 +70,7 @@ struct SleepSetupView: View {
                                 ),
                                 axis: .vertical
                             )
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(.appTextField)
 
                             TextField(
                                 "Sleep notes",
@@ -80,7 +80,7 @@ struct SleepSetupView: View {
                                 ),
                                 axis: .vertical
                             )
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(.appTextField)
                         }
                     }
                 }

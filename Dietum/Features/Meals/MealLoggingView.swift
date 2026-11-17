@@ -56,7 +56,7 @@ struct MealLoggingView: View {
                             ),
                             axis: .vertical
                         )
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(.appTextField)
                         .lineLimit(2...4)
                         .accessibilityLabel("General meal description")
 
@@ -178,7 +178,7 @@ struct MealLoggingView: View {
                             get: { viewModel.draft.notes },
                             set: { viewModel.updateNotes($0) }
                         ), axis: .vertical)
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(.appTextField)
 
                         Text("This is a local estimate based on the general description. Review, correct, and confirm every food before saving.")
                             .font(.caption)
@@ -387,7 +387,7 @@ private struct MealDetectedFoodRow: View {
                         set: onUpdateName
                     )
                 )
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.appTextField)
 
                 Button(role: .destructive, action: onRemove) {
                     Image(systemName: "minus.circle.fill")
@@ -482,7 +482,7 @@ private struct MealDetectedFoodRow: View {
             ),
             format: .number.precision(.fractionLength(1))
         )
-        .textFieldStyle(.roundedBorder)
+        .textFieldStyle(.appTextField)
         .keyboardType(.decimalPad)
     }
 }

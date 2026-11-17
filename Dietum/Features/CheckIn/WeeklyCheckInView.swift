@@ -55,7 +55,7 @@ struct WeeklyCheckInView: View {
 
                             TextField("72.4", text: $viewModel.draft.weeklyWeight)
                                 .keyboardType(.decimalPad)
-                                .textFieldStyle(.roundedBorder)
+                                .textFieldStyle(.appTextField)
                         }
 
                         VStack(alignment: .leading, spacing: AppSpacing.small) {
@@ -64,7 +64,7 @@ struct WeeklyCheckInView: View {
                                 .foregroundStyle(AppPalette.textSecondary)
 
                             TextField("How did your energy feel?", text: $viewModel.draft.energyNotes, axis: .vertical)
-                                .textFieldStyle(.roundedBorder)
+                                .textFieldStyle(.appTextField)
                         }
 
                         VStack(alignment: .leading, spacing: AppSpacing.small) {
@@ -73,7 +73,7 @@ struct WeeklyCheckInView: View {
                                 .foregroundStyle(AppPalette.textSecondary)
 
                             TextField("Any changes in appetite?", text: $viewModel.draft.hungerNotes, axis: .vertical)
-                                .textFieldStyle(.roundedBorder)
+                                .textFieldStyle(.appTextField)
                         }
 
                         VStack(alignment: .leading, spacing: AppSpacing.small) {
@@ -82,7 +82,7 @@ struct WeeklyCheckInView: View {
                                 .foregroundStyle(AppPalette.textSecondary)
 
                             TextField("Notes from training or recovery", text: $viewModel.draft.trainingNotes, axis: .vertical)
-                                .textFieldStyle(.roundedBorder)
+                                .textFieldStyle(.appTextField)
                         }
 
                         Text(viewModel.validationMessage)

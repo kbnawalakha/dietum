@@ -63,18 +63,18 @@ struct OnboardingView: View {
 
                         VStack(alignment: .leading, spacing: AppSpacing.item) {
                             TextField("Name or nickname", text: viewModel.binding(for: \.displayName))
-                                .textFieldStyle(.roundedBorder)
+                                .textFieldStyle(.appTextField)
 
                             HStack(spacing: AppSpacing.item) {
                                 TextField("Height (cm)", text: viewModel.binding(for: \.heightCentimeters))
-                                    .textFieldStyle(.roundedBorder)
+                                    .textFieldStyle(.appTextField)
 
                                 TextField("Current weight (kg)", text: viewModel.binding(for: \.currentWeightKilograms))
-                                    .textFieldStyle(.roundedBorder)
+                                    .textFieldStyle(.appTextField)
                             }
 
                             TextField("Goal weight (kg)", text: viewModel.binding(for: \.goalWeightKilograms))
-                                .textFieldStyle(.roundedBorder)
+                                .textFieldStyle(.appTextField)
 
                             DatePicker(
                                 "Goal date",
@@ -134,7 +134,7 @@ struct OnboardingView: View {
                             .pickerStyle(.segmented)
 
                             TextField("Average sleep hours", text: viewModel.binding(for: \.averageSleepHours))
-                                .textFieldStyle(.roundedBorder)
+                                .textFieldStyle(.appTextField)
                         }
                     }
                 }
@@ -165,7 +165,7 @@ struct OnboardingView: View {
                                 text: viewModel.binding(for: \.preferredMealTimes),
                                 axis: .vertical
                             )
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(.appTextField)
                             .lineLimit(viewModel.draft.mealCount...viewModel.draft.mealCount)
                             .frame(minHeight: CGFloat(viewModel.draft.mealCount) * 28, alignment: .top)
                             .accessibilityHint("Provides one line for each meal in the selected meal count")
@@ -175,14 +175,14 @@ struct OnboardingView: View {
                                 text: viewModel.binding(for: \.heavyMealPreference),
                                 axis: .vertical
                             )
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(.appTextField)
 
                             TextField(
                                 "Light meal preference",
                                 text: viewModel.binding(for: \.lightMealPreference),
                                 axis: .vertical
                             )
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(.appTextField)
                         }
                     }
                 }
@@ -197,25 +197,25 @@ struct OnboardingView: View {
                         VStack(alignment: .leading, spacing: AppSpacing.item) {
                             HStack(spacing: AppSpacing.item) {
                                 TextField("Calories", text: viewModel.binding(for: \.dailyCalories))
-                                    .textFieldStyle(.roundedBorder)
+                                    .textFieldStyle(.appTextField)
 
                                 TextField("Protein %", text: viewModel.binding(for: \.proteinPercentage))
-                                    .textFieldStyle(.roundedBorder)
+                                    .textFieldStyle(.appTextField)
                                     .keyboardType(.decimalPad)
                             }
 
                             HStack(spacing: AppSpacing.item) {
                                 TextField("Carbs %", text: viewModel.binding(for: \.carbohydratePercentage))
-                                    .textFieldStyle(.roundedBorder)
+                                    .textFieldStyle(.appTextField)
                                     .keyboardType(.decimalPad)
 
                                 TextField("Fat %", text: viewModel.binding(for: \.fatPercentage))
-                                    .textFieldStyle(.roundedBorder)
+                                    .textFieldStyle(.appTextField)
                                     .keyboardType(.decimalPad)
                             }
 
                             TextField("Fiber % of carbs", text: viewModel.binding(for: \.fiberPercentage))
-                                .textFieldStyle(.roundedBorder)
+                                .textFieldStyle(.appTextField)
                                 .keyboardType(.decimalPad)
 
                             nutritionBreakdownView
