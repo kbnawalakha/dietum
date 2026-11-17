@@ -170,6 +170,21 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(breakdown.fiberCalories ?? 0, 40, accuracy: 0.001)
     }
 
+    func testLocalMealAnalysisReturnsCompleteNutritionForDescribedIngredients() async throws {
+        let result = try await LocalMealNutritionAnalysisService().analyzeMeal(
+            description: "chicken rice broccoli",
+            photo: nil
+        )
+
+        XCTAssertEqual(result.detectedFoods.map(\.name), ["Chicken", "Rice", "Broccoli"])
+        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.calories }, 595)
+        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.proteinGrams }, 70, accuracy: 0.001)
+        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.carbohydrateGrams }, 56, accuracy: 0.001)
+        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.fatGrams }, 8, accuracy: 0.001)
+        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.fiberGrams }, 6, accuracy: 0.001)
+        XCTAssertTrue(result.notes?.contains("Local estimate") == true)
+    }
+
     private static func day(_ dayOffset: Double) -> Date {
         Date(timeIntervalSince1970: 1_700_000_000 + (86_400 * dayOffset))
     }

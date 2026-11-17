@@ -14,8 +14,8 @@ struct MealLoggingView: View {
             VStack(alignment: .leading, spacing: AppSpacing.section) {
                 AppHeroCard(
                     eyebrow: "Meal logging",
-                    title: "Capture, detect, correct.",
-                    message: "A local mock flow for testing meal photo entry before a production analysis service is chosen."
+                    title: "Describe, analyze, correct.",
+                    message: "Tell Dietum generally what is in the meal and review the complete local calorie and nutrition estimate in this window."
                 )
 
                 AppSurfaceCard {
@@ -30,10 +30,10 @@ struct MealLoggingView: View {
                             Spacer(minLength: 0)
                             Button {
                                 Task {
-                                    await viewModel.analyzeMockPhoto()
+                                    await viewModel.analyzeMeal()
                                 }
                             } label: {
-                                Label("Run mock analysis", systemImage: "sparkles")
+                                Label("Analyze meal", systemImage: "sparkles")
                             }
                             .buttonStyle(.appToolbar)
                             .disabled(viewModel.analysisState == .analyzing)
@@ -44,14 +44,26 @@ struct MealLoggingView: View {
                             onPhotoSelected: { viewModel.setSelectedPhoto($0) }
                         )
 
-                        Text(viewModel.hasSelectedPhoto ? "Selected local photo" : "No photo selected. You can use a local photo or the mock sample.")
+                        Text(viewModel.hasSelectedPhoto ? "Selected local photo" : "No photo selected. A general food description is enough for the local estimate.")
                             .font(.subheadline)
                             .foregroundStyle(AppPalette.textSecondary)
+
+                        TextField(
+                            "What is in this meal? (for example: chicken, rice, broccoli)",
+                            text: Binding(
+                                get: { viewModel.draft.foodDescription },
+                                set: { viewModel.updateFoodDescription($0) }
+                            ),
+                            axis: .vertical
+                        )
+                        .textFieldStyle(.roundedBorder)
+                        .lineLimit(2...4)
+                        .accessibilityLabel("General meal description")
 
                         if viewModel.analysisState == .analyzing {
                             HStack(spacing: AppSpacing.item) {
                                 ProgressView()
-                                Text("Analyzing sample meal...")
+                                Text("Calculating calories and nutrition...")
                                     .font(.subheadline)
                                     .foregroundStyle(AppPalette.textSecondary)
                             }
@@ -91,6 +103,8 @@ struct MealLoggingView: View {
                         Text(viewModel.summary.notes)
                             .font(.subheadline)
                             .foregroundStyle(AppPalette.textSecondary)
+
+                        NutritionBreakdownView(nutrition: viewModel.summary.nutrition)
                     }
                 }
 
@@ -99,7 +113,7 @@ struct MealLoggingView: View {
                         VStack(alignment: .leading, spacing: AppSpacing.item) {
                             AppSectionHeader(
                                 title: "Detected foods",
-                                message: "Edit or remove anything the mock analysis got wrong, then confirm each food."
+                                message: "Edit or remove anything the estimate got wrong, then confirm each food."
                             )
 
                             Label(viewModel.reviewStatusText, systemImage: "checkmark.shield")
@@ -164,7 +178,7 @@ struct MealLoggingView: View {
                         ), axis: .vertical)
                         .textFieldStyle(.roundedBorder)
 
-                        Text("Meal detection is a mock estimate. Review, correct, and confirm every food before saving.")
+                        Text("This is a local estimate based on the general description. Review, correct, and confirm every food before saving.")
                             .font(.caption)
                             .foregroundStyle(AppPalette.textSecondary)
 
@@ -189,6 +203,41 @@ struct MealLoggingView: View {
         .navigationTitle("Log Meal")
         .navigationBarTitleDisplayMode(.inline)
         .appScreenBackground()
+    }
+}
+
+private struct NutritionBreakdownView: View {
+    let nutrition: NutritionAmounts
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.small) {
+            Text("Complete nutrition estimate")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AppPalette.textPrimary)
+
+            HStack(spacing: AppSpacing.item) {
+                nutritionMetric("Calories", "\(nutrition.calories) kcal")
+                nutritionMetric("Protein", "\(nutrition.proteinGrams.formatted(.number.precision(.fractionLength(0)))) g")
+            }
+            HStack(spacing: AppSpacing.item) {
+                nutritionMetric("Carbs", "\(nutrition.carbohydrateGrams.formatted(.number.precision(.fractionLength(0)))) g")
+                nutritionMetric("Fat", "\(nutrition.fatGrams.formatted(.number.precision(.fractionLength(0)))) g")
+            }
+            nutritionMetric("Fiber", "\(nutrition.fiberGrams.formatted(.number.precision(.fractionLength(0)))) g")
+        }
+        .padding(.top, AppSpacing.small)
+    }
+
+    private func nutritionMetric(_ title: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(AppPalette.textSecondary)
+            Text(value)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AppPalette.textPrimary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

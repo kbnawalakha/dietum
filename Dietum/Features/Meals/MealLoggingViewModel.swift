@@ -5,7 +5,8 @@ import UIKit
 struct MealLoggingDraft: Hashable, Sendable {
     var mealType: MealType = .lunch
     var notes: String = ""
-    var photoDescription: String = "Mock meal photo"
+    var photoDescription: String = ""
+    var foodDescription: String = ""
     var detectedFoods: [DetectedMealFood] = []
 
     var trimmedNotes: String {
@@ -22,12 +23,14 @@ struct MealLoggingSummary: Hashable, Sendable {
     var itemCount: Int
     var confidenceText: String
     var notes: String
+    var nutrition: NutritionAmounts
 
     static let empty = MealLoggingSummary(
         mealType: .custom,
         itemCount: 0,
         confidenceText: "No analysis yet",
-        notes: "Run the mock detector to populate a meal draft."
+        notes: "Describe the meal to calculate an estimate.",
+        nutrition: NutritionAmounts()
     )
 }
 
@@ -51,11 +54,10 @@ final class MealLoggingViewModel: ObservableObject {
 
     private let detectionService: MealFoodDetectionService
     private let mealEntryRepository: (any MealEntryRepository)?
-    private let samplePhoto = PhotoMetadata(storageIdentifier: "meal-photo-mock")
 
     init(
         draft: MealLoggingDraft = MealLoggingDraft(),
-        detectionService: MealFoodDetectionService = MockMealFoodDetectionService(),
+        detectionService: MealFoodDetectionService = LocalMealNutritionAnalysisService(),
         mealEntryRepository: (any MealEntryRepository)? = nil
     ) {
         self.draft = draft
@@ -85,9 +87,9 @@ final class MealLoggingViewModel: ObservableObject {
     var headline: String {
         switch analysisState {
         case .idle:
-            return "Capture a meal photo, run mock analysis, then correct the detected foods."
+            return "Describe the meal, then review the complete local nutrition estimate."
         case .analyzing:
-            return "Analyzing the sample meal locally."
+            return "Calculating the meal estimate locally."
         case .ready:
             return "Review the detected foods and make any corrections before saving."
         case .needsReview:
@@ -110,7 +112,7 @@ final class MealLoggingViewModel: ObservableObject {
 
     var reviewStatusText: String {
         guard !draft.detectedFoods.isEmpty else {
-            return "Run the mock detector before reviewing foods."
+            return "Describe the meal and run analysis before reviewing foods."
         }
 
         let remaining = draft.detectedFoods.count - draft.detectedFoods.filter { reviewedItemIDs.contains($0.id) }.count
@@ -143,8 +145,19 @@ final class MealLoggingViewModel: ObservableObject {
             mealType: draft.mealType,
             itemCount: draft.detectedFoods.count,
             confidenceText: confidenceText,
-            notes: draft.trimmedNotes.isEmpty ? "Add notes after the mock analysis if needed." : draft.trimmedNotes
+            notes: draft.trimmedNotes.isEmpty ? "Review the estimate before saving." : draft.trimmedNotes,
+            nutrition: nutritionTotals
         )
+    }
+
+    var nutritionTotals: NutritionAmounts {
+        draft.detectedFoods.reduce(into: NutritionAmounts()) { totals, food in
+            totals.calories += food.nutrition.calories
+            totals.proteinGrams += food.nutrition.proteinGrams
+            totals.carbohydrateGrams += food.nutrition.carbohydrateGrams
+            totals.fatGrams += food.nutrition.fatGrams
+            totals.fiberGrams += food.nutrition.fiberGrams
+        }
     }
 
     var reviewPillText: String {
@@ -164,7 +177,7 @@ final class MealLoggingViewModel: ObservableObject {
         }
     }
 
-    func analyzeMockPhoto() async {
+    func analyzeMeal() async {
         guard analysisState != .analyzing else {
             return
         }
@@ -174,7 +187,10 @@ final class MealLoggingViewModel: ObservableObject {
         selectedItemID = nil
 
         do {
-            let result = try await detectionService.detectFoods(in: samplePhoto)
+            let result = try await detectionService.analyzeMeal(
+                description: draft.foodDescription,
+                photo: selectedPhoto == nil ? nil : PhotoMetadata(storageIdentifier: "meal-photo-selected")
+            )
             updateDraft { draft in
                 draft.detectedFoods = result.detectedFoods
             }
@@ -182,9 +198,17 @@ final class MealLoggingViewModel: ObservableObject {
             analysisNotes = result.notes
             analysisState = result.detectedFoods.isEmpty ? .needsReview : .ready
         } catch {
-            analysisState = .failed("Mock analysis failed. Try again.")
+            analysisState = .failed("Meal analysis failed. Try again.")
             analysisNotes = nil
         }
+    }
+
+    func updateFoodDescription(_ description: String) {
+        updateDraft { draft in
+            draft.foodDescription = description
+        }
+        analysisState = .idle
+        analysisNotes = nil
     }
 
     func addFood() {
@@ -276,7 +300,8 @@ final class MealLoggingViewModel: ObservableObject {
             mealType: draft.mealType,
             notes: draft.trimmedNotes.isEmpty ? nil : draft.trimmedNotes,
             photoMetadata: selectedPhoto == nil ? nil : PhotoMetadata(storageIdentifier: "meal-photo-selected"),
-            items: draft.detectedFoods.map { MealItem(name: $0.name) }
+            items: draft.detectedFoods.map { MealItem(name: $0.name, nutrition: $0.nutrition) },
+            nutrition: nutritionTotals
         )
 
         do {
