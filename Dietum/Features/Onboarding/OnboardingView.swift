@@ -160,19 +160,6 @@ struct OnboardingView: View {
                                 in: 1 ... 8
                             )
 
-                            TextField(
-                                "Heavy meal preference",
-                                text: viewModel.binding(for: \.heavyMealPreference),
-                                axis: .vertical
-                            )
-                            .textFieldStyle(.appTextField)
-
-                            TextField(
-                                "Light meal preference",
-                                text: viewModel.binding(for: \.lightMealPreference),
-                                axis: .vertical
-                            )
-                            .textFieldStyle(.appTextField)
                         }
                     }
                 }

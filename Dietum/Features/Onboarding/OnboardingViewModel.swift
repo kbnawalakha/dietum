@@ -187,8 +187,6 @@ enum OnboardingField: String, CaseIterable, Hashable, Sendable {
     case workoutIntensity
     case averageSleepHours
     case mealCount
-    case heavyMealSlot
-    case lightMealSlot
     case dailyCalories
     case proteinPercentage
     case carbohydratePercentage
@@ -215,10 +213,6 @@ enum OnboardingField: String, CaseIterable, Hashable, Sendable {
             return "Sleep information"
         case .mealCount:
             return "Meal count"
-        case .heavyMealSlot:
-            return "Heavy meal preference"
-        case .lightMealSlot:
-            return "Light meal preference"
         case .dailyCalories:
             return "Daily calorie target"
         case .proteinPercentage:
@@ -243,8 +237,6 @@ struct OnboardingDraft: Hashable, Sendable {
     var workoutIntensity: WorkoutIntensity = .moderate
     var averageSleepHours: String = ""
     var mealCount: Int = 3
-    var heavyMealPreference: String = ""
-    var lightMealPreference: String = ""
     var dailyCalories: String = ""
     var proteinPercentage: String = ""
     var carbohydratePercentage: String = ""
@@ -256,7 +248,7 @@ struct OnboardingDraft: Hashable, Sendable {
     }
 
     var requiredFieldCount: Int {
-        15
+        13
     }
 
     var filledRequiredFieldCount: Int {
@@ -269,8 +261,6 @@ struct OnboardingDraft: Hashable, Sendable {
             !workoutDays.isEmpty,
             !averageSleepHours.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             mealCount > 0,
-            !heavyMealPreference.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-            !lightMealPreference.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             !dailyCalories.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             !proteinPercentage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             !carbohydratePercentage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
@@ -397,8 +387,6 @@ enum OnboardingDraftValidator {
         validateWorkoutDays(draft, issues: &issues)
         validateSleep(draft, issues: &issues)
         validateMealCount(draft, issues: &issues)
-        validateMealPreferences(draft, issues: &issues)
-        validateMealBalance(draft, issues: &issues)
         validateNutritionTargets(draft, issues: &issues)
 
         return OnboardingValidationState(issues: issues)
@@ -481,27 +469,6 @@ enum OnboardingDraftValidator {
         guard (1...8).contains(draft.mealCount) else {
             issues.append(OnboardingValidationIssue(field: .mealCount, message: "Meal count should be between 1 and 8."))
             return
-        }
-    }
-
-    private static func validateMealPreferences(_ draft: OnboardingDraft, issues: inout [OnboardingValidationIssue]) {
-        guard !draft.heavyMealPreference.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            issues.append(OnboardingValidationIssue(field: .heavyMealSlot, message: "Describe which meal should feel heavier."))
-            return
-        }
-
-        guard !draft.lightMealPreference.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            issues.append(OnboardingValidationIssue(field: .lightMealSlot, message: "Describe which meal should feel lighter."))
-            return
-        }
-    }
-
-    private static func validateMealBalance(_ draft: OnboardingDraft, issues: inout [OnboardingValidationIssue]) {
-        let heavy = draft.heavyMealPreference.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let light = draft.lightMealPreference.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-
-        if !heavy.isEmpty, heavy == light {
-            issues.append(OnboardingValidationIssue(field: .heavyMealSlot, message: "Heavy and light meal preferences should describe different habits."))
         }
     }
 
