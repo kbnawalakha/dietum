@@ -56,6 +56,28 @@ struct DashboardView: View {
                             }
                         }
 
+                        HStack(spacing: AppSpacing.item) {
+                            Button {
+                                Task {
+                                    await viewModel.loadSleepInsights()
+                                }
+                            } label: {
+                                Label(
+                                    viewModel.isLoadingSleepInsights ? "Refreshing..." : "Refresh sleep data",
+                                    systemImage: "arrow.clockwise"
+                                )
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .buttonStyle(.appToolbar)
+                            .disabled(viewModel.isLoadingSleepInsights)
+
+                            NavigationLink(value: AppRoute.sleepSetup) {
+                                Label("Open Sleep Setup", systemImage: "bed.double.fill")
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .buttonStyle(.appToolbar)
+                        }
+
                         Text(viewModel.sleepInsightsStatus)
                             .font(.footnote)
                             .foregroundStyle(AppPalette.textSecondary)

@@ -51,6 +51,7 @@ final class DashboardViewModel: ObservableObject {
     @Published var readinessItems: [DashboardReadinessItem]
     @Published private(set) var sleepSummary = DashboardSleepSummary.empty
     @Published private(set) var sleepInsightsStatus = "Sleep insights have not been imported yet."
+    @Published private(set) var isLoadingSleepInsights = false
 
     private let sleepHealthImporter: any SleepHealthImporting
 
@@ -119,7 +120,7 @@ final class DashboardViewModel: ObservableObject {
     }
 
     var sleepInsightsHeadline: String {
-        "Use Apple Health sleep intervals to estimate the time spent on a phone before sleep and after waking."
+        "Refresh Apple Health sleep intervals here; phone totals need Screen Time capability setup."
     }
 
     var sleepInsightCards: [DashboardStatCard] {
@@ -127,7 +128,7 @@ final class DashboardViewModel: ObservableObject {
             DashboardStatCard(
                 title: "Phone usage",
                 value: "Unavailable",
-                detail: "Screen Time access is not enabled",
+                detail: "Family Controls and a report extension are required",
                 symbolName: "iphone"
             ),
             DashboardStatCard(
@@ -152,6 +153,12 @@ final class DashboardViewModel: ObservableObject {
     }
 
     func loadSleepInsights() async {
+        guard !isLoadingSleepInsights else {
+            return
+        }
+
+        isLoadingSleepInsights = true
+        defer { isLoadingSleepInsights = false }
         sleepInsightsStatus = "Reading recent sleep intervals from Apple Health..."
 
         do {
