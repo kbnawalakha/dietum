@@ -185,6 +185,19 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertTrue(result.notes?.contains("Local estimate") == true)
     }
 
+    @MainActor
+    func testProgressPhotoBodyFatEstimateAcceptsMeasuredRangeOnly() {
+        let viewModel = ProgressPhotosViewModel()
+
+        viewModel.bodyFatPercentageText = "22"
+        XCTAssertEqual(viewModel.bodyFatPercentage, 22)
+        XCTAssertTrue(viewModel.bodyFatEstimateText.contains("General range"))
+
+        viewModel.bodyFatPercentageText = "85"
+        XCTAssertNil(viewModel.bodyFatPercentage)
+        XCTAssertEqual(viewModel.bodyFatEstimateText, "No body-fat estimate entered.")
+    }
+
     private static func day(_ dayOffset: Double) -> Date {
         Date(timeIntervalSince1970: 1_700_000_000 + (86_400 * dayOffset))
     }

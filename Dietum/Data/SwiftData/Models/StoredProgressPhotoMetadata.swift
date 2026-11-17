@@ -8,6 +8,7 @@ final class StoredProgressPhotoMetadata {
     var angleRawValue: String
     var photoMetadataData: Data
     var notes: String?
+    var bodyFatPercentage: Double?
 
     init(_ progressPhoto: ProgressPhotoMetadata) {
         self.id = progressPhoto.id
@@ -15,6 +16,7 @@ final class StoredProgressPhotoMetadata {
         self.angleRawValue = progressPhoto.angle.rawValue
         self.photoMetadataData = Self.encode(progressPhoto.photo) ?? Data()
         self.notes = progressPhoto.notes
+        self.bodyFatPercentage = progressPhoto.bodyFatPercentage
     }
 
     var progressPhotoMetadata: ProgressPhotoMetadata {
@@ -23,7 +25,8 @@ final class StoredProgressPhotoMetadata {
             capturedAt: capturedAt,
             angle: ProgressPhotoAngle(rawValue: angleRawValue) ?? .front,
             photo: Self.decode(PhotoMetadata.self, from: photoMetadataData) ?? PhotoMetadata(storageIdentifier: "progress-photo-unknown", capturedAt: capturedAt),
-            notes: notes
+            notes: notes,
+            bodyFatPercentage: bodyFatPercentage
         )
     }
 }

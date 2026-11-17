@@ -1,6 +1,20 @@
 import Foundation
 import SwiftUI
 
+struct BodyFatReferenceBand: Identifiable, Hashable, Sendable {
+    let id: String
+    let title: String
+    let range: String
+    let detail: String
+
+    static let guide: [BodyFatReferenceBand] = [
+        BodyFatReferenceBand(id: "lean", title: "Very lean", range: "Below 10%", detail: "More definition is often visible, but this is not a target for everyone."),
+        BodyFatReferenceBand(id: "active", title: "Active range", range: "10-20%", detail: "A broad reference range for many active adults."),
+        BodyFatReferenceBand(id: "general", title: "General range", range: "20-30%", detail: "A broad middle reference band; age and sex meaningfully affect interpretation."),
+        BodyFatReferenceBand(id: "higher", title: "Higher range", range: "Above 30%", detail: "Consider discussing goals with a qualified health professional rather than judging from photos.")
+    ]
+}
+
 @MainActor
 final class ProgressPhotosViewModel: ObservableObject {
     enum SaveState: Equatable {
@@ -18,6 +32,7 @@ final class ProgressPhotosViewModel: ObservableObject {
     }
 
     @Published var notes: String = ""
+    @Published var bodyFatPercentageText: String = ""
     @Published var stagedPhotos: [ProgressPhotoAngle: PhotoMetadata] = [:]
     @Published var recentPhotos: [ProgressPhotoMetadata] = []
     @Published var comparisonAngle: ProgressPhotoAngle = .front
@@ -77,13 +92,15 @@ final class ProgressPhotosViewModel: ObservableObject {
                     capturedAt: photo.capturedAt,
                     angle: angle,
                     photo: photo,
-                    notes: noteText.isEmpty ? nil : noteText
+                    notes: noteText.isEmpty ? nil : noteText,
+                    bodyFatPercentage: bodyFatPercentage
                 )
                 try await progressPhotoRepository.saveProgressPhoto(metadata)
             }
 
             stagedPhotos.removeAll()
             notes = ""
+            bodyFatPercentageText = ""
             saveState = .saved(Date())
             await loadRecentPhotos()
         } catch {
@@ -94,7 +111,33 @@ final class ProgressPhotosViewModel: ObservableObject {
     func clearStagedPhotos() {
         stagedPhotos.removeAll()
         notes = ""
+        bodyFatPercentageText = ""
         saveState = .idle
+    }
+
+    var bodyFatPercentage: Double? {
+        guard let value = Double(bodyFatPercentageText.trimmingCharacters(in: .whitespacesAndNewlines)), (1...70).contains(value) else {
+            return nil
+        }
+
+        return value
+    }
+
+    var bodyFatEstimateText: String {
+        guard let bodyFatPercentage else {
+            return "No body-fat estimate entered."
+        }
+
+        let band = BodyFatReferenceBand.guide.first { band in
+            switch band.id {
+            case "lean": return bodyFatPercentage < 10
+            case "active": return bodyFatPercentage < 20
+            case "general": return bodyFatPercentage <= 30
+            default: return true
+            }
+        }
+
+        return "Entered estimate: \(bodyFatPercentage.formatted(.number.precision(.fractionLength(0))))% (\(band?.title ?? "reference range"))."
     }
 
     var headline: String {

@@ -59,6 +59,42 @@ struct ProgressPhotosView: View {
                         TextField("Optional notes", text: $viewModel.notes, axis: .vertical)
                             .textFieldStyle(.roundedBorder)
 
+                        TextField("Optional body-fat estimate (%)", text: $viewModel.bodyFatPercentageText)
+                            .textFieldStyle(.roundedBorder)
+                            .keyboardType(.decimalPad)
+                            .accessibilityHint("Enter a measured or manually estimated percentage; it is not calculated from the photo.")
+
+                        Text("Body fat is not inferred from the image. Use a measured or clinician-provided estimate when available.")
+                            .font(.caption)
+                            .foregroundStyle(AppPalette.textSecondary)
+
+                        Text(viewModel.bodyFatEstimateText)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(AppPalette.textPrimary)
+
+                        VStack(alignment: .leading, spacing: AppSpacing.small) {
+                            Text("Reference guide")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(AppPalette.textPrimary)
+
+                            ForEach(BodyFatReferenceBand.guide) { band in
+                                HStack(alignment: .top, spacing: AppSpacing.small) {
+                                    Text(band.range)
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(AppPalette.accent)
+                                        .frame(width: 72, alignment: .leading)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(band.title)
+                                            .font(.caption.weight(.semibold))
+                                            .foregroundStyle(AppPalette.textPrimary)
+                                        Text(band.detail)
+                                            .font(.caption2)
+                                            .foregroundStyle(AppPalette.textSecondary)
+                                    }
+                                }
+                            }
+                        }
+
                         if let statusMessage = viewModel.statusMessage {
                             Text(statusMessage)
                                 .font(.caption)
@@ -331,6 +367,12 @@ private struct ProgressPhotoRow: View {
                         .font(.caption)
                         .foregroundStyle(AppPalette.textSecondary)
                 }
+
+                            if let bodyFatPercentage = photo.bodyFatPercentage {
+                                Text("Body-fat estimate: \(bodyFatPercentage.formatted(.number.precision(.fractionLength(0))))%")
+                                    .font(.caption)
+                                    .foregroundStyle(AppPalette.accent)
+                            }
             }
 
             Spacer(minLength: 0)

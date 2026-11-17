@@ -224,18 +224,21 @@ struct ProgressPhotoMetadata: Identifiable, Codable, Hashable, Sendable {
     var angle: ProgressPhotoAngle
     var photo: PhotoMetadata
     var notes: String?
+    var bodyFatPercentage: Double?
 
     init(
         id: UUID = UUID(),
         capturedAt: Date = Date(),
         angle: ProgressPhotoAngle,
         photo: PhotoMetadata,
-        notes: String? = nil
+        notes: String? = nil,
+        bodyFatPercentage: Double? = nil
     ) {
         self.id = id
         self.capturedAt = capturedAt
         self.angle = angle
         self.photo = photo
         self.notes = notes
+        self.bodyFatPercentage = bodyFatPercentage
     }
 }
