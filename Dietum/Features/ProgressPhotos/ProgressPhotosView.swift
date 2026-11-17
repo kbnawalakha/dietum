@@ -62,6 +62,12 @@ struct ProgressPhotosView: View {
                             .font(.subheadline)
                             .foregroundStyle(AppPalette.textSecondary)
 
+                        if let photoSelectionError = viewModel.photoSelectionError {
+                            Text(photoSelectionError)
+                                .font(.caption)
+                                .foregroundStyle(AppPalette.textSecondary)
+                        }
+
                         Button {
                             Task {
                                 await viewModel.analyzeBodyPhotos()

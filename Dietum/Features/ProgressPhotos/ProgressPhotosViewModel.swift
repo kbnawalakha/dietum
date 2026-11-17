@@ -50,6 +50,7 @@ final class ProgressPhotosViewModel: ObservableObject {
     @Published var comparisonLatestID: UUID?
     @Published var saveState: SaveState = .idle
     @Published var loadState: LoadState = .idle
+    @Published private(set) var photoSelectionError: String?
     @Published private(set) var bodyAnalysisState: BodyAnalysisState = .idle
 
     private let progressPhotoRepository: any ProgressPhotoRepository
@@ -87,10 +88,12 @@ final class ProgressPhotosViewModel: ObservableObject {
             capturedAt: .now,
             imageData: imageData
         )
+        photoSelectionError = nil
         saveState = .idle
     }
 
     func photoSelectionFailed() {
+        photoSelectionError = "The selected photo could not be loaded. Please try another image."
         saveState = .failed("The selected photo could not be loaded. Please try another image.")
     }
 
@@ -133,6 +136,7 @@ final class ProgressPhotosViewModel: ObservableObject {
 
     func clearStagedPhotos() {
         stagedPhotos.removeAll()
+        photoSelectionError = nil
         notes = ""
         bodyFatPercentageText = ""
         selectedBodyFatReferenceID = nil
@@ -345,11 +349,18 @@ final class ProgressPhotosViewModel: ObservableObject {
                 return
             }
 
-            let request = VNDetectHumanBodyPoseRequest()
             let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
             do {
-                try handler.perform([request])
-                if !(request.results ?? []).isEmpty {
+                let poseRequest = VNDetectHumanBodyPoseRequest()
+                try handler.perform([poseRequest])
+                if !(poseRequest.results ?? []).isEmpty {
+                    count += 1
+                    return
+                }
+
+                let rectangleRequest = VNDetectHumanRectanglesRequest()
+                try handler.perform([rectangleRequest])
+                if !(rectangleRequest.results ?? []).isEmpty {
                     count += 1
                 }
             } catch {
