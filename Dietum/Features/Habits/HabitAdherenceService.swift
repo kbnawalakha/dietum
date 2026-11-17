@@ -77,6 +77,11 @@ struct HabitAdherenceService: HabitAdherenceServicing, Sendable {
     private func streakDays(entries: [Date], referenceDate: Date) -> Int {
         let dates = Set(entries.map { calendar.startOfDay(for: $0) })
         var current = calendar.startOfDay(for: referenceDate)
+
+        if !dates.contains(current), let yesterday = calendar.date(byAdding: .day, value: -1, to: current) {
+            current = yesterday
+        }
+
         var count = 0
 
         while dates.contains(current) {
@@ -95,6 +100,11 @@ struct HabitAdherenceService: HabitAdherenceServicing, Sendable {
         }
 
         var current = currentWeek
+
+        if !weeks.contains(current), let previousWeek = calendar.date(byAdding: .weekOfYear, value: -1, to: current) {
+            current = previousWeek
+        }
+
         var count = 0
 
         while weeks.contains(current) {
