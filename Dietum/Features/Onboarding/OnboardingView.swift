@@ -166,6 +166,9 @@ struct OnboardingView: View {
                                 axis: .vertical
                             )
                             .textFieldStyle(.roundedBorder)
+                            .lineLimit(viewModel.draft.mealCount...viewModel.draft.mealCount)
+                            .frame(minHeight: CGFloat(viewModel.draft.mealCount) * 28, alignment: .top)
+                            .accessibilityHint("Provides one line for each meal in the selected meal count")
 
                             TextField(
                                 "Heavy meal preference",

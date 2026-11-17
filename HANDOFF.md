@@ -37,6 +37,7 @@ codex/repo-foundation
 - Added Google OAuth via `ASWebAuthenticationSession`, Keychain token storage, private `drive.appdata` upload, and weekly `BGTaskScheduler` scheduling
 - Added configurable OAuth build settings and documented the device setup required to enable Drive access
 - Updated lifestyle workout-day controls to deselect on repeat activation and added regression coverage
+- Made the preferred meal-time text box grow and shrink with the selected meal count
 
 ## Workstreams
 
