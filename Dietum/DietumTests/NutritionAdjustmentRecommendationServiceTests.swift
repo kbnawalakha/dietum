@@ -104,6 +104,29 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(summary.latestMealEntryDate, referenceDate)
     }
 
+    func testHabitAdherenceCountsWeeklyCheckInStreakAndCoverage() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let referenceDate = Self.day(0)
+        let service = HabitAdherenceService(calendar: calendar)
+        let snapshot = HabitAdherenceSnapshot(
+            weightLogs: [
+                WeightLog(recordedAt: referenceDate, weightKilograms: 80),
+                WeightLog(recordedAt: Self.day(-7), weightKilograms: 81),
+                WeightLog(recordedAt: Self.day(-14), weightKilograms: 82)
+            ],
+            referenceDate: referenceDate,
+            checkInWindowDays: 28
+        )
+
+        let summary = service.buildSummary(from: snapshot)
+
+        XCTAssertEqual(summary.checkInStreakWeeks, 3)
+        XCTAssertEqual(summary.checkInWeeksLogged, 3)
+        XCTAssertEqual(summary.checkInWeeksExpected, 4)
+        XCTAssertEqual(summary.checkInCoveragePercent, 75)
+    }
+
     func testLocalExportWritesSavedMealEntryPayload() throws {
         let createdAt = Self.day(0)
         let entry = MealEntry(

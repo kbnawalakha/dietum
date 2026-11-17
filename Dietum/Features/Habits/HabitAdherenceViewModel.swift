@@ -25,13 +25,15 @@ final class HabitAdherenceViewModel: ObservableObject {
     func load(referenceDate: Date = Date()) async {
         state = .loading
         do {
+            let dayStart = calendar.startOfDay(for: referenceDate)
+            let nextDayStart = calendar.date(byAdding: .day, value: 1, to: dayStart) ?? referenceDate
             let mealWindow = DateInterval(
-                start: calendar.date(byAdding: .day, value: -6, to: referenceDate) ?? referenceDate,
-                end: referenceDate
+                start: calendar.date(byAdding: .day, value: -6, to: dayStart) ?? dayStart,
+                end: nextDayStart
             )
             let checkInWindow = DateInterval(
-                start: calendar.date(byAdding: .day, value: -27, to: referenceDate) ?? referenceDate,
-                end: referenceDate
+                start: calendar.date(byAdding: .day, value: -27, to: dayStart) ?? dayStart,
+                end: nextDayStart
             )
 
             let mealEntries = try await mealRepository.fetchMealEntries(in: mealWindow)
@@ -70,7 +72,7 @@ final class HabitAdherenceViewModel: ObservableObject {
             HabitSummaryCard(
                 kind: .consistency,
                 title: "Check-in streak",
-                value: formatStreak(summary.checkInStreakDays),
+                value: formatStreak(summary.checkInStreakWeeks, unit: "week"),
                 detail: summary.latestCheckInDate.map { "Last check-in \(formatted(date: $0))" } ?? "No check-ins yet"
             ),
             HabitSummaryCard(
@@ -83,15 +85,15 @@ final class HabitAdherenceViewModel: ObservableObject {
     }
 
     func subtitle(for summary: HabitAdherenceSummary) -> String {
-        if summary.mealLoggingStreakDays == 0 && summary.checkInStreakDays == 0 {
+        if summary.mealLoggingStreakDays == 0 && summary.checkInStreakWeeks == 0 {
             return "Keep logging meals and check-ins to build momentum."
         }
 
         return "Consistency is strongest when meals and check-ins stay on a rhythm."
     }
 
-    private func formatStreak(_ count: Int) -> String {
-        count == 1 ? "1 day" : "\(count) days"
+    private func formatStreak(_ count: Int, unit: String = "day") -> String {
+        count == 1 ? "1 \(unit)" : "\(count) \(unit)s"
     }
 
     private func formatted(date: Date) -> String {

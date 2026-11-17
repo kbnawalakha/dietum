@@ -24,7 +24,7 @@ struct HabitAdherenceSnapshot: Sendable, Hashable {
 
 struct HabitAdherenceSummary: Sendable, Hashable {
     var mealLoggingStreakDays: Int
-    var checkInStreakDays: Int
+    var checkInStreakWeeks: Int
     var mealCoverageRatio: Double
     var checkInCoverageRatio: Double
     var mealDaysLogged: Int
