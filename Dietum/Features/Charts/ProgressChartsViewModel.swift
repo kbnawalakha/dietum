@@ -67,7 +67,8 @@ final class ProgressChartsViewModel: ObservableObject {
             let sortedLogs = logs.sorted { $0.recordedAt < $1.recordedAt }
 
             if sortedLogs.isEmpty {
-                applySampleData()
+                weightPoints = []
+                nutritionPoints = []
                 loadState = .loaded
                 return
             }
@@ -76,7 +77,8 @@ final class ProgressChartsViewModel: ObservableObject {
             nutritionPoints = try await buildNutritionSeries(from: sortedLogs)
             loadState = .loaded
         } catch {
-            applySampleData()
+            weightPoints = []
+            nutritionPoints = []
             loadState = .failed("Unable to load progress charts right now.")
         }
     }
@@ -87,8 +89,12 @@ final class ProgressChartsViewModel: ObservableObject {
             return "Building your trend lines from local history."
         case .failed(let message):
             return message
-        case .idle, .loaded:
+        case .idle:
             return "See how weight and nutrition are moving together over time."
+        case .loaded:
+            return weightPoints.isEmpty
+                ? "Add a weekly check-in to build your first real progress trend."
+                : "See how weight and nutrition are moving together over time."
         }
     }
 
@@ -164,6 +170,10 @@ final class ProgressChartsViewModel: ObservableObject {
         "\(baseNutritionTarget.dailyGoal.calories) kcal"
     }
 
+    var currentTargetCalories: Double {
+        Double(baseNutritionTarget.dailyGoal.calories)
+    }
+
     var supportingSignals: [String] {
         [
             "Weight history is based on the latest local check-ins.",
@@ -177,7 +187,7 @@ final class ProgressChartsViewModel: ObservableObject {
         case .loading:
             return "Refreshing the charts..."
         case .failed:
-            return "Fallback sample data is being shown."
+            return "Charts show only saved local history."
         case .idle, .loaded:
             return "Charts update from local data only."
         }
@@ -212,23 +222,4 @@ final class ProgressChartsViewModel: ObservableObject {
         return points
     }
 
-    private func applySampleData() {
-        let calendar = Calendar.current
-        let sampleWeights: [Double] = [81.9, 81.7, 81.8, 81.6]
-        let sampleCalories: [Double] = [2_400, 2_300, 2_300, 2_250]
-
-        weightPoints = sampleWeights.enumerated().compactMap { offset, value in
-            guard let date = calendar.date(byAdding: .day, value: -21 + (offset * 7), to: .now) else {
-                return nil
-            }
-            return WeightChartPoint(date: date, value: value)
-        }
-
-        nutritionPoints = sampleCalories.enumerated().compactMap { offset, value in
-            guard let date = calendar.date(byAdding: .day, value: -21 + (offset * 7), to: .now) else {
-                return nil
-            }
-            return NutritionChartPoint(date: date, value: value)
-        }
-    }
 }

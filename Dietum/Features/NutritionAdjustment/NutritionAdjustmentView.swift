@@ -148,7 +148,7 @@ struct NutritionAdjustmentView: View {
             ContentUnavailableView(
                 "No recommendation yet",
                 systemImage: "slider.horizontal.3",
-                description: Text("The mock recommendation will appear after the local analysis finishes.")
+                description: Text("The local recommendation will appear after the trend analysis finishes.")
             )
         }
     }

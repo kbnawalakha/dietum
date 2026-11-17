@@ -63,24 +63,31 @@ struct ProgressChartsView: View {
                             message: "The goal line helps show whether the trend is heading toward the target."
                         )
 
-                        Chart {
-                            ForEach(viewModel.weightPoints) { point in
-                                LineMark(
-                                    x: .value("Date", point.date),
-                                    y: .value("Weight", point.value)
-                                )
-                                .interpolationMethod(.catmullRom)
-                                .foregroundStyle(AppPalette.accent)
-                                .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                        if viewModel.weightPoints.isEmpty {
+                            ContentUnavailableView(
+                                "No weight history yet",
+                                systemImage: "chart.line.uptrend.xyaxis",
+                                description: Text("Add a weekly check-in to build a real weight trend.")
+                            )
+                            .frame(maxWidth: .infinity, minHeight: 220)
+                        } else {
+                            Chart {
+                                ForEach(viewModel.weightPoints) { point in
+                                    LineMark(
+                                        x: .value("Date", point.date),
+                                        y: .value("Weight", point.value)
+                                    )
+                                    .interpolationMethod(.catmullRom)
+                                    .foregroundStyle(AppPalette.accent)
+                                    .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
 
-                                PointMark(
-                                    x: .value("Date", point.date),
-                                    y: .value("Weight", point.value)
-                                )
-                                .foregroundStyle(AppPalette.accent)
-                            }
+                                    PointMark(
+                                        x: .value("Date", point.date),
+                                        y: .value("Weight", point.value)
+                                    )
+                                    .foregroundStyle(AppPalette.accent)
+                                }
 
-                            if let _ = viewModel.weightPoints.first, let _ = viewModel.weightPoints.last {
                                 RuleMark(y: .value("Goal", viewModel.goalWeightValue))
                                     .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
                                     .foregroundStyle(AppPalette.accent.opacity(0.5))
@@ -93,13 +100,13 @@ struct ProgressChartsView: View {
                                             .background(AppPalette.surface, in: Capsule())
                                     }
                             }
-                        }
-                        .frame(minHeight: 220)
-                        .chartXAxis {
-                            AxisMarks(values: .automatic(desiredCount: 4))
-                        }
-                        .chartYAxis {
-                            AxisMarks(position: .leading)
+                            .frame(minHeight: 220)
+                            .chartXAxis {
+                                AxisMarks(values: .automatic(desiredCount: 4))
+                            }
+                            .chartYAxis {
+                                AxisMarks(position: .leading)
+                            }
                         }
                     }
                 }
@@ -111,50 +118,59 @@ struct ProgressChartsView: View {
                             message: "This line shows the calorie recommendation evolving with the same local history."
                         )
 
-                        Chart {
-                            ForEach(viewModel.nutritionPoints) { point in
-                                LineMark(
-                                    x: .value("Date", point.date),
-                                    y: .value("Calories", point.value)
-                                )
-                                .interpolationMethod(.catmullRom)
-                                .foregroundStyle(.secondary)
-                                .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                        if viewModel.nutritionPoints.isEmpty {
+                            ContentUnavailableView(
+                                "No nutrition trend yet",
+                                systemImage: "flame",
+                                description: Text("Nutrition trends appear after saved check-ins are available.")
+                            )
+                            .frame(maxWidth: .infinity, minHeight: 220)
+                        } else {
+                            Chart {
+                                ForEach(viewModel.nutritionPoints) { point in
+                                    LineMark(
+                                        x: .value("Date", point.date),
+                                        y: .value("Calories", point.value)
+                                    )
+                                    .interpolationMethod(.catmullRom)
+                                    .foregroundStyle(.secondary)
+                                    .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
 
-                                PointMark(
-                                    x: .value("Date", point.date),
-                                    y: .value("Calories", point.value)
-                                )
-                                .foregroundStyle(.secondary)
+                                    PointMark(
+                                        x: .value("Date", point.date),
+                                        y: .value("Calories", point.value)
+                                    )
+                                    .foregroundStyle(.secondary)
+                                }
+
+                                if let latest = viewModel.nutritionPoints.last {
+                                    RuleMark(y: .value("Current target", viewModel.currentTargetCalories))
+                                        .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+                                        .foregroundStyle(AppPalette.accent.opacity(0.45))
+                                        .annotation(position: .topTrailing, alignment: .trailing) {
+                                            Text(viewModel.currentTargetText)
+                                                .font(.caption.weight(.semibold))
+                                                .foregroundStyle(AppPalette.textSecondary)
+                                                .padding(.horizontal, 8)
+                                                .padding(.vertical, 4)
+                                                .background(AppPalette.surface, in: Capsule())
+                                        }
+
+                                    PointMark(
+                                        x: .value("Date", latest.date),
+                                        y: .value("Calories", latest.value)
+                                    )
+                                    .foregroundStyle(AppPalette.accent)
+                                    .symbolSize(80)
+                                }
                             }
-
-                            if let latest = viewModel.nutritionPoints.last {
-                                RuleMark(y: .value("Current target", 2_400))
-                                    .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
-                                    .foregroundStyle(AppPalette.accent.opacity(0.45))
-                                    .annotation(position: .topTrailing, alignment: .trailing) {
-                                        Text(viewModel.currentTargetText)
-                                            .font(.caption.weight(.semibold))
-                                            .foregroundStyle(AppPalette.textSecondary)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 4)
-                                            .background(AppPalette.surface, in: Capsule())
-                                    }
-
-                                PointMark(
-                                    x: .value("Date", latest.date),
-                                    y: .value("Calories", latest.value)
-                                )
-                                .foregroundStyle(AppPalette.accent)
-                                .symbolSize(80)
+                            .frame(minHeight: 220)
+                            .chartXAxis {
+                                AxisMarks(values: .automatic(desiredCount: 4))
                             }
-                        }
-                        .frame(minHeight: 220)
-                        .chartXAxis {
-                            AxisMarks(values: .automatic(desiredCount: 4))
-                        }
-                        .chartYAxis {
-                            AxisMarks(position: .leading)
+                            .chartYAxis {
+                                AxisMarks(position: .leading)
+                            }
                         }
                     }
                 }
