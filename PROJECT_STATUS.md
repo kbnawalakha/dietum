@@ -28,15 +28,13 @@ Milestone 0 — Repository and Architecture Foundation
 - `DIET-016` Implement Meal Logging
 - `DIET-017` Implement Progress Photo Comparison
 - `DIET-018` Implement Weight Logging
-- `DIET-019` Implement Meal Reminders
 - `DIET-020` Integrate Goal Setup and Sleep Setup into the app target
 - Merged the onboarding draft UI into the launch flow and wired validation-backed draft state
 - Merged the goal setup slice into the onboarding flow
 - Merged the sleep setup slice into the onboarding flow
 - Merged the weight logging/check-in slice into the app target
-- Merged the meal reminders surface into the app target
 - Merged the dashboard lane into the app target
-- Added app routes and entry points for goal setup, sleep setup, and meal reminders
+- Removed the meal-reminder UI and navigation surface from the app; existing export/model compatibility remains local-only
 - Added the XCTest target setup and deterministic nutrition-adjustment unit tests
 - Added and hardened a lightweight GitHub Actions build workflow
 - Completed Phase 2: advanced meal-photo assistance, nutrition trend insights, habit/adherence summaries, local data export, improved progress-photo comparison, and smarter reminders
@@ -90,6 +88,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Vision pose detection can be inconclusive for cropped, dark, side-profile, or simulator images; those images now fall back to editable estimates instead of failing outright
 - Current local Xcode verification can fail before app compilation when the SwiftData macro plugin returns a malformed response; rerun after CoreSimulator/Xcode services recover
 - Progress-photo regression coverage now verifies staging and editable estimate generation before save
+- Meal reminders are no longer part of the active app surface; legacy reminder code remains only to preserve existing local export compatibility
 
 # Active Agents
 

@@ -14,7 +14,6 @@ Dietum is a personal-use iPhone nutrition and progress-tracking app. The repo no
 - Daily calorie target and macro targets
 - User-editable calories and macros
 - Daily meal distribution
-- Meal reminders
 - Meal-photo capture
 - Meal-food detection UI backed by a mock service first
 - User correction of detected foods

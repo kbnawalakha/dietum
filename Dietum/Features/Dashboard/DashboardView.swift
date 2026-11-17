@@ -33,9 +33,6 @@ struct DashboardView: View {
                         }
                     }
 
-                    Text(viewModel.reminderStatusText)
-                        .font(.subheadline)
-                        .foregroundStyle(AppPalette.textSecondary)
                 }
 
                 AppSurfaceCard {

@@ -47,7 +47,6 @@ final class DashboardViewModel: ObservableObject {
     @Published var recommendedCalories: Int?
     @Published var progressPhotosCount: Int
     @Published var latestPhotoAngle: ProgressPhotoAngle?
-    @Published var reminderStatusText: String
     @Published var readinessItems: [DashboardReadinessItem]
     @Published private(set) var sleepSummary = DashboardSleepSummary.empty
     @Published private(set) var sleepInsightsStatus = "Sleep insights have not been imported yet."
@@ -57,7 +56,6 @@ final class DashboardViewModel: ObservableObject {
 
     let quickActions: [DashboardActionItem] = [
         DashboardActionItem(title: "Log a meal", symbolName: "camera.fill", route: .mealLogging),
-        DashboardActionItem(title: "Meal reminders", symbolName: "bell.fill", route: .mealReminders),
         DashboardActionItem(title: "Review habit streaks", symbolName: "chart.line.uptrend.xyaxis", route: .habitAdherence),
         DashboardActionItem(title: "Export local data", symbolName: "square.and.arrow.up", route: .mealExport),
         DashboardActionItem(title: "Review nutrition insights", symbolName: "chart.bar.xaxis", route: .nutritionInsights),
@@ -77,7 +75,6 @@ final class DashboardViewModel: ObservableObject {
         recommendedCalories: Int? = 2_300,
         progressPhotosCount: Int = 12,
         latestPhotoAngle: ProgressPhotoAngle? = .front,
-        reminderStatusText: String = "Meal reminder scheduled for lunchtime.",
         readinessItems: [DashboardReadinessItem] = [
             DashboardReadinessItem(title: "Meal logging ready", detail: "Quick actions are available from the dashboard.", isComplete: true),
             DashboardReadinessItem(title: "Weekly check-in ready", detail: "A weight update can be logged from the next card.", isComplete: true),
@@ -94,7 +91,6 @@ final class DashboardViewModel: ObservableObject {
         self.recommendedCalories = recommendedCalories
         self.progressPhotosCount = progressPhotosCount
         self.latestPhotoAngle = latestPhotoAngle
-        self.reminderStatusText = reminderStatusText
         self.readinessItems = readinessItems
         self.sleepHealthImporter = sleepHealthImporter
     }
@@ -104,7 +100,7 @@ final class DashboardViewModel: ObservableObject {
     }
 
     var todaySummaryText: String {
-        "A quick scan of targets, reminders, and next actions for today."
+        "A quick scan of targets and next actions for today."
     }
 
     var progressHeadline: String {

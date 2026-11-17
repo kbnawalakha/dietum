@@ -43,10 +43,6 @@ struct AppContainer {
         NutritionAdjustmentViewModel()
     }
 
-    func makeMealReminderView() -> MealReminderView {
-        MealReminderView()
-    }
-
     func makeHabitAdherenceView() -> HabitAdherenceView {
         HabitAdherenceView(
             viewModel: HabitAdherenceViewModel(

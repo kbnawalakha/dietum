@@ -47,12 +47,14 @@ codex/repo-foundation
 - Dashboard sleep signals now have a visible refresh action and a direct Sleep Setup route; phone usage remains clearly marked as unavailable until the Screen Time capability and report extension exist.
 - Meal and body-photo uploads now trigger local estimates automatically; the detected foods, macros, body-fat ranges, and regional values remain editable before saving.
 - Progress-photo picker selection now retains its pose through PhotosUI dismissal and awaits staging plus analysis before clearing the selection.
+- Removed meal-reminder navigation and dashboard entry points per product direction; legacy reminder model/export types remain only for local compatibility.
 
 ## Known Problems
 
 - Unrelated pre-existing Xcode scheme/project edits, `build/`, and `pass` / `pass.pub` remain uncommitted and were not staged.
 - The latest device compile was blocked by the local SwiftData macro plugin returning malformed responses; the simulator service was also unavailable for XCTest execution.
 - Added a regression test for staging a photo and generating editable estimates before save.
+- The reminder-removal device compile was attempted but stopped at the existing SwiftData macro-plugin malformed-response failure before a complete app build.
 
 ## Exact Next Step
 
