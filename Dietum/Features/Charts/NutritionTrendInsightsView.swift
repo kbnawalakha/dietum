@@ -16,6 +16,22 @@ struct NutritionTrendInsightsView: View {
                     message: viewModel.headline
                 )
 
+                HStack(spacing: AppSpacing.item) {
+                    Button {
+                        Task { await viewModel.retry() }
+                    } label: {
+                        Label("Refresh insights", systemImage: "arrow.clockwise")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .buttonStyle(.appToolbar)
+
+                    NavigationLink(value: AppRoute.mealLogging) {
+                        Label("Log a meal", systemImage: "camera.fill")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .buttonStyle(.appToolbar)
+                }
+
                 content
             }
             .padding(.horizontal, AppSpacing.screen)
@@ -42,17 +58,32 @@ struct NutritionTrendInsightsView: View {
             }
         case .empty:
             AppSurfaceCard {
-                AppSectionHeader(
-                    title: "Not enough history",
-                    message: "Nutrition insights appear after at least one meal day is logged."
-                )
+                VStack(alignment: .leading, spacing: AppSpacing.item) {
+                    AppSectionHeader(
+                        title: "Not enough history",
+                        message: "Nutrition insights appear after at least one meal day is logged in the recent window."
+                    )
+
+                    NavigationLink(value: AppRoute.mealLogging) {
+                        Label("Log your first meal", systemImage: "camera.fill")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .buttonStyle(.appProminent)
+                }
             }
         case .failed:
             AppSurfaceCard {
                 VStack(alignment: .leading, spacing: AppSpacing.item) {
                     AppSectionHeader(title: "Could not refresh", message: viewModel.headline)
-                    Button("Try again") { Task { await viewModel.retry() } }
+                    HStack(spacing: AppSpacing.item) {
+                        Button("Try again") { Task { await viewModel.retry() } }
                         .buttonStyle(.appProminent)
+
+                        NavigationLink(value: AppRoute.mealLogging) {
+                            Label("Log a meal", systemImage: "camera.fill")
+                        }
+                        .buttonStyle(.appToolbar)
+                    }
                 }
             }
         case .loaded(let insights):

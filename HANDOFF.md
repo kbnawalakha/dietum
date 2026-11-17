@@ -57,6 +57,8 @@ codex/repo-foundation
 - Added a regression test for staging a photo and generating editable estimates before save.
 - The reminder-removal device compile was attempted but stopped at the existing SwiftData macro-plugin malformed-response failure before a complete app build.
 - The export-removal device compile was attempted and hit the same existing SwiftData macro-plugin malformed-response failure before a complete app build.
+- Nutrition insights now receive the live SwiftData target repository and provide explicit refresh and log-meal actions.
+- Nutrition-insights device compile was attempted but stopped at the existing SwiftData macro-plugin malformed-response failure.
 
 ## Exact Next Step
 

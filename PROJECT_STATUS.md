@@ -92,6 +92,8 @@ Milestone 0 — Repository and Architecture Foundation
 - Meal reminders are no longer part of the active app surface; legacy reminder code remains only to preserve existing local export compatibility
 - Local export is no longer an active user-facing feature; its snapshot service remains internal for Drive backup compatibility
 - The export-removal compile check remains blocked by the local SwiftData macro-plugin malformed-response issue
+- Nutrition insights now load the persisted active nutrition target and expose refresh/log-meal actions for empty or failed states
+- Nutrition-insights compile verification is currently blocked by the local SwiftData macro-plugin malformed-response issue
 
 # Active Agents
 
