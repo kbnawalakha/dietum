@@ -41,6 +41,7 @@ codex/repo-foundation
 - Body-fat regional values are estimates and should be replaced or edited with measured data when available.
 - Vision pose detection remains best-effort; valid images with inconclusive framing use an editable general-range fallback.
 - Actual Screen Time totals are not yet available because the project does not have a Device Activity report extension.
+- The default device build uses the existing HealthKit-only profile; Screen Time authorization remains unavailable until Family Controls is enabled in Apple Developer and Xcode.
 
 ## Known Problems
 
