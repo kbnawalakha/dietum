@@ -228,6 +228,7 @@ struct ProgressPhotoMetadata: Identifiable, Codable, Hashable, Sendable {
     var photo: PhotoMetadata
     var notes: String?
     var bodyFatPercentage: Double?
+    var bodyFatBreakdown: BodyFatEstimateBreakdown?
 
     init(
         id: UUID = UUID(),
@@ -235,7 +236,8 @@ struct ProgressPhotoMetadata: Identifiable, Codable, Hashable, Sendable {
         angle: ProgressPhotoAngle,
         photo: PhotoMetadata,
         notes: String? = nil,
-        bodyFatPercentage: Double? = nil
+        bodyFatPercentage: Double? = nil,
+        bodyFatBreakdown: BodyFatEstimateBreakdown? = nil
     ) {
         self.id = id
         self.capturedAt = capturedAt
@@ -243,5 +245,22 @@ struct ProgressPhotoMetadata: Identifiable, Codable, Hashable, Sendable {
         self.photo = photo
         self.notes = notes
         self.bodyFatPercentage = bodyFatPercentage
+        self.bodyFatBreakdown = bodyFatBreakdown
+    }
+}
+
+struct BodyFatEstimateBreakdown: Codable, Hashable, Sendable {
+    var chestPercentage: Double?
+    var armsPercentage: Double?
+    var legsPercentage: Double?
+    var backPercentage: Double?
+    var visceralPercentage: Double?
+
+    var isEmpty: Bool {
+        chestPercentage == nil
+            && armsPercentage == nil
+            && legsPercentage == nil
+            && backPercentage == nil
+            && visceralPercentage == nil
     }
 }

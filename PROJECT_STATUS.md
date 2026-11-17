@@ -52,6 +52,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Hardened meal analysis cancellation and error handling, including clearing stale estimates when the description changes
 - Fixed progress-photo library uploads so the selected pose remains associated while the PhotosPicker image loads asynchronously
 - Added Family Controls entitlements and a user-triggered Screen Time authorization flow in Sleep Setup
+- Grouped saved progress photos by capture date and added editable regional body-fat estimates for chest, arms, legs, back, and visceral fat
 
 # In Progress
 
@@ -80,6 +81,7 @@ Milestone 0 — Repository and Architecture Foundation
 - `Dietum.xcodeproj/project.pbxproj` has an unrelated uncommitted Xcode-generated modification and remains intentionally untouched
 - Google Drive is intentionally disabled until `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_REDIRECT_URI`, and `GOOGLE_OAUTH_SCHEME` are configured
 - Phone usage totals remain unavailable until the Family Controls capability is approved and a Device Activity report extension is added; HealthKit only provides the in-bed intervals used for estimates
+- Body-fat regional values are visual estimates, not clinical measurements; visceral fat cannot be measured from a photograph
 
 # Active Agents
 

@@ -110,6 +110,19 @@ struct ProgressPhotosView: View {
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(AppPalette.textPrimary)
 
+                        AppSectionHeader(
+                            title: "Regional estimates",
+                            message: "Analyze the staged photos for editable, non-clinical estimates. Visceral fat cannot be measured from a photo."
+                        )
+
+                        LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
+                            bodyFatField(title: "Chest (%)", text: $viewModel.chestBodyFatText)
+                            bodyFatField(title: "Arms (%)", text: $viewModel.armsBodyFatText)
+                            bodyFatField(title: "Legs (%)", text: $viewModel.legsBodyFatText)
+                            bodyFatField(title: "Back (%)", text: $viewModel.backBodyFatText)
+                            bodyFatField(title: "Visceral (%)", text: $viewModel.visceralBodyFatText)
+                        }
+
                         VStack(alignment: .leading, spacing: AppSpacing.small) {
                             Text("Reference guide")
                                 .font(.subheadline.weight(.semibold))
@@ -248,8 +261,16 @@ struct ProgressPhotosView: View {
                                 .foregroundStyle(AppPalette.textSecondary)
                         } else {
                             VStack(alignment: .leading, spacing: AppSpacing.item) {
-                                ForEach(viewModel.recentPhotos.prefix(8)) { photo in
-                                    ProgressPhotoRow(photo: photo)
+                                ForEach(viewModel.recentPhotoGroups) { group in
+                                    VStack(alignment: .leading, spacing: AppSpacing.small) {
+                                        Text(group.day.formatted(date: .abbreviated, time: .omitted))
+                                            .font(.headline)
+                                            .foregroundStyle(AppPalette.textPrimary)
+
+                                        ForEach(group.photos.prefix(8)) { photo in
+                                            ProgressPhotoRow(photo: photo)
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -313,6 +334,12 @@ struct ProgressPhotosView: View {
             }
         }
         .appScreenBackground()
+    }
+
+    private func bodyFatField(title: String, text: Binding<String>) -> some View {
+        TextField(title, text: text)
+            .textFieldStyle(.appTextField)
+            .keyboardType(.decimalPad)
     }
 }
 
@@ -486,11 +513,20 @@ private struct ProgressPhotoRow: View {
                         .foregroundStyle(AppPalette.textSecondary)
                 }
 
-                            if let bodyFatPercentage = photo.bodyFatPercentage {
-                                Text("Body-fat estimate: \(bodyFatPercentage.formatted(.number.precision(.fractionLength(0))))%")
-                                    .font(.caption)
-                                    .foregroundStyle(AppPalette.accent)
-                            }
+                if let bodyFatPercentage = photo.bodyFatPercentage {
+                    Text("Body-fat estimate: \(bodyFatPercentage.formatted(.number.precision(.fractionLength(0))))%")
+                        .font(.caption)
+                        .foregroundStyle(AppPalette.accent)
+                }
+
+                if let breakdown = photo.bodyFatBreakdown {
+                    Text("Chest \(format(breakdown.chestPercentage))% · Arms \(format(breakdown.armsPercentage))% · Legs \(format(breakdown.legsPercentage))%")
+                        .font(.caption2)
+                        .foregroundStyle(AppPalette.textSecondary)
+                    Text("Back \(format(breakdown.backPercentage))% · Visceral \(format(breakdown.visceralPercentage))%")
+                        .font(.caption2)
+                        .foregroundStyle(AppPalette.textSecondary)
+                }
             }
 
             Spacer(minLength: 0)
@@ -502,6 +538,10 @@ private struct ProgressPhotoRow: View {
                 .offset(y: 24),
             alignment: .bottom
         )
+    }
+
+    private func format(_ value: Double?) -> String {
+        value.map { $0.formatted(.number.precision(.fractionLength(1))) } ?? "—"
     }
 }
 

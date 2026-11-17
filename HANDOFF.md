@@ -6,7 +6,7 @@
 
 ## Assigned Issue
 
-Enable Screen Time authorization and document the remaining Device Activity integration
+Group progress photos by date and persist regional body-fat estimates
 
 ## Branch
 
@@ -14,29 +14,31 @@ codex/repo-foundation
 
 ## Work Completed
 
-- Added `Family Controls` and `Family Controls App and Website Usage` entitlements to the app.
-- Added a real authorization request using `AuthorizationCenter.shared.requestAuthorization(for: .individual)`.
-- Added Sleep Setup status and an actionable `Allow Screen Time access` button.
-- Kept the dashboard honest: it does not fabricate usage totals before Device Activity reporting is available.
+- Added `BodyFatEstimateBreakdown` for chest, arms, legs, back, and visceral estimates.
+- Persisted the optional breakdown through the SwiftData progress-photo model.
+- Added editable regional estimate fields and automatic general-range suggestions after body analysis.
+- Grouped saved progress-photo rows by capture date.
 
 ## Files Changed
 
-- `Dietum/Dietum.entitlements`
-- `Dietum/Features/Onboarding/SleepSetupViewModel.swift`
-- `Dietum/Features/Onboarding/SleepSetupView.swift`
+- `Dietum/Domain/Models/DomainModelPlaceholder.swift`
+- `Dietum/Data/SwiftData/Models/StoredProgressPhotoMetadata.swift`
+- `Dietum/Features/ProgressPhotos/ProgressPhotosViewModel.swift`
+- `Dietum/Features/ProgressPhotos/ProgressPhotosView.swift`
+- `Dietum/DietumTests/NutritionAdjustmentRecommendationServiceTests.swift`
 - `PROJECT_STATUS.md`
 - `HANDOFF.md`
 
 ## Verification
 
-- Feature build: `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-screen-time-build` succeeded.
-- Final: `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-screen-time-tests` passed with 17 tests and 0 failures.
+- Feature build: `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-body-fat-build` succeeded.
+- Final: `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-body-fat-tests` passed with 17 tests and 0 failures.
 - `git diff --check` passed.
 
 ## Work Remaining
 
+- Body-fat regional values are estimates and should be replaced or edited with measured data when available.
 - Actual Screen Time totals are not yet available because the project does not have a Device Activity report extension.
-- Apple must approve the Family Controls capability for device distribution; simulator builds only verify compilation.
 
 ## Known Problems
 

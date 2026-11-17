@@ -17,6 +17,13 @@ struct BodyFatReferenceBand: Identifiable, Hashable, Sendable {
     ]
 }
 
+struct ProgressPhotoDayGroup: Identifiable, Hashable, Sendable {
+    let day: Date
+    let photos: [ProgressPhotoMetadata]
+
+    var id: Date { day }
+}
+
 @MainActor
 final class ProgressPhotosViewModel: ObservableObject {
     enum BodyAnalysisState: Equatable {
@@ -42,6 +49,11 @@ final class ProgressPhotosViewModel: ObservableObject {
 
     @Published var notes: String = ""
     @Published var bodyFatPercentageText: String = ""
+    @Published var chestBodyFatText: String = ""
+    @Published var armsBodyFatText: String = ""
+    @Published var legsBodyFatText: String = ""
+    @Published var backBodyFatText: String = ""
+    @Published var visceralBodyFatText: String = ""
     @Published var selectedBodyFatReferenceID: String?
     @Published var stagedPhotos: [ProgressPhotoAngle: PhotoMetadata] = [:]
     @Published var recentPhotos: [ProgressPhotoMetadata] = []
@@ -117,7 +129,8 @@ final class ProgressPhotosViewModel: ObservableObject {
                     angle: angle,
                     photo: photo,
                     notes: noteText.isEmpty ? nil : noteText,
-                    bodyFatPercentage: bodyFatPercentage
+                    bodyFatPercentage: bodyFatPercentage,
+                    bodyFatBreakdown: bodyFatBreakdown
                 )
                 try await progressPhotoRepository.saveProgressPhoto(metadata)
             }
@@ -125,6 +138,7 @@ final class ProgressPhotosViewModel: ObservableObject {
             stagedPhotos.removeAll()
             notes = ""
             bodyFatPercentageText = ""
+            clearBodyFatBreakdown()
             selectedBodyFatReferenceID = nil
             bodyAnalysisState = .idle
             saveState = .saved(Date())
@@ -139,6 +153,7 @@ final class ProgressPhotosViewModel: ObservableObject {
         photoSelectionError = nil
         notes = ""
         bodyFatPercentageText = ""
+        clearBodyFatBreakdown()
         selectedBodyFatReferenceID = nil
         bodyAnalysisState = .idle
         saveState = .idle
@@ -150,6 +165,17 @@ final class ProgressPhotosViewModel: ObservableObject {
         }
 
         return value
+    }
+
+    var bodyFatBreakdown: BodyFatEstimateBreakdown? {
+        let breakdown = BodyFatEstimateBreakdown(
+            chestPercentage: parsedEstimate(chestBodyFatText),
+            armsPercentage: parsedEstimate(armsBodyFatText),
+            legsPercentage: parsedEstimate(legsBodyFatText),
+            backPercentage: parsedEstimate(backBodyFatText),
+            visceralPercentage: parsedEstimate(visceralBodyFatText)
+        )
+        return breakdown.isEmpty ? nil : breakdown
     }
 
     var bodyFatEstimateText: String {
@@ -206,8 +232,9 @@ final class ProgressPhotosViewModel: ObservableObject {
         if detectedCount == 0 {
             bodyAnalysisState = .failed("No clear human body was detected. Try a brighter, full-body photo with less obstruction.")
         } else {
+            applySuggestedBodyFatBreakdown()
             let photoWord = detectedCount == 1 ? "photo" : "photos"
-            bodyAnalysisState = .analyzed("Body detected in \(detectedCount) \(photoWord). Use the visual reference ranges below for a non-clinical body-fat estimate.")
+            bodyAnalysisState = .analyzed("Body detected in \(detectedCount) \(photoWord). Review the non-clinical regional estimates and edit them before saving.")
         }
     }
 
@@ -383,6 +410,17 @@ final class ProgressPhotosViewModel: ObservableObject {
         return "Showing the most recent saved entries from your local history."
     }
 
+    var recentPhotoGroups: [ProgressPhotoDayGroup] {
+        let calendar = Calendar.current
+        let grouped = Dictionary(grouping: recentPhotos) { photo in
+            calendar.startOfDay(for: photo.capturedAt)
+        }
+
+        return grouped
+            .map { ProgressPhotoDayGroup(day: $0.key, photos: $0.value.sorted { $0.capturedAt > $1.capturedAt }) }
+            .sorted { $0.day > $1.day }
+    }
+
     func stagedPhoto(for angle: ProgressPhotoAngle) -> PhotoMetadata? {
         stagedPhotos[angle]
     }
@@ -424,6 +462,46 @@ final class ProgressPhotosViewModel: ObservableObject {
 
     private func angleOrder(_ angle: ProgressPhotoAngle) -> Int {
         ProgressPhotoAngle.allCases.firstIndex(of: angle) ?? 0
+    }
+
+    private func parsedEstimate(_ value: String) -> Double? {
+        guard let number = Double(value.trimmingCharacters(in: .whitespacesAndNewlines)), (1...70).contains(number) else {
+            return nil
+        }
+        return number
+    }
+
+    private func clearBodyFatBreakdown() {
+        chestBodyFatText = ""
+        armsBodyFatText = ""
+        legsBodyFatText = ""
+        backBodyFatText = ""
+        visceralBodyFatText = ""
+    }
+
+    private func applySuggestedBodyFatBreakdown() {
+        let baseline = bodyFatPercentage
+            ?? BodyFatReferenceBand.guide.first(where: { $0.id == selectedBodyFatReferenceID }).map(Self.midpoint(of:))
+            ?? 25
+
+        chestBodyFatText = formattedEstimate(baseline)
+        armsBodyFatText = formattedEstimate(baseline - 1)
+        legsBodyFatText = formattedEstimate(baseline + 2)
+        backBodyFatText = formattedEstimate(baseline + 1)
+        visceralBodyFatText = formattedEstimate(baseline * 0.9)
+    }
+
+    private func formattedEstimate(_ value: Double) -> String {
+        String(format: "%.1f", min(max(value, 1), 70))
+    }
+
+    private static func midpoint(of band: BodyFatReferenceBand) -> Double {
+        switch band.id {
+        case "lean": return 8
+        case "active": return 15
+        case "general": return 25
+        default: return 35
+        }
     }
 }
 

@@ -297,6 +297,13 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
                 storageIdentifier: "progress-photo-front-01",
                 capturedAt: capturedAt,
                 imageData: imageData
+            ),
+            bodyFatBreakdown: BodyFatEstimateBreakdown(
+                chestPercentage: 22.0,
+                armsPercentage: 21.0,
+                legsPercentage: 24.0,
+                backPercentage: 23.0,
+                visceralPercentage: 19.8
             )
         )
 
@@ -305,6 +312,8 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
 
         XCTAssertEqual(results.count, 1)
         XCTAssertEqual(results.first?.photo.imageData, imageData)
+        XCTAssertEqual(results.first?.bodyFatBreakdown?.legsPercentage, 24.0)
+        XCTAssertEqual(results.first?.bodyFatBreakdown?.visceralPercentage, 19.8)
     }
 
     @MainActor
