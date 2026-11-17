@@ -41,6 +41,8 @@ Milestone 0 — Repository and Architecture Foundation
 - Completed MVP hardening: local meal-photo input, meal-entry persistence, live local export loading, and repository-backed meal save wiring
 - Verified MVP hardening with a successful app build and XCTest run
 - Added deterministic quality coverage for reminder controls, habit adherence, and local export payloads
+- Added optional Google account sign-in, Keychain token storage, private Drive backup upload, skip flow, and weekly background scheduling
+- Verified the optional account and backup flow with a successful build and 6-test XCTest run
 
 # In Progress
 
@@ -52,7 +54,7 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Next Tasks
 
-- Begin the next product phase when new product scope is defined
+- Configure Google OAuth build settings for a device build if Drive backup is desired
 
 # Dependency Tracking
 
@@ -65,6 +67,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Elevated hardening verification completed successfully after the sandbox-only restriction was bypassed
 - Existing progress-photo metadata does not include rendered image assets, so comparison cards use privacy-safe placeholders
 - `Dietum.xcodeproj/project.pbxproj` has an unrelated uncommitted Xcode-generated modification and remains intentionally untouched
+- Google Drive is intentionally disabled until `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_REDIRECT_URI`, and `GOOGLE_OAUTH_SCHEME` are configured
 
 # Active Agents
 
@@ -72,4 +75,4 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Last Updated
 
-2026-10-01
+2026-11-17

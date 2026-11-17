@@ -4,7 +4,7 @@ Replace the previous handoff content with the current state at the end of each a
 
 ## Date
 
-2026-10-01
+2026-11-17
 
 ## Agent
 
@@ -12,7 +12,7 @@ Phase 2 Integration Lane
 
 ## Assigned Issue
 
-Quality coverage after MVP hardening
+Optional account and weekly Drive backup
 
 ## Branch
 
@@ -33,6 +33,9 @@ codex/repo-foundation
 - Added live local meal-entry loading to the export provider and injected it through the app container
 - Added the camera usage description required for device capture
 - Added deterministic XCTest coverage for reminder permission/control behavior, habit streak and coverage calculations, and local export payload round-tripping
+- Added an optional account setup screen with a local skip path
+- Added Google OAuth via `ASWebAuthenticationSession`, Keychain token storage, private `drive.appdata` upload, and weekly `BGTaskScheduler` scheduling
+- Added configurable OAuth build settings and documented the device setup required to enable Drive access
 
 ## Workstreams
 
@@ -63,6 +66,14 @@ codex/repo-foundation
 - `PROJECT_STATUS.md`
 - `HANDOFF.md`
 - `Dietum/DietumTests/NutritionAdjustmentRecommendationServiceTests.swift`
+- `Dietum/App/AccountFeature.swift`
+- `Dietum/App/AppContainer.swift`
+- `Dietum/App/DietumApp.swift`
+- `Dietum/App/RootView.swift`
+- `Dietum/Info.plist`
+- `README.md`
+- `PRODUCT_SPEC.md`
+- `DECISIONS.md`
 
 ## Tests Run
 
@@ -79,10 +90,12 @@ codex/repo-foundation
 - The elevated XCTest run succeeded with 2 tests and 0 failures
 - `git diff --check` passed
 - The expanded XCTest run succeeded with 5 tests and 0 failures
+- The account/backup app build succeeded with elevated Xcode access
+- The account/backup XCTest run succeeded with 6 tests and 0 failures
 
 ## Work Remaining
 
-- No quality-hardening work remains; the next product milestone requires new product scope
+- Google OAuth configuration remains required before real sign-in/Drive upload can be exercised on a device
 
 ## Known Problems
 
@@ -91,6 +104,7 @@ codex/repo-foundation
 - Progress-photo comparison currently uses metadata placeholders because the existing local photo model exposes storage metadata rather than renderable image assets
 - Unrelated uncommitted files remain in the working tree: `pass` and `pass.pub`
 - An unrelated uncommitted Xcode project-file modification remains in the working tree and was not included
+- `pass` and `pass.pub` remain unrelated untracked files
 
 ## Important Decisions
 
@@ -100,7 +114,7 @@ codex/repo-foundation
 
 ## Exact Next Step
 
-- Start the next product milestone when the product specification defines it
+- Configure the three Google OAuth build settings, then validate sign-in and a real weekly backup on a physical device
 
 ## Suggested Next Agent
 

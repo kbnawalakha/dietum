@@ -94,4 +94,16 @@ struct AppContainer {
     func makeSleepSetupView() -> SleepSetupView {
         SleepSetupView(viewModel: SleepSetupViewModel())
     }
+
+    func makeAccountViewModel() -> AccountViewModel {
+        AccountViewModel(
+            snapshotProvider: SwiftDataMealExportSnapshotProvider(
+                mealEntryRepository: mealEntryRepository
+            )
+        )
+    }
+
+    func makeAccountView(onComplete: @escaping () -> Void) -> AccountView {
+        AccountView(viewModel: makeAccountViewModel(), onComplete: onComplete)
+    }
 }

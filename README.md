@@ -1,6 +1,6 @@
 # Dietum
 
-Dietum is a personal-use iPhone nutrition and progress-tracking app. The repo now includes a buildable Xcode project and a minimal SwiftUI shell. The product direction stays local-first, Swift-based, and centered on helping one user track meals, weight, progress photos, and nutrition targets without accounts or cloud sync.
+Dietum is a personal-use iPhone nutrition and progress-tracking app. The repo now includes a buildable Xcode project and a SwiftUI app shell. The product direction stays local-first, Swift-based, and centered on helping one user track meals, weight, progress photos, and nutrition targets. Account sign-in and Google Drive backup are optional; users can skip them and keep using the app locally.
 
 ## MVP Scope
 
@@ -24,6 +24,7 @@ Dietum is a personal-use iPhone nutrition and progress-tracking app. The repo no
 - Progress-photo comparison
 - Weight and nutrition progress charts
 - Suggested calorie adjustments with user approval before applying them
+- Optional Google sign-in with private weekly Google Drive backups
 
 ## Technology Choices
 
@@ -36,15 +37,25 @@ Dietum is a personal-use iPhone nutrition and progress-tracking app. The repo no
 
 ## Current Development Status
 
-The repository now contains the coordination foundation, a buildable Xcode project, the initial SwiftUI app shell, the SwiftData foundation, the meal-logging slice, the weekly check-in slice, the progress-photo slice, the progress-charts slice, the nutrition-adjustment slice, the onboarding draft flow and launch gate, and the state-driven daily dashboard. The code builds on the iOS simulator and remains local-first.
+The repository now contains the coordination foundation, a buildable Xcode project, the SwiftUI app shell, SwiftData persistence, the complete MVP feature set, Phase 2 enhancements, local-only hardening, deterministic quality coverage, and the optional account/backup flow. The code builds on the iOS simulator and remains local-first when account setup is skipped.
 
 ## How To Open And Run
 
 Open `Dietum.xcodeproj` in Xcode, select an iPhone simulator target, and run the `Dietum` scheme.
 
+## Optional Google Drive Setup
+
+The account screen is usable without configuration: tap **Skip for now** to stay local-only. To enable Google sign-in and weekly Drive backups, create a Google OAuth iOS client and set these build settings for the `Dietum` target:
+
+- `GOOGLE_OAUTH_CLIENT_ID` - the Google OAuth client ID
+- `GOOGLE_OAUTH_REDIRECT_URI` - the registered custom-scheme redirect URI
+- `GOOGLE_OAUTH_SCHEME` - the URL scheme used by that redirect URI
+
+The app requests the private `drive.appdata` scope and stores OAuth tokens in the iOS Keychain. Weekly backup scheduling uses `BGTaskScheduler`; iOS decides when an eligible background refresh runs.
+
 ## How To Run Tests
 
-Automated app tests have not been added yet. When the first test target exists, run it from Xcode or with the appropriate `xcodebuild test` command for the selected scheme.
+Run the `Dietum` scheme with an iPhone Simulator. The current suite contains 5 deterministic XCTest cases and should report 0 failures.
 
 ## Repository Structure
 
@@ -69,6 +80,7 @@ At the moment, the repository includes documentation and a lightweight source sc
 - `Dietum/Features/Charts/` - progress chart visualizations for weight and nutrition
 - `Dietum/Features/NutritionAdjustment/` - calorie adjustment review and approval flow
 - `Dietum/Features/Onboarding/` - user profile onboarding draft flow and launch gate
+- `Dietum/App/AccountFeature.swift` - optional Google account and weekly Drive backup flow
 - `Dietum/Features/Dashboard/` - state-driven daily dashboard
 - `Dietum/Data/` - SwiftData models, persistence stack, and repository adapters
 

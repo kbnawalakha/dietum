@@ -31,6 +31,7 @@ Dietum helps one person track nutrition, body progress, and feedback loops in a 
 - Progress-photo comparison
 - Weight and nutrition progress charts
 - Suggested calorie adjustments that require user approval
+- Optional Google account sign-in and private weekly Google Drive backup
 
 ## Out-Of-Scope Features
 
@@ -124,6 +125,7 @@ Dietum helps one person track nutrition, body progress, and feedback loops in a 
 - Health and photo data are not shared externally
 - No account creation is required
 - No cloud backup is assumed by default
+- Optional Drive backups use Google's private app-data area and require explicit user authorization
 - The app should minimize logging of private data
 
 ## Safety Constraints
@@ -133,6 +135,14 @@ Dietum helps one person track nutrition, body progress, and feedback loops in a 
 - Suggested calorie changes must never apply silently
 - Users must remain in control of edits to their profile and targets
 - The app should avoid overclaiming medical or clinical accuracy
+
+## Optional Account And Backup
+
+- Users may skip account setup and continue using the app locally
+- Google sign-in is only used to authorize the optional Drive backup path
+- Backup data is serialized locally before upload and is not shared with Dietum servers
+- The app requests only the private Google Drive app-data scope
+- Weekly background backup is best-effort and remains subject to iOS background scheduling
 
 ## Phase 2 Ideas
 

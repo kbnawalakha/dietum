@@ -14,6 +14,20 @@ Status:
 
 Accepted.
 
+## ADR-005 — Optional Google Drive Backup
+
+Decision:
+
+Keep Dietum local-first, but allow users to opt into Google sign-in and private weekly Drive backups. Skipping account setup must leave the local app fully usable.
+
+Reason:
+
+Users requested a recoverable weekly backup without changing the default privacy model or introducing Dietum accounts and cloud synchronization.
+
+Status:
+
+Accepted.
+
 ## ADR-002 — SwiftData Persistence
 
 Decision:

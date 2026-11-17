@@ -131,6 +131,15 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(exportedSnapshot.mealEntries[0].items[0].name, "Rice")
     }
 
+    func testOAuthPlaceholderConfigurationStaysDisabledUntilConfigured() {
+        let configuration = GoogleDriveConfiguration(info: [
+            "GoogleOAuthClientID": "$(GOOGLE_OAUTH_CLIENT_ID)",
+            "GoogleOAuthRedirectURI": "$(GOOGLE_OAUTH_REDIRECT_URI)"
+        ])
+
+        XCTAssertFalse(configuration.isConfigured)
+    }
+
     private static func day(_ dayOffset: Double) -> Date {
         Date(timeIntervalSince1970: 1_700_000_000 + (86_400 * dayOffset))
     }

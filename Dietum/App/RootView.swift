@@ -101,6 +101,13 @@ struct RootView: View {
                             Label(AppRoute.sleepSetup.title, systemImage: AppRoute.sleepSetup.systemImage)
                         }
                         .buttonStyle(.appToolbar)
+
+                        Button {
+                            viewModel.isAccountPresented = true
+                        } label: {
+                            Label("Account & Backup", systemImage: "person.crop.circle")
+                        }
+                        .buttonStyle(.appToolbar)
                     }
                 }
                 .navigationDestination(for: AppRoute.self) { route in
@@ -140,6 +147,16 @@ struct RootView: View {
                         viewModel.completeOnboarding()
                     }
                 }
+                .fullScreenCover(isPresented: $viewModel.shouldPresentAccount) {
+                    container.makeAccountView {
+                        viewModel.completeAccountSetup()
+                    }
+                }
+                .sheet(isPresented: $viewModel.isAccountPresented) {
+                    container.makeAccountView {
+                        viewModel.isAccountPresented = false
+                    }
+                }
         }
     }
 }
@@ -147,6 +164,14 @@ struct RootView: View {
 final class RootViewModel: ObservableObject {
     @Published var path: [AppRoute] = []
     @Published var shouldPresentOnboarding = true
+    @Published var shouldPresentAccount: Bool
+    @Published var isAccountPresented = false
+
+    init() {
+        let accountSetupCompleted = UserDefaults.standard.bool(forKey: "dietum.account.setup-completed")
+        shouldPresentAccount = !accountSetupCompleted
+        shouldPresentOnboarding = accountSetupCompleted
+    }
 
     func showMealLogging() {
         path.append(.mealLogging)
@@ -199,5 +224,10 @@ final class RootViewModel: ObservableObject {
     func completeOnboarding() {
         shouldPresentOnboarding = false
         path.removeAll()
+    }
+
+    func completeAccountSetup() {
+        shouldPresentAccount = false
+        shouldPresentOnboarding = true
     }
 }
