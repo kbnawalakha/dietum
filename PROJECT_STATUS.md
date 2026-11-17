@@ -54,6 +54,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Added a user-triggered Screen Time authorization flow in Sleep Setup; Family Controls remains optional until Apple approval
 - Grouped saved progress photos by capture date and added editable regional body-fat estimates for chest, arms, legs, back, and visceral fat
 - Relaxed body-photo analysis so valid uploaded images still receive an editable analysis when Vision pose detection is inconclusive
+- Made meal-photo and body-photo analysis start automatically after upload, while keeping estimates editable before local save
 
 # In Progress
 
@@ -86,6 +87,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Dashboard sleep signals now expose an explicit HealthKit refresh and Sleep Setup path; phone usage totals remain unavailable until Family Controls and a Device Activity report extension are provisioned
 - Body-fat regional values are visual estimates, not clinical measurements; visceral fat cannot be measured from a photograph
 - Vision pose detection can be inconclusive for cropped, dark, side-profile, or simulator images; those images now fall back to editable estimates instead of failing outright
+- Current local Xcode verification can fail before app compilation when the SwiftData macro plugin returns a malformed response; rerun after CoreSimulator/Xcode services recover
 
 # Active Agents
 

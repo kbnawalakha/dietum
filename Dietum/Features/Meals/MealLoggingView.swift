@@ -41,7 +41,12 @@ struct MealLoggingView: View {
 
                         MealPhotoInput(
                             selectedImage: viewModel.selectedPhoto,
-                            onPhotoSelected: { viewModel.setSelectedPhoto($0) },
+                            onPhotoSelected: { image in
+                                viewModel.setSelectedPhoto(image)
+                                Task {
+                                    await viewModel.analyzeMeal()
+                                }
+                            },
                             onPhotoSelectionFailed: { viewModel.photoSelectionFailed() }
                         )
 
@@ -51,7 +56,7 @@ struct MealLoggingView: View {
                                 .foregroundStyle(AppPalette.textSecondary)
                         }
 
-                        Text(viewModel.hasSelectedPhoto ? "Selected local photo. Add a description for a more specific analysis." : "No photo selected. A general food description is enough for the local estimate.")
+                        Text(viewModel.hasSelectedPhoto ? "Photo estimate is ready to review. Add a description for a more specific analysis, or edit the detected foods below." : "No photo selected. A general food description is enough for the local estimate.")
                             .font(.subheadline)
                             .foregroundStyle(AppPalette.textSecondary)
 

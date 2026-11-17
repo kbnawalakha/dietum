@@ -45,10 +45,12 @@ codex/repo-foundation
 - Actual Screen Time totals are not yet available because the project does not have a Device Activity report extension.
 - The default device build uses the existing HealthKit-only profile; Screen Time authorization remains unavailable until Family Controls is enabled in Apple Developer and Xcode.
 - Dashboard sleep signals now have a visible refresh action and a direct Sleep Setup route; phone usage remains clearly marked as unavailable until the Screen Time capability and report extension exist.
+- Meal and body-photo uploads now trigger local estimates automatically; the detected foods, macros, body-fat ranges, and regional values remain editable before saving.
 
 ## Known Problems
 
 - Unrelated pre-existing Xcode scheme/project edits, `build/`, and `pass` / `pass.pub` remain uncommitted and were not staged.
+- The latest device compile was blocked by the local SwiftData macro plugin returning malformed responses; the simulator service was also unavailable for XCTest execution.
 
 ## Exact Next Step
 

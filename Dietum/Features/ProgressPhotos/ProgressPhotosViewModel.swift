@@ -243,7 +243,7 @@ final class ProgressPhotosViewModel: ObservableObject {
         if detectedCount == 0 {
             applySuggestedBodyFatBreakdown()
             let photoWord = validImageCount == 1 ? "photo was" : "photos were"
-            bodyAnalysisState = .analyzed("The (photoWord) loaded, but pose detection was inconclusive. Review the editable visual estimates below; use a brighter, less obstructed full-body photo for stronger framing feedback.")
+            bodyAnalysisState = .analyzed("The \(photoWord) loaded, but pose detection was inconclusive. Review the editable visual estimates below; use a brighter, less obstructed full-body photo for stronger framing feedback.")
         } else {
             applySuggestedBodyFatBreakdown()
             let photoWord = detectedCount == 1 ? "photo" : "photos"

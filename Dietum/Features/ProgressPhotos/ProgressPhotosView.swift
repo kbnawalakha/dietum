@@ -75,7 +75,7 @@ struct ProgressPhotosView: View {
                                 await viewModel.analyzeBodyPhotos()
                             }
                         } label: {
-                            Label("Analyze body photos", systemImage: "figure.stand")
+                            Label("Recalculate body estimate", systemImage: "figure.stand")
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .buttonStyle(.appToolbar)
@@ -112,7 +112,7 @@ struct ProgressPhotosView: View {
 
                         AppSectionHeader(
                             title: "Regional estimates",
-                            message: "Analyze the staged photos for editable, non-clinical estimates. Visceral fat cannot be measured from a photo."
+                            message: "Upload a photo to generate editable, non-clinical estimates before saving. Visceral fat cannot be measured from a photo."
                         )
 
                         LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
@@ -311,6 +311,9 @@ struct ProgressPhotosView: View {
 
                 await MainActor.run {
                     viewModel.stagePhoto(for: angle, image: image)
+                    Task {
+                        await viewModel.analyzeBodyPhotos()
+                    }
                     isPhotoPickerPresented = false
                     selectedAngle = nil
                     pickerItem = nil
@@ -328,6 +331,9 @@ struct ProgressPhotosView: View {
             CameraImagePicker { image in
                 if let selectedAngle {
                     viewModel.stagePhoto(for: selectedAngle, image: image)
+                    Task {
+                        await viewModel.analyzeBodyPhotos()
+                    }
                 }
                 self.selectedAngle = nil
                 isCameraPresented = false
