@@ -45,3 +45,40 @@ assert(RhythmTimeline.estimatedBPM(in: [0.5, 1, 1.5, 2], at: 2.1) == 120)
 assert(RhythmTimeline.estimatedBPM(in: [0.5, 1, 1.5, 2], at: 5) == nil)
 assert(RhythmTimeline.estimatedBPM(in: [], at: 1) == nil)
 print("18 rhythm signal, tempo and playback-position checks passed")
+
+// Whole-video movement levels with an audio-only first section: it must stay Stop.
+let movement = (0..<550).map { index in
+    RhythmSample(time: Double(index) / 10, strength: Double(index / 110) * 0.01)
+}
+var motionCues: [Double] = []
+for level in 1...4 {
+    for index in 0..<(level * 5) {
+        let start = 11.0 * Double(level)
+        let offset = Double(index) * 11.0 / Double(level * 5)
+        motionCues.append(start + offset)
+    }
+}
+let meterTimeline = RhythmTimeline(audio: stride(from: 0.0, to: 55, by: 0.3).map { $0 }, motion: motionCues, duration: 55, movement: movement)
+let sections = RhythmMeter.sections(for: meterTimeline)
+assert(sections.map(\.level) == [.stop, .slow, .normal, .fast, .ultrafast])
+assert(sections.allSatisfy { $0.end - $0.start > 10 })
+assert(sections.first?.start == 0 && sections.last?.end == 55)
+assert(zip(sections, sections.dropFirst()).allSatisfy { $0.end == $1.start })
+for section in sections where section.level != .stop {
+    let period = 60 / section.bpm
+    assert(abs(section.barPosition(at: section.start)) < 0.000001)
+    assert(abs(section.barPosition(at: section.start + period / 2) - 1) < 0.000001)
+    assert(abs(section.barPosition(at: section.start + period)) < 0.000001)
+    let cycles = (section.end - section.start) / period
+    assert(abs(cycles - cycles.rounded()) < 0.000001)
+}
+assert(sections[0].barPosition(at: 5) == 0)
+let stopped = RhythmTimeline(audio: Array(stride(from: 0.0, to: 35.0, by: 0.25)), motion: [], duration: 35,
+                             movement: (0..<350).map { RhythmSample(time: Double($0) / 10, strength: 0) })
+assert(RhythmMeter.sections(for: stopped).map(\.level) == [.stop])
+assert(RhythmMeter.sections(for: RhythmTimeline(audio: [], motion: [], duration: 10)).isEmpty)
+let shortTail = RhythmMeter.sections(for: RhythmTimeline(audio: [], motion: [1,2,3,12,13,14], duration: 23))
+assert(shortTail.allSatisfy { $0.end - $0.start > 10 })
+assert(shortTail.last?.end == 23)
+assert(zip(sections.dropFirst(), sections.dropFirst(2)).allSatisfy { $0.bpm < $1.bpm })
+print("Whole-video levels, minimum holds, complete bar cycles, motion priority, and short-video checks passed")

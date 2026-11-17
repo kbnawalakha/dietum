@@ -133,7 +133,7 @@ struct CounterView: View {
                             }
                             }
                             .overlay(alignment: .topTrailing) {
-                                if guide.timeline != nil && guide.enabled {
+                                if !guide.sections.isEmpty && guide.enabled {
                                     RhythmGuideOverlay(guide: guide)
                                 } else {
                                     MetronomeOverlay(model: metronome)

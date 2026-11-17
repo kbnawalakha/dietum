@@ -18,6 +18,20 @@ final class MetronomeModel: ObservableObject {
         if running { start() }
     }
 
+    var level: RhythmLevel {
+        if !running { return .stop }
+        if bpm < 60 { return .slow }
+        if bpm < 100 { return .normal }
+        if bpm < 150 { return .fast }
+        return .ultrafast
+    }
+
+    func select(_ level: RhythmLevel) {
+        if level == .stop { stop(); return }
+        setTempo(Int(level.targetBPM))
+        if !running { start() }
+    }
+
     func toggle() { running ? stop() : start() }
 
     func stop() {
@@ -92,27 +106,37 @@ final class MetronomeModel: ObservableObject {
 struct MetronomeOverlay: View {
     @ObservedObject var model: MetronomeModel
     @State private var expanded = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !model.running)) { context in
-                    let lit = model.running && context.date.timeIntervalSince(model.lastBeat) < 0.12
-                    Circle().fill(lit ? Color.mint : Color.gray.opacity(0.5))
-                        .frame(width: 14, height: 14)
-                        .scaleEffect(lit && !reduceMotion ? 1.2 : 1)
-                }.accessibilityHidden(true)
-                Text("\(model.bpm) BPM").font(.subheadline.bold()).monospacedDigit()
+        VStack(spacing: 8) {
+            HStack(spacing: 12) {
+                Text(model.level.rawValue).font(.subheadline.bold())
                 Button(model.running ? "Stop" : "Start", systemImage: model.running ? "stop.fill" : "play.fill") {
                     model.toggle()
                 }.labelStyle(.iconOnly)
                     .accessibilityLabel(model.running ? "Stop metronome" : "Start metronome")
-                Button("Tempo settings", systemImage: expanded ? "chevron.up" : "slider.horizontal.3") {
-                    expanded.toggle()
-                }.labelStyle(.iconOnly).accessibilityLabel("Tempo settings")
+                Button("Tempo settings", systemImage: "slider.horizontal.3") { expanded = true }
+                    .labelStyle(.iconOnly)
             }
-            if expanded {
+            TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !model.running)) { context in
+                let elapsed = max(0, context.date.timeIntervalSince(model.lastBeat))
+                let phase = (elapsed * Double(model.bpm) / 60).truncatingRemainder(dividingBy: 1)
+                RhythmBar(position: model.running ? 1 - abs(2 * phase - 1) : 0)
+            }
+            Text("\(model.running ? model.bpm : 0) BPM · Manual").font(.caption.monospacedDigit())
+        }
+        .tint(.mint)
+        .padding(10)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .padding(8)
+        .sheet(isPresented: $expanded) {
+            VStack(spacing: 18) {
+                Text("Manual tempo · \(model.bpm) BPM").font(.headline)
+                HStack(spacing: 12) {
+                    ForEach(RhythmLevel.allCases, id: \.self) { level in
+                        Button(level.rawValue) { model.select(level) }.font(.caption)
+                    }
+                }
                 HStack {
                     Button("Slower", systemImage: "minus.circle") { model.setTempo(model.bpm - 1) }
                         .labelStyle(.iconOnly).disabled(model.bpm == 30)
@@ -121,24 +145,12 @@ struct MetronomeOverlay: View {
                     Button("Faster", systemImage: "plus.circle") { model.setTempo(model.bpm + 1) }
                         .labelStyle(.iconOnly).disabled(model.bpm == 240)
                 }
-                HStack {
-                    ForEach(1...4, id: \.self) { beat in
-                        Circle().fill(model.beat == beat ? Color.mint : Color.gray.opacity(0.4))
-                            .frame(width: 10, height: 10)
-                    }
-                    Spacer()
-                    Toggle("Click", isOn: $model.soundEnabled).fixedSize()
-                        .accessibilityLabel("Audible metronome clicks")
-                }
+                Toggle("Audible clicks", isOn: $model.soundEnabled)
                 if let error = model.soundError { Text(error).font(.caption) }
+                Button("Done") { expanded = false }
             }
+            .padding(24).tint(.mint)
+            .presentationDetents([.height(300)])
         }
-        .font(.subheadline)
-        .tint(.mint)
-        .padding(12)
-        .frame(maxWidth: expanded ? 290 : nil)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(0.15)))
-        .padding(10)
     }
 }

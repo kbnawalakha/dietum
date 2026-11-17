@@ -13,6 +13,11 @@ struct RhythmTimeline: Sendable {
     let audio: [Double]
     let motion: [Double]
     let duration: Double
+    let movement: [RhythmSample]
+
+    init(audio: [Double], motion: [Double], duration: Double, movement: [RhythmSample] = []) {
+        self.audio = audio; self.motion = motion; self.duration = duration; self.movement = movement
+    }
 
     func cues(for source: RhythmSource) -> [Double] {
         switch source {

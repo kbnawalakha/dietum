@@ -139,3 +139,10 @@ Milestone 0 — Repository and Architecture Foundation
 - Analysis uses ephemeral downloads capped at 150 MiB and 10 minutes; media cleanup and task cancellation are implemented. Links/results are not persisted.
 - Synthetic signal and generated-media decoding checks passed. iPhone/network playback accuracy and specific action recognition remain unverified; semantic stroke-pattern recognition is not implemented. HLS/website analysis remains unsupported.
 - Final synchronization validation: iPhone build succeeded; 13 link checks, 18 rhythm checks, and generated-media/loopback HTTP integration checks passed (including temporary-file decoding, size rejection, HTTP errors, cleanup, and cancellation).
+
+### Counter movement-led bar and stable levels (2026-11-17)
+
+- Replaced automatic cue flashes with a vertical up/down bar and Stop/Slow/Normal/Fast/Ultrafast levels; manual mode also uses a bar and speed presets.
+- Whole-video classification weights movement 85% and audio 15%; static sections remain Stop. All automatic sections last strictly over 10 seconds, including the tail; short videos explain the minimum length.
+- Target cycle rates 0/40/80/120/180 BPM are fitted to whole cycles per section. A section preview shows the complete video plan. Classification is based on movement estimates, not semantic action recognition.
+- Final bar validation: iPhone build, existing link/rhythm tests, new section/cycle tests, generated-media/HTTP regressions, and whitespace checks passed; physical-device visual checks remain.

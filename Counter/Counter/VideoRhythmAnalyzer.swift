@@ -128,8 +128,8 @@ actor VideoRhythmAnalyzer: VideoRhythmAnalyzing {
         let motion = try videoTracks.first.map { try motionSamples(asset, track: $0) } ?? []
         let timeline = RhythmTimeline(
             audio: RhythmTimeline.peaks(audio, floor: 0.015, minimumGap: 0.25),
-            motion: RhythmTimeline.peaks(motion, floor: 0.012, minimumGap: 0.3), duration: duration)
-        guard !timeline.audio.isEmpty || !timeline.motion.isEmpty else { throw RhythmAnalysisError.noCues }
+            motion: RhythmTimeline.peaks(motion, floor: 0.012, minimumGap: 0.3), duration: duration, movement: motion)
+        guard !timeline.audio.isEmpty || !timeline.motion.isEmpty || !motion.isEmpty else { throw RhythmAnalysisError.noCues }
         return timeline
     }
 
