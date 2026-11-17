@@ -191,7 +191,7 @@ struct OnboardingView: View {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
                             title: "Nutrition targets",
-                            message: "The draft ends with daily calories and macros so the dashboard can pick them up later."
+                            message: "Enter macro percentages and let Dietum calculate the gram values from daily calories."
                         )
 
                         VStack(alignment: .leading, spacing: AppSpacing.item) {
@@ -199,20 +199,24 @@ struct OnboardingView: View {
                                 TextField("Calories", text: viewModel.binding(for: \.dailyCalories))
                                     .textFieldStyle(.roundedBorder)
 
-                                TextField("Protein", text: viewModel.binding(for: \.proteinGrams))
+                                TextField("Protein %", text: viewModel.binding(for: \.proteinPercentage))
                                     .textFieldStyle(.roundedBorder)
+                                    .keyboardType(.decimalPad)
                             }
 
                             HStack(spacing: AppSpacing.item) {
-                                TextField("Carbs", text: viewModel.binding(for: \.carbohydrateGrams))
+                                TextField("Carbs %", text: viewModel.binding(for: \.carbohydratePercentage))
                                     .textFieldStyle(.roundedBorder)
+                                    .keyboardType(.decimalPad)
 
-                                TextField("Fat", text: viewModel.binding(for: \.fatGrams))
+                                TextField("Fat %", text: viewModel.binding(for: \.fatPercentage))
                                     .textFieldStyle(.roundedBorder)
+                                    .keyboardType(.decimalPad)
                             }
 
-                            TextField("Fiber", text: viewModel.binding(for: \.fiberGrams))
+                            TextField("Fiber % of carbs", text: viewModel.binding(for: \.fiberPercentage))
                                 .textFieldStyle(.roundedBorder)
+                                .keyboardType(.decimalPad)
 
                             nutritionBreakdownView
                         }
@@ -301,23 +305,26 @@ struct OnboardingView: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(AppPalette.textPrimary)
 
-            Text("Percentages use the daily calorie target. Fiber percentage uses carbohydrate grams.")
+            Text("Macro percentages are converted to calories and grams. Fiber percentage is applied to carbohydrate grams.")
                 .font(.footnote)
                 .foregroundStyle(AppPalette.textSecondary)
 
             nutritionSummaryRow(
                 title: "Protein",
                 percentage: breakdown.proteinPercentage,
+                grams: breakdown.proteinGrams,
                 calories: breakdown.proteinCalories
             )
             nutritionSummaryRow(
                 title: "Carbohydrates",
                 percentage: breakdown.carbohydratePercentage,
+                grams: breakdown.carbohydrateGrams,
                 calories: breakdown.carbohydrateCalories
             )
             nutritionSummaryRow(
                 title: "Fat",
                 percentage: breakdown.fatPercentage,
+                grams: breakdown.fatGrams,
                 calories: breakdown.fatCalories
             )
 
@@ -328,19 +335,19 @@ struct OnboardingView: View {
 
                 Spacer(minLength: 0)
 
-                Text(summaryPercentage(breakdown.fiberPercentageOfCarbohydrates, suffix: "% of carbs"))
+                Text(summaryPercentage(breakdown.fiberPercentage, suffix: "% of carbs"))
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(AppPalette.accent)
             }
 
-            Text(summaryCalories(breakdown.fiberCalories, suffix: "fiber kcal estimate"))
+            Text("\(summaryGrams(breakdown.fiberGrams, suffix: "g")) • \(summaryCalories(breakdown.fiberCalories, suffix: "fiber kcal estimate"))")
                 .font(.footnote)
                 .foregroundStyle(AppPalette.textSecondary)
         }
         .padding(.top, AppSpacing.small)
     }
 
-    private func nutritionSummaryRow(title: String, percentage: Double?, calories: Double?) -> some View {
+    private func nutritionSummaryRow(title: String, percentage: Double?, grams: Double?, calories: Double?) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack {
                 Text(title)
@@ -354,7 +361,7 @@ struct OnboardingView: View {
                     .foregroundStyle(AppPalette.accent)
             }
 
-            Text(summaryCalories(calories, suffix: "calories"))
+            Text("\(summaryGrams(grams, suffix: "g")) • \(summaryCalories(calories, suffix: "calories"))")
                 .font(.footnote)
                 .foregroundStyle(AppPalette.textSecondary)
         }
@@ -374,6 +381,14 @@ struct OnboardingView: View {
         }
 
         return "\(value.formatted(.number.precision(.fractionLength(0)))) \(suffix)"
+    }
+
+    private func summaryGrams(_ value: Double?, suffix: String) -> String {
+        guard let value else {
+            return "Grams will appear when the values are valid."
+        }
+
+        return "\(value.formatted(.number.precision(.fractionLength(0))))\(suffix)"
     }
 }
 

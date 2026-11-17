@@ -191,10 +191,10 @@ enum OnboardingField: String, CaseIterable, Hashable, Sendable {
     case heavyMealSlot
     case lightMealSlot
     case dailyCalories
-    case proteinGrams
-    case carbohydrateGrams
-    case fatGrams
-    case fiberGrams
+    case proteinPercentage
+    case carbohydratePercentage
+    case fatPercentage
+    case fiberPercentage
 
     var title: String {
         switch self {
@@ -224,14 +224,14 @@ enum OnboardingField: String, CaseIterable, Hashable, Sendable {
             return "Light meal preference"
         case .dailyCalories:
             return "Daily calorie target"
-        case .proteinGrams:
-            return "Protein target"
-        case .carbohydrateGrams:
-            return "Carbohydrate target"
-        case .fatGrams:
-            return "Fat target"
-        case .fiberGrams:
-            return "Fiber target"
+        case .proteinPercentage:
+            return "Protein percentage"
+        case .carbohydratePercentage:
+            return "Carbohydrate percentage"
+        case .fatPercentage:
+            return "Fat percentage"
+        case .fiberPercentage:
+            return "Fiber percentage"
         }
     }
 }
@@ -250,10 +250,10 @@ struct OnboardingDraft: Hashable, Sendable {
     var heavyMealPreference: String = ""
     var lightMealPreference: String = ""
     var dailyCalories: String = ""
-    var proteinGrams: String = ""
-    var carbohydrateGrams: String = ""
-    var fatGrams: String = ""
-    var fiberGrams: String = ""
+    var proteinPercentage: String = ""
+    var carbohydratePercentage: String = ""
+    var fatPercentage: String = ""
+    var fiberPercentage: String = ""
 
     var trimmedDisplayName: String {
         displayName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -277,10 +277,10 @@ struct OnboardingDraft: Hashable, Sendable {
             !heavyMealPreference.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             !lightMealPreference.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             !dailyCalories.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-            !proteinGrams.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-            !carbohydrateGrams.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-            !fatGrams.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-            !fiberGrams.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            !proteinPercentage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+            !carbohydratePercentage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+            !fatPercentage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+            !fiberPercentage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         ]
         .filter { $0 }
         .count
@@ -293,10 +293,10 @@ struct OnboardingDraft: Hashable, Sendable {
     var nutritionBreakdown: OnboardingNutritionBreakdown {
         OnboardingNutritionBreakdown(
             totalCalories: Double(dailyCalories.trimmingCharacters(in: .whitespacesAndNewlines)),
-            proteinGrams: Double(proteinGrams.trimmingCharacters(in: .whitespacesAndNewlines)),
-            carbohydrateGrams: Double(carbohydrateGrams.trimmingCharacters(in: .whitespacesAndNewlines)),
-            fatGrams: Double(fatGrams.trimmingCharacters(in: .whitespacesAndNewlines)),
-            fiberGrams: Double(fiberGrams.trimmingCharacters(in: .whitespacesAndNewlines))
+            proteinPercentage: Double(proteinPercentage.trimmingCharacters(in: .whitespacesAndNewlines)),
+            carbohydratePercentage: Double(carbohydratePercentage.trimmingCharacters(in: .whitespacesAndNewlines)),
+            fatPercentage: Double(fatPercentage.trimmingCharacters(in: .whitespacesAndNewlines)),
+            fiberPercentage: Double(fiberPercentage.trimmingCharacters(in: .whitespacesAndNewlines))
         )
     }
 
@@ -311,49 +311,53 @@ struct OnboardingDraft: Hashable, Sendable {
 
 struct OnboardingNutritionBreakdown: Hashable, Sendable {
     let totalCalories: Double?
-    let proteinGrams: Double?
-    let carbohydrateGrams: Double?
-    let fatGrams: Double?
-    let fiberGrams: Double?
+    let proteinPercentage: Double?
+    let carbohydratePercentage: Double?
+    let fatPercentage: Double?
+    let fiberPercentage: Double?
 
     var proteinCalories: Double? {
-        proteinGrams.map { $0 * 4 }
+        macroCalories(for: proteinPercentage)
     }
 
     var carbohydrateCalories: Double? {
-        carbohydrateGrams.map { $0 * 4 }
+        macroCalories(for: carbohydratePercentage)
     }
 
     var fatCalories: Double? {
-        fatGrams.map { $0 * 9 }
+        macroCalories(for: fatPercentage)
     }
 
     var fiberCalories: Double? {
         fiberGrams.map { $0 * 2 }
     }
 
-    var proteinPercentage: Double? {
-        percentage(of: proteinCalories, total: totalCalories)
+    var proteinGrams: Double? {
+        proteinCalories.map { $0 / 4 }
     }
 
-    var carbohydratePercentage: Double? {
-        percentage(of: carbohydrateCalories, total: totalCalories)
+    var carbohydrateGrams: Double? {
+        carbohydrateCalories.map { $0 / 4 }
     }
 
-    var fatPercentage: Double? {
-        percentage(of: fatCalories, total: totalCalories)
+    var fatGrams: Double? {
+        fatCalories.map { $0 / 9 }
     }
 
-    var fiberPercentageOfCarbohydrates: Double? {
-        percentage(of: fiberGrams, total: carbohydrateGrams)
-    }
-
-    private func percentage(of value: Double?, total: Double?) -> Double? {
-        guard let value, let total, total > 0 else {
+    var fiberGrams: Double? {
+        guard let carbohydrateGrams, let fiberPercentage else {
             return nil
         }
 
-        return (value / total) * 100
+        return carbohydrateGrams * fiberPercentage / 100
+    }
+
+    private func macroCalories(for percentage: Double?) -> Double? {
+        guard let totalCalories, let percentage else {
+            return nil
+        }
+
+        return totalCalories * percentage / 100
     }
 }
 
@@ -513,10 +517,24 @@ enum OnboardingDraftValidator {
 
     private static func validateNutritionTargets(_ draft: OnboardingDraft, issues: inout [OnboardingValidationIssue]) {
         validateCalories(draft, issues: &issues)
-        validateMacroTarget(draft.proteinGrams, field: .proteinGrams, label: "Protein", issues: &issues)
-        validateMacroTarget(draft.carbohydrateGrams, field: .carbohydrateGrams, label: "Carbohydrate", issues: &issues)
-        validateMacroTarget(draft.fatGrams, field: .fatGrams, label: "Fat", issues: &issues)
-        validateMacroTarget(draft.fiberGrams, field: .fiberGrams, label: "Fiber", issues: &issues)
+        validatePercentage(draft.proteinPercentage, field: .proteinPercentage, label: "Protein", issues: &issues)
+        validatePercentage(draft.carbohydratePercentage, field: .carbohydratePercentage, label: "Carbohydrate", issues: &issues)
+        validatePercentage(draft.fatPercentage, field: .fatPercentage, label: "Fat", issues: &issues)
+        validatePercentage(draft.fiberPercentage, field: .fiberPercentage, label: "Fiber", issues: &issues)
+
+        let macroPercentages = [
+            parseDouble(draft.proteinPercentage),
+            parseDouble(draft.carbohydratePercentage),
+            parseDouble(draft.fatPercentage)
+        ]
+
+        if macroPercentages.allSatisfy({ $0 != nil }),
+           abs(macroPercentages.compactMap { $0 }.reduce(0, +) - 100) > 0.1 {
+            issues.append(OnboardingValidationIssue(
+                field: .dailyCalories,
+                message: "Protein, carbohydrate, and fat percentages should add up to 100%."
+            ))
+        }
     }
 
     private static func validateCalories(_ draft: OnboardingDraft, issues: inout [OnboardingValidationIssue]) {
@@ -531,19 +549,19 @@ enum OnboardingDraftValidator {
         }
     }
 
-    private static func validateMacroTarget(
+    private static func validatePercentage(
         _ value: String,
         field: OnboardingField,
         label: String,
         issues: inout [OnboardingValidationIssue]
     ) {
         guard let value = parseDouble(value) else {
-            issues.append(OnboardingValidationIssue(field: field, message: "Enter a \(label.lowercased()) target."))
+            issues.append(OnboardingValidationIssue(field: field, message: "Enter a \(label.lowercased()) percentage."))
             return
         }
 
-        guard value > 0 else {
-            issues.append(OnboardingValidationIssue(field: field, message: "\(label) target should be greater than zero."))
+        guard (0...100).contains(value) else {
+            issues.append(OnboardingValidationIssue(field: field, message: "\(label) percentage should be between 0% and 100%."))
             return
         }
     }

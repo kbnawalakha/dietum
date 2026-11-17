@@ -153,21 +153,25 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
     func testOnboardingNutritionBreakdownCalculatesMacroPercentagesAndFiberFromCarbs() {
         var draft = OnboardingDraft()
         draft.dailyCalories = "2000"
-        draft.proteinGrams = "100"
-        draft.carbohydrateGrams = "200"
-        draft.fatGrams = "66.6667"
-        draft.fiberGrams = "20"
+        draft.proteinPercentage = "20"
+        draft.carbohydratePercentage = "50"
+        draft.fatPercentage = "30"
+        draft.fiberPercentage = "10"
 
         let breakdown = draft.nutritionBreakdown
 
         XCTAssertEqual(breakdown.proteinCalories ?? 0, 400, accuracy: 0.001)
-        XCTAssertEqual(breakdown.carbohydrateCalories ?? 0, 800, accuracy: 0.001)
+        XCTAssertEqual(breakdown.carbohydrateCalories ?? 0, 1000, accuracy: 0.001)
         XCTAssertEqual(breakdown.fatCalories ?? 0, 600, accuracy: 0.001)
         XCTAssertEqual(breakdown.proteinPercentage ?? 0, 20, accuracy: 0.001)
-        XCTAssertEqual(breakdown.carbohydratePercentage ?? 0, 40, accuracy: 0.001)
+        XCTAssertEqual(breakdown.carbohydratePercentage ?? 0, 50, accuracy: 0.001)
         XCTAssertEqual(breakdown.fatPercentage ?? 0, 30, accuracy: 0.001)
-        XCTAssertEqual(breakdown.fiberPercentageOfCarbohydrates ?? 0, 10, accuracy: 0.001)
-        XCTAssertEqual(breakdown.fiberCalories ?? 0, 40, accuracy: 0.001)
+        XCTAssertEqual(breakdown.proteinGrams ?? 0, 100, accuracy: 0.001)
+        XCTAssertEqual(breakdown.carbohydrateGrams ?? 0, 250, accuracy: 0.001)
+        XCTAssertEqual(breakdown.fatGrams ?? 0, 66.6667, accuracy: 0.001)
+        XCTAssertEqual(breakdown.fiberPercentage ?? 0, 10, accuracy: 0.001)
+        XCTAssertEqual(breakdown.fiberGrams ?? 0, 25, accuracy: 0.001)
+        XCTAssertEqual(breakdown.fiberCalories ?? 0, 50, accuracy: 0.001)
     }
 
     func testLocalMealAnalysisReturnsCompleteNutritionForDescribedIngredients() async throws {
