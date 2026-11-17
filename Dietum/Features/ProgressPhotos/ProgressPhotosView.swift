@@ -17,8 +17,8 @@ struct ProgressPhotosView: View {
             VStack(alignment: .leading, spacing: AppSpacing.section) {
                 AppHeroCard(
                     eyebrow: "Progress photos",
-                    title: "Capture a front, back, left, and right set locally.",
-                    message: "Review two entries from the same angle side by side while keeping photo data on this device."
+                    title: "Capture front, back, and one profile side locally.",
+                    message: "A left or right profile is enough. Add both sides when you want a more complete comparison, while keeping photo data on this device."
                 )
 
                 AppSurfaceCard {
@@ -89,7 +89,7 @@ struct ProgressPhotosView: View {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
                             title: "Save staged photos",
-                            message: "Add a short note, then store the staged set locally."
+                            message: "Front, back, and either left or right profile are required."
                         )
 
                         TextField("Optional notes", text: $viewModel.notes, axis: .vertical)

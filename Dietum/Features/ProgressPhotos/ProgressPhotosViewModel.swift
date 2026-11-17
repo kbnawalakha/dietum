@@ -98,8 +98,8 @@ final class ProgressPhotosViewModel: ObservableObject {
     }
 
     func saveStagedPhotos() async {
-        guard !stagedPhotos.isEmpty else {
-            saveState = .failed("Stage at least one progress photo before saving.")
+        guard hasRequiredPhotoSet else {
+            saveState = .failed("Stage front, back, and either the left or right profile before saving.")
             return
         }
 
@@ -222,7 +222,7 @@ final class ProgressPhotosViewModel: ObservableObject {
         case .failed(let message):
             return message
         case .idle, .loaded:
-            return "Choose real photos for each angle, then save the set locally."
+            return "Choose front, back, and either profile side, then save the set locally."
         }
     }
 
@@ -232,7 +232,7 @@ final class ProgressPhotosViewModel: ObservableObject {
         }
 
         let count = stagedPhotos.count
-        return "\(count) of 4 angles staged."
+        return "\(count) photo\(count == 1 ? "" : "s") staged. Front, back, and one profile side are required."
     }
 
     var stagedSummaryText: String {
@@ -320,7 +320,13 @@ final class ProgressPhotosViewModel: ObservableObject {
     }
 
     var canSave: Bool {
-        !stagedPhotos.isEmpty && saveState != .saving
+        hasRequiredPhotoSet && saveState != .saving
+    }
+
+    var hasRequiredPhotoSet: Bool {
+        stagedPhotos[.front] != nil
+            && stagedPhotos[.back] != nil
+            && (stagedPhotos[.left] != nil || stagedPhotos[.right] != nil)
     }
 
     var statusMessage: String? {
