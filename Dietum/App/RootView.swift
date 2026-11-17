@@ -129,7 +129,7 @@ struct SettingsView: View {
                 settingsSection(
                     title: "Tracking",
                     message: "Open the logging and history flows from this settings hub.",
-                    routes: [.mealLogging, .weeklyCheckIn, .progressPhotos, .progressCharts]
+                    routes: [.weeklyCheckIn, .progressPhotos, .progressCharts]
                 )
 
                 settingsSection(

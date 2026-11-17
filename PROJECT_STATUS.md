@@ -95,7 +95,7 @@ Milestone 0 — Repository and Architecture Foundation
 - The export-removal compile check remains blocked by the local SwiftData macro-plugin malformed-response issue
 - Nutrition insights now load the persisted active nutrition target and expose refresh/log-meal actions for empty or failed states
 - Nutrition-insights compile verification is currently blocked by the local SwiftData macro-plugin malformed-response issue
-- Profile onboarding is now gated to first launch with a persisted completion flag; profile edits and secondary navigation live in the ellipsis Settings hub, and Dashboard Quick Start has been removed
+- Profile onboarding is now gated to first launch with a persisted completion flag; profile edits and secondary navigation live in the ellipsis Settings hub, while meal tracking remains directly on the dashboard
 - Settings-shell compile verification is currently subject to the local SwiftData macro-plugin malformed-response issue
 - Progress-photo day deletion test execution is currently blocked when CoreSimulatorService has no available simulator destination
 - Google sign-in requires real `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_REDIRECT_URI`, and matching `GOOGLE_OAUTH_SCHEME` build settings; placeholder values intentionally keep the button disabled

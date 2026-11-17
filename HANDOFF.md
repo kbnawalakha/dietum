@@ -52,7 +52,7 @@ codex/repo-foundation
 - Progress-photo history now shows capture dates as the primary records; use the trash action on a date to remove its full photo set and analysis.
 - Removed meal-reminder navigation and dashboard entry points per product direction; legacy reminder model/export types remain only for local compatibility.
 - Removed local-export navigation and dashboard entry points; retained snapshot services because the optional Drive backup uses them internally.
-- Profile onboarding is now a first-launch flow; the dashboard Quick Start and crowded toolbar were replaced by an ellipsis Settings hub for profile edits and all secondary routes.
+- Profile onboarding is now a first-launch flow; the dashboard Quick Start and crowded toolbar were replaced by an ellipsis Settings hub, with meal tracking kept as a direct dashboard action.
 - Recent progress photos are presented as capture-date groups; each date can delete all saved angles and associated body-fat analysis together.
 
 ## Known Problems

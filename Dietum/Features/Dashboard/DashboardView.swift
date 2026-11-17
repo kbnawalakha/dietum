@@ -38,6 +38,21 @@ struct DashboardView: View {
                 AppSurfaceCard {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
+                            title: "Track a meal",
+                            message: "Log what you eat from the dashboard while it is top of mind."
+                        )
+
+                        NavigationLink(value: AppRoute.mealLogging) {
+                            Label("Open meal tracker", systemImage: "fork.knife.circle.fill")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.appProminent)
+                    }
+                }
+
+                AppSurfaceCard {
+                    VStack(alignment: .leading, spacing: AppSpacing.item) {
+                        AppSectionHeader(
                             title: "Sleep and phone signals",
                             message: viewModel.sleepInsightsHeadline
                         )
