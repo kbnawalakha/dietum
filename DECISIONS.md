@@ -70,3 +70,11 @@ Status:
 
 Accepted.
 
+
+## Counter ADR-001 — Streaming-Only Rhythm Analysis
+
+Decision: Counter must not download or store a video for analysis. Observe decoded native-player frames and optional pass-through audio using bounded in-memory evidence. Remove the whole-file analyzer and future section plan; classify levels as playback progresses. Keep 11-second minimum holds and finish the current bar cycle before a level change during uninterrupted playback.
+
+Reason: The user explicitly requires realtime analysis and streaming only. Unseen future footage cannot be classified under that constraint. Standard AVPlayer buffering is system-managed; Counter creates no media files, offline copies, saved links, or analysis history. A deletion-only migration cleanup removes media from the prior implementation.
+
+Status: Accepted, specific to the separate Counter app; Dietum architecture is unchanged.

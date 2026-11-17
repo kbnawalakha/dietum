@@ -46,39 +46,42 @@ assert(RhythmTimeline.estimatedBPM(in: [0.5, 1, 1.5, 2], at: 5) == nil)
 assert(RhythmTimeline.estimatedBPM(in: [], at: 1) == nil)
 print("18 rhythm signal, tempo and playback-position checks passed")
 
-// Whole-video movement levels with an audio-only first section: it must stay Stop.
-let movement = (0..<550).map { index in
-    RhythmSample(time: Double(index) / 10, strength: Double(index / 110) * 0.01)
+var live = LiveRhythmMeter()
+var changes: [(time: Double, level: RhythmLevel)] = []
+for frame in 0..<900 {
+    let time = Double(frame) / 12
+    live.advance(to: time)
+    // Silence/static, then movement, then static; audio stays loud throughout.
+    let strength = time >= 16 && time < 48 ? 0.04 : 0.0
+    live.ingest(LiveRhythmSample(time: time, movement: strength, audio: frame % 6 == 0 ? 0.8 : 0.001))
+    if live.ready && changes.last?.level != live.level { changes.append((time, live.level)) }
+    assert(live.samples.count <= 64)
 }
-var motionCues: [Double] = []
-for level in 1...4 {
-    for index in 0..<(level * 5) {
-        let start = 11.0 * Double(level)
-        let offset = Double(index) * 11.0 / Double(level * 5)
-        motionCues.append(start + offset)
-    }
+assert(changes.first?.level == .stop && changes.last?.level == .stop)
+assert(changes.contains { $0.level == .fast })
+assert(zip(changes, changes.dropFirst()).allSatisfy { $1.time - $0.time > 10 })
+assert(live.samples.first!.time >= live.samples.last!.time - 4.01)
+let beforePause = live.position
+// No time advancement during a pause means no synthetic ticking.
+assert(live.position == beforePause)
+live.advance(to: 5) // backwards seek
+assert(!live.ready && live.samples.isEmpty)
+live.advance(to: 30) // forwards seek
+assert(!live.ready)
+for (strength, expected) in [(0.0, RhythmLevel.stop), (0.006, .slow), (0.02, .normal), (0.05, .fast), (0.1, .ultrafast)] {
+    let window = (0..<48).map { LiveRhythmSample(time: Double($0) / 12, movement: strength, audio: nil) }
+    assert(LiveRhythmMeter.classify(window) == expected)
 }
-let meterTimeline = RhythmTimeline(audio: stride(from: 0.0, to: 55, by: 0.3).map { $0 }, motion: motionCues, duration: 55, movement: movement)
-let sections = RhythmMeter.sections(for: meterTimeline)
-assert(sections.map(\.level) == [.stop, .slow, .normal, .fast, .ultrafast])
-assert(sections.allSatisfy { $0.end - $0.start > 10 })
-assert(sections.first?.start == 0 && sections.last?.end == 55)
-assert(zip(sections, sections.dropFirst()).allSatisfy { $0.end == $1.start })
-for section in sections where section.level != .stop {
-    let period = 60 / section.bpm
-    assert(abs(section.barPosition(at: section.start)) < 0.000001)
-    assert(abs(section.barPosition(at: section.start + period / 2) - 1) < 0.000001)
-    assert(abs(section.barPosition(at: section.start + period)) < 0.000001)
-    let cycles = (section.end - section.start) / period
-    assert(abs(cycles - cycles.rounded()) < 0.000001)
+var cycle = LiveRhythmMeter()
+for frame in 0...48 {
+    let time = Double(frame) / 12
+    cycle.advance(to: time)
+    cycle.ingest(LiveRhythmSample(time: time, movement: 0.02, audio: nil))
 }
-assert(sections[0].barPosition(at: 5) == 0)
-let stopped = RhythmTimeline(audio: Array(stride(from: 0.0, to: 35.0, by: 0.25)), motion: [], duration: 35,
-                             movement: (0..<350).map { RhythmSample(time: Double($0) / 10, strength: 0) })
-assert(RhythmMeter.sections(for: stopped).map(\.level) == [.stop])
-assert(RhythmMeter.sections(for: RhythmTimeline(audio: [], motion: [], duration: 10)).isEmpty)
-let shortTail = RhythmMeter.sections(for: RhythmTimeline(audio: [], motion: [1,2,3,12,13,14], duration: 23))
-assert(shortTail.allSatisfy { $0.end - $0.start > 10 })
-assert(shortTail.last?.end == 23)
-assert(zip(sections.dropFirst(), sections.dropFirst(2)).allSatisfy { $0.bpm < $1.bpm })
-print("Whole-video levels, minimum holds, complete bar cycles, motion priority, and short-video checks passed")
+assert(cycle.ready && cycle.level == .normal)
+let cycleStart = cycle.position
+cycle.advance(to: 4.375) // half a Normal cycle at 80 BPM
+assert(abs(cycle.position - (1 - cycleStart)) < 0.00001)
+cycle.advance(to: 4.75)
+assert(abs(cycle.position - cycleStart) < 0.00001)
+print("Live levels, >10s holds, bounded memory, seeks, stationary audio rejection, and full-cycle checks passed")

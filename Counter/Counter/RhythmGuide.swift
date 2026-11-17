@@ -4,87 +4,80 @@ import Combine
 
 @MainActor
 final class RhythmGuideModel: ObservableObject {
-    @Published private(set) var analyzing = false
-    @Published private(set) var timeline: RhythmTimeline?
+    @Published private(set) var live = false
     @Published private(set) var message: String?
-    @Published private(set) var sections: [RhythmSection] = []
     @Published private(set) var playing = false
-    @Published private(set) var playbackTime = 0.0
-    @Published var enabled = true
+    @Published private(set) var meter = LiveRhythmMeter()
+    @Published var enabled = true {
+        didSet {
+            guard live else { return }
+            meter.reset(); analyzer.detach(); lastFrameTime = nil
+            if enabled, let item = player?.currentItem { analyzer.attach(to: item) }
+        }
+    }
     private let analyzer: any VideoRhythmAnalyzing
-    private var work: Task<Void, Never>?
     private var player: AVPlayer?
     private var observer: Any?
     private var playbackStatus: NSKeyValueObservation?
-    private var generation = UUID()
+    private var jumpObserver: NSObjectProtocol?
+    private var lastFrameTime: Double?
+    private var waitingSince: Double?
 
-    init(analyzer: any VideoRhythmAnalyzing = VideoRhythmAnalyzer()) { self.analyzer = analyzer }
+    init(analyzer: (any VideoRhythmAnalyzing)? = nil) { self.analyzer = analyzer ?? VideoRhythmAnalyzer() }
 
-    func analyze(url: URL, player: AVPlayer) {
+    func start(player: AVPlayer) {
         reset()
+        guard let item = player.currentItem else { return }
         self.player = player
-        analyzing = true
-        let generation = self.generation
-        work = Task { [weak self, analyzer] in
-            do {
-                let result = try await analyzer.analyze(url)
-                try Task.checkCancellation()
-                guard let self, self.generation == generation else { return }
-                self.timeline = result
-                self.sections = RhythmMeter.sections(for: result)
-                if self.sections.isEmpty { self.message = "The bar guide needs a video longer than 10 seconds so each level can last more than 10 seconds." }
-                self.analyzing = false
-                self.follow(player)
-            } catch {
-                guard let self, self.generation == generation, !Task.isCancelled else { return }
-                self.analyzing = false
-                // Never display underlying network errors that may contain the source URL.
-                self.message = (error as? RhythmAnalysisError)?.errorDescription
-                    ?? "Analysis couldn’t finish. Try another direct video or use manual tempo."
-            }
-        }
-    }
-
-    func reset() {
-        generation = UUID()
-        work?.cancel()
-        work = nil
-        if let observer { player?.removeTimeObserver(observer) }
-        observer = nil
-        playbackStatus?.invalidate()
-        playbackStatus = nil
-        player = nil
-        timeline = nil
-        sections = []
-        message = nil
-        playing = false
-        playbackTime = 0
-        analyzing = false
-        enabled = true
-    }
-
-    func suspend() { enabled = false; playing = false }
-
-    private func follow(_ player: AVPlayer) {
+        live = true
+        analyzer.attach(to: item)
         playbackStatus = player.observe(\.timeControlStatus, options: [.new]) { [weak self, weak player] _, _ in
             Task { @MainActor [weak self, weak player] in
                 guard let self, let player, self.player === player else { return }
                 self.playing = player.timeControlStatus == .playing
             }
         }
+        jumpObserver = NotificationCenter.default.addObserver(forName: .AVPlayerItemTimeJumped, object: item, queue: .main) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.meter.reset(); self?.analyzer.resetSamples()
+                self?.lastFrameTime = nil; self?.waitingSince = nil
+            }
+        }
         observer = player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1.0 / 30, preferredTimescale: 600), queue: .main) { [weak self, weak player] time in
             Task { @MainActor [weak self, weak player] in
                 guard let self, let player, self.player === player else { return }
-                self.playbackTime = time.seconds
                 self.playing = player.timeControlStatus == .playing
+                guard self.enabled, self.playing, time.seconds.isFinite else { return }
+                self.meter.advance(to: time.seconds)
+                if let sample = self.analyzer.sample(at: time) {
+                    self.lastFrameTime = time.seconds
+                    self.waitingSince = nil
+                    self.meter.ingest(sample)
+                    self.message = nil
+                } else {
+                    if self.waitingSince == nil { self.waitingSince = time.seconds }
+                    if time.seconds - (self.lastFrameTime ?? self.waitingSince ?? time.seconds) > 3 {
+                        self.meter.reset()
+                        self.message = "Video frames aren’t available for analysis. Try another stream or switch to manual tempo."
+                    }
+                }
             }
         }
     }
 
-    var section: RhythmSection? {
-        sections.first { playbackTime >= $0.start && playbackTime < $0.end }
+    func reset() {
+        live = false
+        if let observer { player?.removeTimeObserver(observer) }
+        observer = nil
+        playbackStatus?.invalidate(); playbackStatus = nil
+        if let jumpObserver { NotificationCenter.default.removeObserver(jumpObserver) }
+        jumpObserver = nil
+        analyzer.detach(); player = nil
+        meter.reset(); message = nil; playing = false
+        lastFrameTime = nil; waitingSince = nil; enabled = true
     }
 
+    func suspend() { enabled = false; playing = false }
 }
 
 struct RhythmGuideControls: View {
@@ -92,30 +85,18 @@ struct RhythmGuideControls: View {
     let analyze: () -> Void
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            if guide.analyzing {
-                HStack {
-                    ProgressView("Analyzing audio and movement…")
-                    Spacer()
-                    Button("Cancel") { guide.reset() }
+            if guide.live {
+                Toggle("Live rhythm bar", isOn: $guide.enabled)
+                Button("Stop live analysis") { guide.reset() }
+                if guide.enabled && !guide.meter.ready && guide.message == nil {
+                    Text(guide.playing ? "Learning movement as the video plays…" : "Play the video to learn its movement.")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
             } else {
-                Button(guide.timeline == nil ? "Analyze video rhythm" : "Analyze again", systemImage: "waveform.path") { analyze() }
-            }
-            if !guide.sections.isEmpty {
-                Toggle("Video-synchronized bar", isOn: $guide.enabled)
-                Text("Movement-led · Full video · Levels held over 10 seconds")
-                    .font(.caption).foregroundStyle(.secondary)
-                ScrollView(.horizontal) {
-                    HStack {
-                        ForEach(Array(guide.sections.enumerated()), id: \.offset) { _, section in
-                            Text("\(Int(section.start))–\(Int(section.end))s \(section.level.rawValue)")
-                                .font(.caption).padding(6).background(.white.opacity(0.08), in: Capsule())
-                        }
-                    }
-                }
+                Button("Start live rhythm", systemImage: "waveform.path") { analyze() }
             }
             if let message = guide.message { Text(message).font(.callout).foregroundStyle(.orange) }
-            Text("Movement-led estimates, not action recognition. Analysis temporarily downloads up to 150 MB; files must be 10 minutes or shorter. No links or results are saved.")
+            Text("Analyzes the playing stream without creating video files. No links or analysis history are saved. Levels use recent movement, with audio support when available, and stay over 10 seconds during uninterrupted playback.")
                 .font(.caption).foregroundStyle(.secondary)
         }
     }
@@ -139,14 +120,14 @@ struct RhythmBar: View {
 struct RhythmGuideOverlay: View {
     @ObservedObject var guide: RhythmGuideModel
     var body: some View {
-        let section = guide.section
         VStack(spacing: 6) {
-            Text(section?.level.rawValue ?? "Stop").font(.subheadline.bold())
-            RhythmBar(position: section?.barPosition(at: guide.playbackTime) ?? 0)
-            if let section, section.level != .stop {
-                Text("\(Int(section.bpm.rounded())) BPM").font(.caption.monospacedDigit())
+            Text(guide.meter.ready ? guide.meter.level.rawValue : "Learning")
+                .font(.subheadline.bold())
+            RhythmBar(position: guide.meter.position)
+            if guide.meter.ready && guide.meter.level != .stop {
+                Text("\(Int(guide.meter.level.targetBPM)) BPM").font(.caption.monospacedDigit())
             }
-            Text(guide.playing ? "Video sync" : "Paused").font(.caption2)
+            Text(guide.playing ? "Live sync" : "Paused").font(.caption2)
         }
         .padding(10)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))

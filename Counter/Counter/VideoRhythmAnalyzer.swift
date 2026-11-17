@@ -1,217 +1,147 @@
-import Foundation
 import AVFoundation
 import CoreVideo
+import MediaToolbox
 
-protocol VideoRhythmAnalyzing: Sendable {
-    func analyze(_ url: URL) async throws -> RhythmTimeline
+@MainActor
+protocol VideoRhythmAnalyzing: AnyObject {
+    func attach(to item: AVPlayerItem)
+    func sample(at time: CMTime) -> LiveRhythmSample?
+    func resetSamples()
+    func detach()
 }
 
-enum RhythmAnalysisError: LocalizedError {
-    case unsupported, tooLarge, tooLong, unreadable, noCues, download
-    var errorDescription: String? {
-        switch self {
-        case .unsupported: return "Analysis needs a direct MP4, M4V or MOV file. Website and HLS playback can use the manual metronome."
-        case .tooLarge: return "This video is too large to analyze. Choose a file under 150 MB."
-        case .tooLong: return "Choose a video up to 10 minutes long for rhythm analysis."
-        case .unreadable: return "This video's tracks can’t be analyzed. Try another unprotected video."
-        case .noCues: return "No clear audio or movement peaks found. Try another video or use manual tempo."
-        case .download: return "The video couldn’t be downloaded for analysis. Check your connection and link, then retry."
+/// Reads only the frames already decoded for playback. No requests, readers, or media files.
+@MainActor
+final class VideoRhythmAnalyzer: VideoRhythmAnalyzing {
+    private var item: AVPlayerItem?
+    private var output: AVPlayerItemVideoOutput?
+    private var previous: [Double]?
+    private var audioWork: Task<Void, Never>?
+    private var audio: StreamingAudioEnergy?
+    private var lastTime = -Double.infinity
+
+    static func removeLegacyDownloads() {
+        // Remove media left by the superseded downloadable-analysis version; never creates files.
+        let oldDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("CounterAnalysis", isDirectory: true)
+        try? FileManager.default.removeItem(at: oldDirectory)
+    }
+
+    func attach(to item: AVPlayerItem) {
+        detach()
+        self.item = item
+        let output = AVPlayerItemVideoOutput(pixelBufferAttributes: [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
+        item.add(output)
+        self.output = output
+        // Audio is optional: some stream formats and protected media do not expose a tap.
+        audioWork = Task { [weak self, weak item] in
+            guard let item else { return }
+            guard let tracks = try? await item.asset.loadTracks(withMediaType: .audio),
+                  !Task.isCancelled, self?.item === item, let track = tracks.first else { return }
+            let audio = StreamingAudioEnergy()
+            if let parameters = audio.parameters(for: track) {
+                let mix = AVMutableAudioMix()
+                mix.inputParameters = [parameters]
+                item.audioMix = mix
+                self?.audio = audio
+            }
         }
+    }
+
+    func sample(at time: CMTime) -> LiveRhythmSample? {
+        let seconds = time.seconds
+        guard seconds.isFinite, seconds - lastTime >= 1.0 / 12,
+              let output, output.hasNewPixelBuffer(forItemTime: time),
+              let image = output.copyPixelBuffer(forItemTime: time, itemTimeForDisplay: nil) else { return nil }
+        lastTime = seconds
+        return analyze(image, at: seconds)
+    }
+
+    func analyze(_ image: CVPixelBuffer, at seconds: Double) -> LiveRhythmSample {
+        let grid = Self.grid(image)
+        defer { previous = grid }
+        guard let previous, previous.count == grid.count, !grid.isEmpty else {
+            return LiveRhythmSample(time: seconds, movement: 0, audio: audio?.energy(at: seconds))
+        }
+        let difference = zip(previous, grid).reduce(0.0) { $0 + abs($1.0 - $1.1) } / Double(grid.count)
+        return LiveRhythmSample(time: seconds, movement: difference > 0.45 ? 0 : difference,
+                                audio: audio?.energy(at: seconds))
+    }
+
+    static func grid(_ image: CVPixelBuffer) -> [Double] {
+        CVPixelBufferLockBaseAddress(image, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(image, .readOnly) }
+        guard let base = CVPixelBufferGetBaseAddress(image) else { return [] }
+        let pixels = base.assumingMemoryBound(to: UInt8.self)
+        let width = CVPixelBufferGetWidth(image), height = CVPixelBufferGetHeight(image)
+        let stride = CVPixelBufferGetBytesPerRow(image)
+        return (0..<256).map { index in
+            let x = (index % 16 * 2 + 1) * width / 32
+            let y = (index / 16 * 2 + 1) * height / 32
+            let offset = y * stride + x * 4
+            return (Double(pixels[offset]) + Double(pixels[offset + 1]) + Double(pixels[offset + 2])) / 765
+        }
+    }
+
+    func resetSamples() { previous = nil; lastTime = -.infinity; audio?.clear() }
+
+    func detach() {
+        audioWork?.cancel(); audioWork = nil
+        if let output { item?.remove(output) }
+        if audio != nil { item?.audioMix = nil }
+        output = nil; item = nil; audio = nil
+        resetSamples()
     }
 }
 
-private final class DownloadLimit: NSObject, URLSessionDownloadDelegate, @unchecked Sendable {
-    static let bytes: Int64 = 150 * 1024 * 1024
+/// Keeps a single RMS reading in RAM. The tap passes source audio through unchanged.
+private final class StreamingAudioEnergy: @unchecked Sendable {
     private let lock = NSLock()
-    private var continuation: CheckedContinuation<(URL, URLResponse), Error>?
-    private var result: Result<(URL, URLResponse), Error>?
-    private var exceeded = false
-    let mediaExtension: String
+    private var latest: (time: Double, energy: Double)?
+    private var format = AudioStreamBasicDescription()
 
-    init(mediaExtension: String) { self.mediaExtension = mediaExtension }
-
-    func install(_ continuation: CheckedContinuation<(URL, URLResponse), Error>) {
-        lock.lock()
-        if let result { lock.unlock(); continuation.resume(with: result) }
-        else { self.continuation = continuation; lock.unlock() }
+    func clear() { lock.lock(); latest = nil; lock.unlock() }
+    func energy(at time: Double) -> Double? {
+        guard lock.try() else { return nil }
+        defer { lock.unlock() }
+        guard let latest, abs(latest.time - time) < 0.5 else { return nil }
+        return latest.energy
     }
 
-    private func finish(_ result: Result<(URL, URLResponse), Error>) {
-        lock.lock()
-        guard self.result == nil else { lock.unlock(); return }
-        self.result = result
-        let continuation = self.continuation
-        self.continuation = nil
-        lock.unlock()
-        continuation?.resume(with: result)
-    }
-
-    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask,
-                    didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
-        if totalBytesWritten > Self.bytes || totalBytesExpectedToWrite > Self.bytes {
-            lock.lock(); exceeded = true; lock.unlock()
-            downloadTask.cancel()
-        }
-    }
-
-    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        do {
-            guard let response = downloadTask.response as? HTTPURLResponse,
-                  (200..<300).contains(response.statusCode) else { throw RhythmAnalysisError.download }
-            let size = try location.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
-            guard size <= Self.bytes else { throw RhythmAnalysisError.tooLarge }
-            try FileManager.default.createDirectory(at: VideoRhythmAnalyzer.temporaryDirectory, withIntermediateDirectories: true)
-            let media = VideoRhythmAnalyzer.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-                .appendingPathExtension(mediaExtension)
-            // The original URL is never used as a filename or persisted as history.
-            try FileManager.default.moveItem(at: location, to: media)
-            finish(.success((media, response)))
-        } catch { finish(.failure(error)) }
-    }
-
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        guard let error else { return }
-        lock.lock(); let tooLarge = exceeded; lock.unlock()
-        finish(.failure(tooLarge ? RhythmAnalysisError.tooLarge : error))
-    }
-}
-
-actor VideoRhythmAnalyzer: VideoRhythmAnalyzing {
-    static var temporaryDirectory: URL {
-        FileManager.default.temporaryDirectory.appendingPathComponent("CounterAnalysis", isDirectory: true)
-    }
-
-    // Called once at app launch, before any analysis starts, for interrupted-session cleanup.
-    static func discardAbandonedMedia() {
-        try? FileManager.default.removeItem(at: temporaryDirectory)
-    }
-    func analyze(_ url: URL) async throws -> RhythmTimeline {
-        guard ["mp4", "mov", "m4v"].contains(url.pathExtension.lowercased()) else { throw RhythmAnalysisError.unsupported }
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.urlCache = nil
-        configuration.httpCookieStorage = nil
-        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
-        configuration.timeoutIntervalForRequest = 30
-        configuration.timeoutIntervalForResource = 180
-        let delegate = DownloadLimit(mediaExtension: url.pathExtension.lowercased())
-        let session = URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
-        defer { session.invalidateAndCancel() }
-        let download = session.downloadTask(with: URLRequest(url: url))
-        let media: URL
-        do {
-            (media, _) = try await withTaskCancellationHandler {
-                try Task.checkCancellation()
-                return try await withCheckedThrowingContinuation { continuation in
-                    delegate.install(continuation)
-                    download.resume()
+    func parameters(for track: AVAssetTrack) -> AVMutableAudioMixInputParameters? {
+        let retained = Unmanaged.passRetained(self)
+        var callbacks = MTAudioProcessingTapCallbacks(
+            version: kMTAudioProcessingTapCallbacksVersion_0, clientInfo: retained.toOpaque(),
+            init: { _, info, storage in storage.pointee = info },
+            finalize: { tap in Unmanaged<StreamingAudioEnergy>.fromOpaque(MTAudioProcessingTapGetStorage(tap)).release() },
+            prepare: { tap, _, format in
+                Unmanaged<StreamingAudioEnergy>.fromOpaque(MTAudioProcessingTapGetStorage(tap)).takeUnretainedValue().format = format.pointee
+            }, unprepare: nil,
+            process: { tap, frames, _, buffers, framesOut, flagsOut in
+                var range = CMTimeRange.invalid
+                let status = MTAudioProcessingTapGetSourceAudio(tap, frames, buffers, flagsOut, &range, framesOut)
+                guard status == noErr else { framesOut.pointee = 0; return }
+                let state = Unmanaged<StreamingAudioEnergy>.fromOpaque(MTAudioProcessingTapGetStorage(tap)).takeUnretainedValue()
+                guard state.format.mFormatFlags & kAudioFormatFlagIsFloat != 0,
+                      state.format.mBitsPerChannel == 32,
+                      state.format.mFormatFlags & kAudioFormatFlagIsBigEndian == 0 else { return }
+                var sum = 0.0, count = 0
+                for buffer in UnsafeMutableAudioBufferListPointer(buffers) {
+                    guard let data = buffer.mData else { continue }
+                    let values = data.assumingMemoryBound(to: Float.self)
+                    for index in stride(from: 0, to: Int(buffer.mDataByteSize) / 4, by: 8) {
+                        sum += Double(values[index] * values[index]); count += 1
+                    }
                 }
-            } onCancel: { download.cancel() }
-        } catch {
-            try Task.checkCancellation()
-            if let typed = error as? RhythmAnalysisError { throw typed }
-            throw RhythmAnalysisError.download
-        }
-        defer { try? FileManager.default.removeItem(at: media) }
-        try Task.checkCancellation()
-        return try await analyzeAsset(AVURLAsset(url: media))
-    }
-
-    func analyzeAsset(_ asset: AVAsset) async throws -> RhythmTimeline {
-        try Task.checkCancellation()
-        let duration = try await asset.load(.duration).seconds
-        guard duration.isFinite, duration > 0 else { throw RhythmAnalysisError.unreadable }
-        guard duration <= 600 else { throw RhythmAnalysisError.tooLong }
-        let audioTracks = try await asset.loadTracks(withMediaType: .audio)
-        let videoTracks = try await asset.loadTracks(withMediaType: .video)
-        let audio = try audioTracks.first.map { try audioSamples(asset, track: $0) } ?? []
-        try Task.checkCancellation()
-        let motion = try videoTracks.first.map { try motionSamples(asset, track: $0) } ?? []
-        let timeline = RhythmTimeline(
-            audio: RhythmTimeline.peaks(audio, floor: 0.015, minimumGap: 0.25),
-            motion: RhythmTimeline.peaks(motion, floor: 0.012, minimumGap: 0.3), duration: duration, movement: motion)
-        guard !timeline.audio.isEmpty || !timeline.motion.isEmpty || !motion.isEmpty else { throw RhythmAnalysisError.noCues }
-        return timeline
-    }
-
-    private func reader(_ asset: AVAsset, track: AVAssetTrack, settings: [String: Any]) throws -> (AVAssetReader, AVAssetReaderTrackOutput) {
-        let reader = try AVAssetReader(asset: asset)
-        let output = AVAssetReaderTrackOutput(track: track, outputSettings: settings)
-        output.alwaysCopiesSampleData = false
-        guard reader.canAdd(output) else { throw RhythmAnalysisError.unreadable }
-        reader.add(output)
-        guard reader.startReading() else { throw RhythmAnalysisError.unreadable }
-        return (reader, output)
-    }
-
-    private func audioSamples(_ asset: AVAsset, track: AVAssetTrack) throws -> [RhythmSample] {
-        let (reader, output) = try reader(asset, track: track, settings: [
-            AVFormatIDKey: kAudioFormatLinearPCM, AVSampleRateKey: 8000,
-            AVNumberOfChannelsKey: 1, AVLinearPCMBitDepthKey: 32,
-            AVLinearPCMIsFloatKey: true, AVLinearPCMIsNonInterleaved: false,
-            AVLinearPCMIsBigEndianKey: false])
-        defer { reader.cancelReading() }
-        var result: [RhythmSample] = []
-        var sum = 0.0
-        var count = 0
-        while let buffer = output.copyNextSampleBuffer() {
-            try Task.checkCancellation()
-            guard let block = CMSampleBufferGetDataBuffer(buffer) else { continue }
-            let length = CMBlockBufferGetDataLength(block)
-            guard length > 0, length % MemoryLayout<Float>.size == 0 else { throw RhythmAnalysisError.unreadable }
-            var values = [Float](repeating: 0, count: length / MemoryLayout<Float>.size)
-            let status = values.withUnsafeMutableBytes { bytes in
-                CMBlockBufferCopyDataBytes(block, atOffset: 0, dataLength: length, destination: bytes.baseAddress!)
-            }
-            guard status == kCMBlockBufferNoErr else { throw RhythmAnalysisError.unreadable }
-            let start = CMSampleBufferGetPresentationTimeStamp(buffer).seconds
-            for (index, value) in values.enumerated() {
-                sum += Double(value * value)
-                count += 1
-                if count == 160 {
-                    result.append(RhythmSample(time: start + Double(index) / 8000, strength: sqrt(sum / 160)))
-                    count = 0; sum = 0
-                }
-            }
-        }
-        guard reader.status == .completed else { throw RhythmAnalysisError.unreadable }
-        return result
-    }
-
-    private func motionSamples(_ asset: AVAsset, track: AVAssetTrack) throws -> [RhythmSample] {
-        let (reader, output) = try reader(asset, track: track, settings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
-        defer { reader.cancelReading() }
-        var previous: [Double]?
-        var lastTime = -1.0
-        var result: [RhythmSample] = []
-        while let buffer = output.copyNextSampleBuffer() {
-            try Task.checkCancellation()
-            let time = CMSampleBufferGetPresentationTimeStamp(buffer).seconds
-            guard time - lastTime >= 1.0 / 12,
-                  let image = CMSampleBufferGetImageBuffer(buffer) else { continue }
-            lastTime = time
-            CVPixelBufferLockBaseAddress(image, .readOnly)
-            let grid: [Double] = {
-                guard let base = CVPixelBufferGetBaseAddress(image) else { return [] }
-                let pixels = base.assumingMemoryBound(to: UInt8.self)
-                let width = CVPixelBufferGetWidth(image)
-                let height = CVPixelBufferGetHeight(image)
-                let stride = CVPixelBufferGetBytesPerRow(image)
-                return (0..<256).map { index in
-                    let x = (index % 16 * 2 + 1) * width / 32
-                    let y = (index / 16 * 2 + 1) * height / 32
-                    let p = y * stride + x * 4
-                    return (Double(pixels[p]) + Double(pixels[p + 1]) + Double(pixels[p + 2])) / 765
-                }
-            }()
-            CVPixelBufferUnlockBaseAddress(image, .readOnly)
-            if let previous, previous.count == grid.count, !grid.isEmpty {
-                let difference = zip(previous, grid).reduce(0.0) { $0 + abs($1.0 - $1.1) } / Double(grid.count)
-                // Large full-frame cuts are not useful movement cues.
-                result.append(RhythmSample(time: time, strength: difference > 0.45 ? 0 : difference))
-            }
-            previous = grid
-        }
-        guard reader.status == .completed else { throw RhythmAnalysisError.unreadable }
-        return result
+                guard count > 0, state.lock.try() else { return }
+                state.latest = (range.start.seconds, sqrt(sum / Double(count)))
+                state.lock.unlock()
+            })
+        var tap: MTAudioProcessingTap?
+        guard MTAudioProcessingTapCreate(kCFAllocatorDefault, &callbacks, kMTAudioProcessingTapCreationFlag_PreEffects, &tap) == noErr,
+              let tap else { retained.release(); return nil }
+        let parameters = AVMutableAudioMixInputParameters(track: track)
+        parameters.audioTapProcessor = tap
+        return parameters
     }
 }

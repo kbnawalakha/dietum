@@ -146,3 +146,11 @@ Milestone 0 — Repository and Architecture Foundation
 - Whole-video classification weights movement 85% and audio 15%; static sections remain Stop. All automatic sections last strictly over 10 seconds, including the tail; short videos explain the minimum length.
 - Target cycle rates 0/40/80/120/180 BPM are fitted to whole cycles per section. A section preview shows the complete video plan. Classification is based on movement estimates, not semantic action recognition.
 - Final bar validation: iPhone build, existing link/rhythm tests, new section/cycle tests, generated-media/HTTP regressions, and whitespace checks passed; physical-device visual checks remain.
+
+### Counter streaming-only analysis (2026-11-17)
+
+- Replaced whole-file downloads/AVAssetReader analysis with live native-player frame observation and an optional pass-through audio-energy tap.
+- No app-created video files or separate analysis requests. Evidence is bounded to a small previous-frame grid, one audio reading, and four seconds/64 numeric samples in memory. Legacy analysis files are deleted on launch.
+- Live five-level bar observes movement, holds levels at least 11 playback seconds, and completes cycles before changes. Seeks reset observation; pause freezes it. The entire-future-video plan and size/duration caps are removed.
+- This supersedes prior full-video/download-based Counter behavior. System-managed streaming buffers remain; native live audio/protected-stream support and iPhone visual/CPU checks remain unverified.
+- Final streaming verification: iPhone build, link/signal/live-meter checks, in-memory frame/output lifecycle tests, source persistence checks, and whitespace checks passed.

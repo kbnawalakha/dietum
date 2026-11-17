@@ -4,7 +4,7 @@ import Combine
 
 @main
 struct CounterApp: App {
-    init() { VideoRhythmAnalyzer.discardAbandonedMedia() }
+    init() { VideoRhythmAnalyzer.removeLegacyDownloads() }
     var body: some Scene { WindowGroup { CounterView() } }
 }
 
@@ -133,7 +133,7 @@ struct CounterView: View {
                             }
                             }
                             .overlay(alignment: .topTrailing) {
-                                if !guide.sections.isEmpty && guide.enabled {
+                                if guide.live && guide.enabled {
                                     RhythmGuideOverlay(guide: guide)
                                 } else {
                                     MetronomeOverlay(model: metronome)
@@ -142,7 +142,7 @@ struct CounterView: View {
                             if !model.webMode, let player = model.player {
                                 RhythmGuideControls(guide: guide) {
                                     metronome.stop()
-                                    guide.analyze(url: url, player: player)
+                                    guide.start(player: player)
                                 }
                             }
                             HStack {

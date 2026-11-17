@@ -123,3 +123,17 @@ Baseline: 13 link checks and 18 rhythm checks plus unsigned iPhone build passed.
 Remaining: physical-iPhone visual and timing checks plus real-world movement classification accuracy. No semantic action recognition or system-fullscreen overlay. No saved links and no GitHub push. Next step: load a supported video over 10 seconds on iPhone, analyze it, inspect the full section preview, and test bar cycles while pausing/seeking.
 
 Final bar verification: unsigned generic iPhone build succeeded after the manual-sheet changes. Existing link/rhythm checks, new whole-video section/cycle tests, generated-media/local HTTP regressions, and `git diff --check` passed. Saved locally only; unrelated Dietum scheme/repository changes are excluded.
+
+### Counter streaming-only realtime analysis (2026-11-17)
+
+Assigned request: stream and analyze in realtime without storing video. Replaced `Counter/Counter/VideoRhythmAnalyzer.swift` with a protocol-based AVPlayerItemVideoOutput service and optional MTAudioProcessingTap RMS tap; changed `Counter/Counter/{RhythmMeter.swift,RhythmGuide.swift,CounterApp.swift}`, `Counter/Tests/{main.swift,Media/MediaChecks.swift}`, `Counter/README.md`, `DECISIONS.md`, `PROJECT_STATUS.md`, and this handoff.
+
+Removed the download/delegate/file-reader path and the future section classifier. Live evidence is a 256-point previous-frame grid, one optional RMS reading, and a rolling numeric window capped at four seconds/64 observations. No video files, link history, accumulated analysis timeline, or separate analysis network requests are created. Launch cleanup only deletes old `CounterAnalysis` media. Native streaming buffering is controlled by AVPlayer, not an app-managed store.
+
+The five-level live bar learns for around three seconds. Movement controls activity; audio optionally refines tempo. Level changes wait at least 11 playback seconds and finish the current bar cycle; pause freezes, and seeks restart observation. Future levels cannot be computed before that footage streams. Natural stream endings/explicit seeks can truncate the visible final hold. Websites/protected streams may not expose frames or audio; manual mode remains available.
+
+Baseline link/rhythm/whole-video checks and unsigned iPhone build passed. Initial feature build encountered the known sandbox SwiftUI macro error plus a new-SDK CoreFoundation tap type mismatch (corrected to the automatically managed tap type). Initial live test expected a direct Stop→Fast transition, but a rolling window legitimately passes through a sustained Normal level; the test now checks the required minimum holds and eventual movement/stop outcomes. In-memory frame/lifecycle and live signal checks passed. No test fixture media or loopback downloads remain in the new service test.
+
+Remaining: real iPhone/HLS frame delivery, optional audio-tap support, protected/no-frame stream behavior, thermal/CPU behavior, and perceived bar alignment. Next step: run Counter on iPhone, open a native stream, tap Start live rhythm, then test pause, seek, close/reload, and manual fallback. No GitHub push.
+
+Final streaming-only verification: unsigned generic iPhone build succeeded; 13 link checks, 18 signal/tempo checks, live hold/phase/memory/seek tests, in-memory frame/output lifecycle checks, and `git diff --check` passed. Runtime-source inspection found no URLSession, download task, AVAssetReader/Writer, or media-file creation path; the sole filesystem operation removes the old analysis directory. Changes saved locally only, excluding unrelated Dietum edits.

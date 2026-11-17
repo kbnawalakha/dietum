@@ -35,25 +35,21 @@ The overlay belongs to Counter's inline player; iOS/website-provided fullscreen 
 
 Counter keeps the current URL only in memory. It does not write video links to files, databases, preferences, analytics, or app logs, and does not restore links after relaunch. Closing the player clears both its URL and the link field. Each website player uses a nonpersistent WebKit data store; browsing data is not saved as an app history. This does not control records kept by the websites or network providers.
 
-## Video-synchronized rhythm bar
+## Streaming-only live rhythm bar
 
-Open a direct MP4, M4V, or MOV link in the native player, then tap **Analyze video rhythm**. The entire file is analyzed before displaying the movement-led bar plan. The meter uses **Stop**, **Slow**, **Normal**, **Fast**, and **Ultrafast**. It completes one full bottom-to-top-to-bottom cycle per beat and freezes at its current position while playback is paused or buffering. Seeking selects the section and bar phase at the destination time.
+Open a native video stream and tap **Start live rhythm**. Counter reads frames already decoded by `AVPlayerItemVideoOutput`; it does not download another copy, create a video file, read a completed asset, or save an analysis timeline. Only one small previous-frame grid, a single audio-energy reading, and up to four seconds/64 numeric observations are kept in RAM. Older observations are discarded. Stop, close, reload, and player changes detach the analyzer and clear evidence. A deletion-only launch cleanup removes media left by the superseded downloadable-analysis version.
 
-Movement contributes 85% of each section score and audio contributes 15%. A still section stays Stop even if its soundtrack has strong beats. Motion energy plus detected movement frequency are normalized against the full video's active sections. Audio refines the score only in moving sections. Relative scores select the four moving levels; a video with little meaningful variation keeps one Normal level. Not every video must contain every level.
+The vertical bar uses **Stop**, **Slow**, **Normal**, **Fast**, and **Ultrafast**, at 0/40/80/120/180 complete up-and-down cycles per minute. About three seconds of visible playback are needed for initial observation. Movement is primary; an optional pass-through audio tap contributes 15% of the tempo estimate when supported. Audio cannot activate a still scene. Some formats/OS versions do not expose audio taps, so the guide falls back to movement alone. Protected video and website players may not expose frames; manual tempo remains available.
 
-The video is divided into equal windows of at least 11 seconds (or one full-length window for a video between 10 and 11 seconds). Adjacent matching levels merge. This guarantees every displayed automatic level lasts **strictly longer than 10 seconds**, including the final section. Videos of 10 seconds or less cannot use the automatic bar. Section boundaries are approximate; smoothing intentionally absorbs brief motion changes.
+Every named level is held for at least 11 seconds of playback before changing, and moving levels finish the current cycle before a change. The bar freezes during pause/buffering. Seeking, toggling analysis, or leaving the foreground resets observation; playback ending can naturally truncate the last hold. This is a live estimate, not semantic action recognition. Camera motion, cuts, lighting, and compression can affect it.
 
-Nominal cycle rates are Slow 40, Normal 80, Fast 120, and Ultrafast 180 BPM; Stop is stationary. Each section's rate is adjusted slightly to fit an integer number of complete cycles, preventing a half-finished beat at a level change. A horizontal list below the player previews the full sequence of sections. Manual controls are independent and can be overridden immediately.
+Live analysis cannot classify unseen future footage or preview the entire video. It replaces the earlier whole-file analysis and its future section list. There is no analysis file-size/duration cap, whole-file download, separate analysis request, or saved link history. Standard system-managed streaming buffering still occurs in AVPlayer; Counter does not provide downloads, offline copies, or app-managed video storage. Website playback uses a nonpersistent WebKit data store.
 
-Analysis uses RMS audio energy and sampled frame differences. It estimates overall visible movement rather than recognizing specific actions or measuring the user's actions. Camera motion, cuts, lighting, and compression can affect the classification. This is not semantic stroke recognition. The overlay remains inline only, outside system fullscreen and Picture in Picture.
-
-Analysis uses an ephemeral network session and temporarily downloads the media (150 MiB maximum, 10-minute maximum duration). It analyzes the whole supported video without truncation. Downloads have a 180-second timeout and can be canceled. Temporary files use random names with media extensions; they are removed after completion/error/cancellation, and abandoned analysis media is cleared at app launch. Source URLs and results are not saved as history. HLS, protected media, websites, and unsupported extensions retain manual playback/tempo only.
-
-Generated-media and loopback HTTP integration checks can run on macOS with Apple's media services and `/usr/bin/python3` available:
+In-memory service checks on macOS (no media files or network fixtures):
 
 ```sh
-swiftc -parse-as-library -module-cache-path /private/tmp/counter-swift-cache Counter/RhythmTimeline.swift Counter/VideoRhythmAnalyzer.swift Tests/Media/MediaChecks.swift -o /private/tmp/counter-media-tests
+swiftc -parse-as-library -module-cache-path /private/tmp/counter-swift-cache Counter/RhythmTimeline.swift Counter/RhythmMeter.swift Counter/VideoRhythmAnalyzer.swift Tests/Media/MediaChecks.swift -o /private/tmp/counter-media-tests
 /private/tmp/counter-media-tests
 ```
 
-Tests cover whole-video classification, all five levels, minimum section duration, full bar cycles, motion priority over audio, silence, tempo, cue timing, decoded generated audio/movement, downloading/cleanup, size rejection, HTTP errors, and cancellation. Real iPhone visual quality, external-host behavior, and real-world detection accuracy still require physical-device testing.
+Tests cover live level classification, bounded evidence, minimum holds, complete bar cycles, seeks, static movement despite audio, generated in-memory frames, cut rejection, output attachment/removal, and no-frame behavior. Real iPhone frame delivery, live audio-tap support, HLS/protected-stream behavior, CPU usage, and perceived alignment remain device checks.
