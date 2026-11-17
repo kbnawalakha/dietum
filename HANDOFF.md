@@ -20,6 +20,8 @@ codex/repo-foundation
 - Added dashboard cards for phone usage, wake time, and both inferred doom-scroll averages.
 - Kept phone usage explicitly unavailable because ordinary iOS apps cannot read Screen Time totals without the separate Family Controls capability.
 - Added deterministic dashboard coverage for the average calculations and formatted values.
+- Hardened meal analysis so cancellation does not show a false error and failures provide actionable retry guidance.
+- Clear prior detected foods when the meal description changes so stale estimates are not reused.
 
 ## Files Changed
 
@@ -35,6 +37,7 @@ codex/repo-foundation
 - Baseline: `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-baseline-tests` passed with 16 tests and 0 failures.
 - Feature build: `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-dashboard-build` succeeded.
 - Final: `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-dashboard-tests-2` passed with 17 tests and 0 failures.
+- Meal-analysis regression verification: `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-meal-analysis-tests` passed with 17 tests and 0 failures.
 - `git diff --check` passed.
 
 ## Work Remaining

@@ -49,6 +49,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Made the preferred meal-time text box grow and shrink with meal count
 - Added calorie-based macro percentage and fiber-from-carbohydrates calculations to onboarding
 - Added dashboard sleep/phone signals with HealthKit-derived wake time and seven-night inferred doom-scroll averages
+- Hardened meal analysis cancellation and error handling, including clearing stale estimates when the description changes
 
 # In Progress
 

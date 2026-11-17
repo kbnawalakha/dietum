@@ -219,16 +219,22 @@ final class MealLoggingViewModel: ObservableObject {
             reviewedItemIDs = []
             analysisNotes = result.notes
             analysisState = result.detectedFoods.isEmpty ? .needsReview : .ready
+        } catch is CancellationError {
+            analysisState = .idle
+            analysisNotes = "Analysis was canceled. Add a description or photo and try again."
         } catch {
-            analysisState = .failed("Meal analysis failed. Try again.")
-            analysisNotes = nil
+            analysisState = .failed("Meal analysis could not be completed.")
+            analysisNotes = "Check the meal description or photo, then try again."
         }
     }
 
     func updateFoodDescription(_ description: String) {
         updateDraft { draft in
             draft.foodDescription = description
+            draft.detectedFoods = []
         }
+        reviewedItemIDs = []
+        selectedItemID = nil
         analysisState = .idle
         analysisNotes = nil
     }
