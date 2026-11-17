@@ -67,6 +67,8 @@ codex/repo-foundation
 - Settings-shell device compile was attempted but stopped at the existing SwiftData macro-plugin malformed-response failure.
 - The progress-photo day deletion regression test was added but could not execute because CoreSimulatorService exposed no matching simulator destination.
 - Google OAuth configuration now validates the explicit callback scheme against the redirect URI and reports placeholder/mismatch settings; real Google Cloud OAuth values are still required for a device sign-in.
+- Fixed the build failure caused by `SwiftDataNutritionTargetRepository` conforming to `NutritionTargetRepository` without implementing `saveNutritionTarget(_:)`.
+- Elevated `xcodebuild build` and `xcodebuild build-for-testing` completed successfully after the nutrition-target repository fix; existing Swift concurrency warnings remain.
 
 ## Exact Next Step
 

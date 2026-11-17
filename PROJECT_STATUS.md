@@ -99,6 +99,8 @@ Milestone 0 — Repository and Architecture Foundation
 - Settings-shell compile verification is currently subject to the local SwiftData macro-plugin malformed-response issue
 - Progress-photo day deletion test execution is currently blocked when CoreSimulatorService has no available simulator destination
 - Google sign-in requires real `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_REDIRECT_URI`, and matching `GOOGLE_OAUTH_SCHEME` build settings; placeholder values intentionally keep the button disabled
+- Fixed `SwiftDataNutritionTargetRepository` protocol conformance by adding the missing active nutrition-target save adapter
+- Elevated generic simulator build and test-bundle compilation now succeed; existing Swift concurrency warnings remain
 
 # Active Agents
 

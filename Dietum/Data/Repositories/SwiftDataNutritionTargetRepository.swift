@@ -33,6 +33,22 @@ final class SwiftDataNutritionTargetRepository: NutritionTargetRepository {
         )
     }
 
+    func saveNutritionTarget(_ target: NutritionTarget) async throws {
+        let storedTarget = StoredNutritionTarget(
+            id: target.id,
+            createdAt: target.updatedAt,
+            updatedAt: target.updatedAt,
+            effectiveDate: target.updatedAt,
+            isActive: true,
+            calorieTarget: target.dailyGoal.calories,
+            proteinTargetGrams: target.dailyGoal.proteinGrams,
+            carbohydrateTargetGrams: target.dailyGoal.carbohydrateGrams,
+            fatTargetGrams: target.dailyGoal.fatGrams,
+            fiberTargetGrams: target.dailyGoal.fiberGrams
+        )
+        try replaceActiveTarget(storedTarget)
+    }
+
     func replaceActiveTarget(_ target: StoredNutritionTarget) throws {
         let existingTargets = try modelContext.fetch(FetchDescriptor<StoredNutritionTarget>())
         existingTargets.forEach { modelContext.delete($0) }
