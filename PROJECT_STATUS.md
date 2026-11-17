@@ -127,4 +127,13 @@ Milestone 0 — Repository and Architecture Foundation
 
 - Confirmed no link persistence, analytics, URL logging, or restored sessions in Counter; embedded websites already use nonpersistent WebKit storage.
 - Closing the player now also clears the URL input; added a visible no-history notice and README explanation.
-- Video-synchronized rhythm guidance remains a separate pending request: audio beat vs. visible motion vs. manually marked timeline has not yet been selected or implemented.
+- Video-synchronized guidance was subsequently selected as audio plus movement; see the direct-video synchronization update below.
+
+### Counter direct-video synchronization (2026-11-17)
+
+- User selected audio beat plus visible movement, starting with direct videos.
+- Added protocol-based on-device analysis for direct MP4/M4V/MOV, audio RMS peaks, sampled frame-difference peaks, and selectable Audio/Movement/Both cue timelines with local BPM estimates.
+- Overlay follows native playback time rather than an independent clock; no inferred beats are inserted in pauses/gaps. Manual metronome remains available.
+- Analysis uses ephemeral downloads capped at 150 MiB and 10 minutes; media cleanup and task cancellation are implemented. Links/results are not persisted.
+- Synthetic signal and generated-media decoding checks passed. iPhone/network playback accuracy and specific action recognition remain unverified; semantic stroke-pattern recognition is not implemented. HLS/website analysis remains unsupported.
+- Final synchronization validation: iPhone build succeeded; 13 link checks, 18 rhythm checks, and generated-media/loopback HTTP integration checks passed (including temporary-file decoding, size rejection, HTTP errors, cleanup, and cancellation).

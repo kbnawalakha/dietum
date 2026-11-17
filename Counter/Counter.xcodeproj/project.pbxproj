@@ -5,10 +5,10 @@
 000000000000000000000003 = { isa = PBXGroup; children = (000000000000000000000006, 000000000000000000000004); sourceTree = "<group>"; };
 000000000000000000000004 = { isa = PBXGroup; children = (000000000000000000000007); name = Products; sourceTree = "<group>"; };
 000000000000000000000005 = { isa = PBXNativeTarget; buildConfigurationList = 000000000000000000000008; buildPhases = (000000000000000000000009); buildRules = (); dependencies = (); name = Counter; productName = Counter; productReference = 000000000000000000000007; productType = "com.apple.product-type.application"; };
-000000000000000000000006 = { isa = PBXGroup; children = (000000000000000000000014, 000000000000000000000015, 000000000000000000000016, 000000000000000000000017); path = Counter; sourceTree = "<group>"; };
+000000000000000000000006 = { isa = PBXGroup; children = (000000000000000000000014, 000000000000000000000015, 000000000000000000000016, 000000000000000000000017, 000000000000000000000028, 000000000000000000000029, 00000000000000000000002A); path = Counter; sourceTree = "<group>"; };
 000000000000000000000007 = { isa = PBXFileReference; explicitFileType = wrapper.application; path = Counter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 000000000000000000000008 = { isa = XCConfigurationList; buildConfigurations = (00000000000000000000000C, 00000000000000000000000D); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
-000000000000000000000009 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (00000000000000000000001E, 00000000000000000000001F, 000000000000000000000020, 000000000000000000000021); runOnlyForDeploymentPostprocessing = 0; };
+000000000000000000000009 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (00000000000000000000001E, 00000000000000000000001F, 000000000000000000000020, 000000000000000000000021, 000000000000000000000032, 000000000000000000000033, 000000000000000000000034); runOnlyForDeploymentPostprocessing = 0; };
 00000000000000000000000A = { isa = XCBuildConfiguration; name = Debug; buildSettings = { SDKROOT = iphoneos; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SWIFT_VERSION = 5.0; CLANG_ENABLE_MODULES = YES; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; }; };
 00000000000000000000000B = { isa = XCBuildConfiguration; name = Release; buildSettings = { SDKROOT = iphoneos; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SWIFT_VERSION = 5.0; CLANG_ENABLE_MODULES = YES; SWIFT_OPTIMIZATION_LEVEL = "-O"; }; };
 00000000000000000000000C = { isa = XCBuildConfiguration; name = Debug; buildSettings = { PRODUCT_NAME = Counter; PRODUCT_BUNDLE_IDENTIFIER = com.local.counter; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = Counter; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"; INFOPLIST_FILE = Counter/Info.plist; TARGETED_DEVICE_FAMILY = 1; SUPPORTS_MACCATALYST = NO; SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO; SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; CODE_SIGN_STYLE = Automatic; }; };
@@ -21,4 +21,10 @@
 000000000000000000000020 = { isa = PBXBuildFile; fileRef = 000000000000000000000016; };
 000000000000000000000017 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetronomeOverlay.swift; sourceTree = "<group>"; };
 000000000000000000000021 = { isa = PBXBuildFile; fileRef = 000000000000000000000017; };
+000000000000000000000028 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RhythmTimeline.swift; sourceTree = "<group>"; };
+000000000000000000000032 = { isa = PBXBuildFile; fileRef = 000000000000000000000028; };
+000000000000000000000029 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoRhythmAnalyzer.swift; sourceTree = "<group>"; };
+000000000000000000000033 = { isa = PBXBuildFile; fileRef = 000000000000000000000029; };
+00000000000000000000002A = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RhythmGuide.swift; sourceTree = "<group>"; };
+000000000000000000000034 = { isa = PBXBuildFile; fileRef = 00000000000000000000002A; };
 }; rootObject = 000000000000000000000001; }

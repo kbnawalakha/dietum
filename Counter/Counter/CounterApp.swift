@@ -4,6 +4,7 @@ import Combine
 
 @main
 struct CounterApp: App {
+    init() { VideoRhythmAnalyzer.discardAbandonedMedia() }
     var body: some Scene { WindowGroup { CounterView() } }
 }
 
@@ -68,6 +69,7 @@ final class PlaybackModel: ObservableObject {
 struct CounterView: View {
     @StateObject private var model = PlaybackModel()
     @StateObject private var metronome = MetronomeModel()
+    @StateObject private var guide = RhythmGuideModel()
     @Environment(\.scenePhase) private var scenePhase
     @FocusState private var editingLink: Bool
 
@@ -113,7 +115,7 @@ struct CounterView: View {
                                 Label(model.webMode ? "Website player" : "Video player", systemImage: "play.rectangle")
                                     .font(.headline)
                                 Spacer()
-                                Button("Close", systemImage: "xmark.circle.fill") { metronome.stop(); model.close() }
+                                Button("Close", systemImage: "xmark.circle.fill") { guide.reset(); metronome.stop(); model.close() }
                                     .labelStyle(.iconOnly).accessibilityLabel("Close player")
                             }
                             Text(url.host ?? "Video").font(.caption).foregroundStyle(.secondary)
@@ -130,7 +132,19 @@ struct CounterView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 16))
                             }
                             }
-                            .overlay(alignment: .topTrailing) { MetronomeOverlay(model: metronome) }
+                            .overlay(alignment: .topTrailing) {
+                                if guide.timeline != nil && guide.enabled {
+                                    RhythmGuideOverlay(guide: guide)
+                                } else {
+                                    MetronomeOverlay(model: metronome)
+                                }
+                            }
+                            if !model.webMode, let player = model.player {
+                                RhythmGuideControls(guide: guide) {
+                                    metronome.stop()
+                                    guide.analyze(url: url, player: player)
+                                }
+                            }
                             HStack {
                                 Button("Reload", systemImage: "arrow.clockwise") { model.open(forceWebsite: model.webMode, forceNative: !model.webMode) }
                                 Spacer()
@@ -170,9 +184,11 @@ struct CounterView: View {
         }
         .preferredColorScheme(.dark)
         .onChange(of: scenePhase) { _, phase in
-            if phase != .active { metronome.stop() }
+            if phase != .active { metronome.stop(); guide.suspend() }
         }
-        .onDisappear { metronome.stop() }
+        .onChange(of: model.reloadID) { _, _ in guide.reset() }
+        .onChange(of: guide.enabled) { _, enabled in if enabled { metronome.stop() } }
+        .onDisappear { metronome.stop(); guide.reset() }
     }
     private func play() { editingLink = false; model.open() }
 }
