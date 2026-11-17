@@ -41,6 +41,30 @@ struct DashboardView: View {
                 AppSurfaceCard {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
+                            title: "Sleep and phone signals",
+                            message: viewModel.sleepInsightsHeadline
+                        )
+
+                        LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
+                            ForEach(viewModel.sleepInsightCards) { card in
+                                AppMetricCard(
+                                    title: card.title,
+                                    value: card.value,
+                                    detail: card.detail,
+                                    symbolName: card.symbolName
+                                )
+                            }
+                        }
+
+                        Text(viewModel.sleepInsightsStatus)
+                            .font(.footnote)
+                            .foregroundStyle(AppPalette.textSecondary)
+                    }
+                }
+
+                AppSurfaceCard {
+                    VStack(alignment: .leading, spacing: AppSpacing.item) {
+                        AppSectionHeader(
                             title: "Quick start",
                             message: "Jump into the next step from a single place."
                         )
@@ -176,5 +200,8 @@ struct DashboardView: View {
         }
         .scrollIndicators(.hidden)
         .appScreenBackground()
+        .task {
+            await viewModel.loadSleepInsights()
+        }
     }
 }

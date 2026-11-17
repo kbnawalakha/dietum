@@ -4,6 +4,8 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Completed
 
+- Fixed physical-device signing configuration; signed iPhone build succeeded after Keychain approval.
+
 - Product scope defined
 - Multi-agent strategy defined
 - Repository coordination setup
@@ -46,6 +48,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Updated lifestyle workout-day controls so activating a selected day deselects it
 - Made the preferred meal-time text box grow and shrink with meal count
 - Added calorie-based macro percentage and fiber-from-carbohydrates calculations to onboarding
+- Added dashboard sleep/phone signals with HealthKit-derived wake time and seven-night inferred doom-scroll averages
 
 # In Progress
 
@@ -71,6 +74,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Existing progress-photo metadata does not include rendered image assets, so comparison cards use privacy-safe placeholders
 - `Dietum.xcodeproj/project.pbxproj` has an unrelated uncommitted Xcode-generated modification and remains intentionally untouched
 - Google Drive is intentionally disabled until `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_REDIRECT_URI`, and `GOOGLE_OAUTH_SCHEME` are configured
+- Phone usage is shown as unavailable until a separately authorized Family Controls / Screen Time integration is added; HealthKit only provides the in-bed intervals used for estimates
 
 # Active Agents
 

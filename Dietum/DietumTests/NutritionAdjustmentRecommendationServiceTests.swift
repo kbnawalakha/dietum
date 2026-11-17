@@ -324,6 +324,35 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertTrue(viewModel.sleepSchedule.contains("Bedtime"))
     }
 
+    @MainActor
+    func testDashboardSleepInsightsAveragesInferredDoomScrollWindows() async {
+        let firstNight = ImportedSleepWindow(
+            bedtime: Self.day(-2),
+            sleepStart: Self.day(-2 + 0.25),
+            wakeTime: Self.day(-1),
+            outOfBedTime: Self.day(-1 + 0.125)
+        )
+        let secondNight = ImportedSleepWindow(
+            bedtime: Self.day(-1),
+            sleepStart: Self.day(-1 + 0.125),
+            wakeTime: Self.day(0),
+            outOfBedTime: Self.day(0 + 0.25)
+        )
+        let importer = StubSleepHealthImporter(
+            result: secondNight,
+            recentResults: [firstNight, secondNight]
+        )
+        let viewModel = DashboardViewModel(sleepHealthImporter: importer)
+
+        await viewModel.loadSleepInsights()
+
+        XCTAssertEqual(viewModel.sleepSummary.nightCount, 2)
+        XCTAssertEqual(viewModel.sleepSummary.averagePreSleepDoomScrollDuration ?? -1, 16_200, accuracy: 0.001)
+        XCTAssertEqual(viewModel.sleepSummary.averagePostWakeDoomScrollDuration ?? -1, 16_200, accuracy: 0.001)
+        XCTAssertEqual(viewModel.sleepInsightCards[2].value, "4h 30m")
+        XCTAssertEqual(viewModel.sleepInsightCards[3].value, "4h 30m")
+    }
+
     private static func day(_ dayOffset: Double) -> Date {
         Date(timeIntervalSince1970: 1_700_000_000 + (86_400 * dayOffset))
     }
@@ -331,8 +360,18 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
 
 private struct StubSleepHealthImporter: SleepHealthImporting {
     let result: ImportedSleepWindow
+    var recentResults: [ImportedSleepWindow]?
+
+    init(result: ImportedSleepWindow, recentResults: [ImportedSleepWindow]? = nil) {
+        self.result = result
+        self.recentResults = recentResults
+    }
 
     func importLatestSleepWindow() async throws -> ImportedSleepWindow {
         result
+    }
+
+    func importRecentSleepWindows(days: Int) async throws -> [ImportedSleepWindow] {
+        recentResults ?? [result]
     }
 }

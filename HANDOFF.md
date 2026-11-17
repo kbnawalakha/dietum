@@ -1,18 +1,12 @@
 # Active Handoff
 
-Replace the previous handoff content with the current state at the end of each assignment. Do not append stale status indefinitely.
-
 ## Date
 
 2026-11-17
 
-## Agent
-
-Phase 2 Integration Lane
-
 ## Assigned Issue
 
-Optional account and weekly Drive backup
+Dashboard sleep and phone-use signals
 
 ## Branch
 
@@ -20,108 +14,39 @@ codex/repo-foundation
 
 ## Work Completed
 
-- Added explicit confirmation and uncertainty safeguards to meal-photo detection review
-- Added deterministic habit streak and adherence summaries with loading, empty, and error states
-- Added privacy-preserving local JSON export with export-only DTOs and typed errors
-- Added deterministic reminder pattern insights with explicit apply/keep-current controls
-- Added deterministic nutrition trend insights comparing recent and prior logged periods
-- Added improved progress-photo comparison controls with angle and date selection
-- Registered the Phase 2 feature files in the Xcode target
-- Added app routes, container factories, toolbar actions, and dashboard quick actions for habits and export
-- Added local photo-library selection and camera capture affordances to meal logging
-- Connected meal logging save to the SwiftData meal-entry repository
-- Added live local meal-entry loading to the export provider and injected it through the app container
-- Added the camera usage description required for device capture
-- Added deterministic XCTest coverage for reminder permission/control behavior, habit streak and coverage calculations, and local export payload round-tripping
-- Added an optional account setup screen with a local skip path
-- Added Google OAuth via `ASWebAuthenticationSession`, Keychain token storage, private `drive.appdata` upload, and weekly `BGTaskScheduler` scheduling
-- Added configurable OAuth build settings and documented the device setup required to enable Drive access
-- Updated lifestyle workout-day controls to deselect on repeat activation and added regression coverage
-- Made the preferred meal-time text box grow and shrink with the selected meal count
-- Added onboarding calorie-based macro percentages, calorie summaries, and fiber percentage from carbohydrates
-
-## Workstreams
-
-- Phase 2 Integration Lane | Owner: Coordination | Completed
+- Extended the HealthKit sleep importer to distinguish bedtime, sleep onset, wake time, and out-of-bed time.
+- Added inferred pre-sleep and post-wake doom-scroll durations from those intervals.
+- Added seven-night averaging and today wake-time loading to the dashboard view model.
+- Added dashboard cards for phone usage, wake time, and both inferred doom-scroll averages.
+- Kept phone usage explicitly unavailable because ordinary iOS apps cannot read Screen Time totals without the separate Family Controls capability.
+- Added deterministic dashboard coverage for the average calculations and formatted values.
 
 ## Files Changed
 
-- `Dietum.xcodeproj/project.pbxproj`
-- `Dietum/App/AppContainer.swift`
-- `Dietum/App/AppRoute.swift`
-- `Dietum/App/RootView.swift`
+- `Dietum/Features/Onboarding/HealthKitSleepService.swift`
 - `Dietum/Features/Dashboard/DashboardViewModel.swift`
-- `Dietum/Features/Habits/`
-- `Dietum/Features/Charts/NutritionTrendInsightsModels.swift`
-- `Dietum/Features/Charts/NutritionTrendInsightsService.swift`
-- `Dietum/Features/Charts/NutritionTrendInsightsViewModel.swift`
-- `Dietum/Features/Charts/NutritionTrendInsightsView.swift`
-- `Dietum/Features/Meals/MealExportService.swift`
-- `Dietum/Features/Meals/MealExportViewModel.swift`
-- `Dietum/Features/Meals/MealExportView.swift`
-- `Dietum/Features/Meals/MealLoggingView.swift`
-- `Dietum/Features/Meals/MealLoggingViewModel.swift`
-- `Dietum/Info.plist`
-- `Dietum/Features/Meals/MealReminderView.swift`
-- `Dietum/Features/Meals/MealReminderViewModel.swift`
-- `Dietum/Features/ProgressPhotos/ProgressPhotosView.swift`
-- `Dietum/Features/ProgressPhotos/ProgressPhotosViewModel.swift`
+- `Dietum/Features/Dashboard/DashboardView.swift`
+- `Dietum/DietumTests/NutritionAdjustmentRecommendationServiceTests.swift`
 - `PROJECT_STATUS.md`
 - `HANDOFF.md`
-- `Dietum/DietumTests/NutritionAdjustmentRecommendationServiceTests.swift`
-- `Dietum/App/AccountFeature.swift`
-- `Dietum/App/AppContainer.swift`
-- `Dietum/App/DietumApp.swift`
-- `Dietum/App/RootView.swift`
-- `Dietum/Info.plist`
-- `README.md`
-- `PRODUCT_SPEC.md`
-- `DECISIONS.md`
 
-## Tests Run
+## Verification
 
-- `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-phase2-integrated-tests-2`
-- `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-hardening-escalated`
-- `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-hardening-escalated-tests`
-- `git diff --check`
-- `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-quality-tests-2`
-- `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-lifestyle-tests`
-
-## Test Results
-
-- Previous integrated Phase 2 verification succeeded with 2 tests passed and 0 failures
-- The elevated hardening build succeeded, including SwiftData macro expansion
-- The elevated XCTest run succeeded with 2 tests and 0 failures
-- `git diff --check` passed
-- The expanded XCTest run succeeded with 5 tests and 0 failures
-- The account/backup app build succeeded with elevated Xcode access
-- The account/backup XCTest run succeeded with 6 tests and 0 failures
-- The lifestyle toggle XCTest run succeeded with 7 tests and 0 failures
-- The nutrition calculator XCTest run succeeded with 8 tests and 0 failures
+- Baseline: `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-baseline-tests` passed with 16 tests and 0 failures.
+- Feature build: `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-dashboard-build` succeeded.
+- Final: `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-dashboard-tests-2` passed with 17 tests and 0 failures.
+- `git diff --check` passed.
 
 ## Work Remaining
 
-- Google OAuth configuration remains required before real sign-in/Drive upload can be exercised on a device
+- Actual phone-usage totals require a separately authorized Screen Time / Family Controls integration; the dashboard currently shows `Unavailable` rather than fabricating a number.
+- Google OAuth build settings still need to be configured before real Drive backup can be exercised on a device.
 
 ## Known Problems
 
-- Sandbox-only SwiftData macro diagnostics are not reproducible with elevated verification
-- The current test target covers deterministic nutrition-adjustment behavior; broader feature-specific coverage remains optional follow-up work
-- Progress-photo comparison currently uses metadata placeholders because the existing local photo model exposes storage metadata rather than renderable image assets
-- Unrelated uncommitted files remain in the working tree: `pass` and `pass.pub`
-- An unrelated uncommitted Xcode project-file modification remains in the working tree and was not included
-- `pass` and `pass.pub` remain unrelated untracked files
-
-## Important Decisions
-
-- Keep the meal reminders surface local-first and reachable from the main shell
-- Avoid touching unrelated features beyond the route and dashboard entry points needed for navigation
-- Leave unrelated pre-existing compile issues for the owning lane
+- Unrelated pre-existing Xcode scheme/project edits and `pass` / `pass.pub` remain uncommitted and were not staged.
+- HealthKit-derived doom-scroll values are estimates of time in bed before sleep and after wake, not proof that the screen was active.
 
 ## Exact Next Step
 
-- Configure the three Google OAuth build settings, then validate sign-in and a real weekly backup on a physical device
-
-## Suggested Next Agent
-
-- None
+- Configure Google OAuth for device testing, then decide whether to pursue the separate Family Controls entitlement for real Screen Time totals.

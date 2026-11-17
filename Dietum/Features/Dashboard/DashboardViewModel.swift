@@ -23,6 +23,20 @@ struct DashboardReadinessItem: Identifiable, Hashable, Sendable {
     var isComplete: Bool
 }
 
+struct DashboardSleepSummary: Equatable, Sendable {
+    let todayWakeTime: Date?
+    let averagePreSleepDoomScrollDuration: TimeInterval?
+    let averagePostWakeDoomScrollDuration: TimeInterval?
+    let nightCount: Int
+
+    static let empty = DashboardSleepSummary(
+        todayWakeTime: nil,
+        averagePreSleepDoomScrollDuration: nil,
+        averagePostWakeDoomScrollDuration: nil,
+        nightCount: 0
+    )
+}
+
 @MainActor
 final class DashboardViewModel: ObservableObject {
     @Published var todayCaloriesTarget: Int
@@ -35,6 +49,10 @@ final class DashboardViewModel: ObservableObject {
     @Published var latestPhotoAngle: ProgressPhotoAngle?
     @Published var reminderStatusText: String
     @Published var readinessItems: [DashboardReadinessItem]
+    @Published private(set) var sleepSummary = DashboardSleepSummary.empty
+    @Published private(set) var sleepInsightsStatus = "Sleep insights have not been imported yet."
+
+    private let sleepHealthImporter: any SleepHealthImporting
 
     let quickActions: [DashboardActionItem] = [
         DashboardActionItem(title: "Log a meal", symbolName: "camera.fill", route: .mealLogging),
@@ -64,7 +82,8 @@ final class DashboardViewModel: ObservableObject {
             DashboardReadinessItem(title: "Weekly check-in ready", detail: "A weight update can be logged from the next card.", isComplete: true),
             DashboardReadinessItem(title: "Goal review ready", detail: "The latest calorie recommendation is available for approval.", isComplete: true),
             DashboardReadinessItem(title: "Photo tracking ready", detail: "Progress photo history is stored locally.", isComplete: true)
-        ]
+        ],
+        sleepHealthImporter: any SleepHealthImporting = HealthKitSleepService()
     ) {
         self.todayCaloriesTarget = todayCaloriesTarget
         self.plannedMeals = plannedMeals
@@ -76,6 +95,7 @@ final class DashboardViewModel: ObservableObject {
         self.latestPhotoAngle = latestPhotoAngle
         self.reminderStatusText = reminderStatusText
         self.readinessItems = readinessItems
+        self.sleepHealthImporter = sleepHealthImporter
     }
 
     var headline: String {
@@ -96,6 +116,65 @@ final class DashboardViewModel: ObservableObject {
 
     var nutritionHeadline: String {
         "Preview a calorie change and require approval before it is applied."
+    }
+
+    var sleepInsightsHeadline: String {
+        "Use Apple Health sleep intervals to estimate the time spent on a phone before sleep and after waking."
+    }
+
+    var sleepInsightCards: [DashboardStatCard] {
+        [
+            DashboardStatCard(
+                title: "Phone usage",
+                value: "Unavailable",
+                detail: "Screen Time access is not enabled",
+                symbolName: "iphone"
+            ),
+            DashboardStatCard(
+                title: "Wake time",
+                value: formattedWakeTime,
+                detail: "Today from Apple Health",
+                symbolName: "sunrise.fill"
+            ),
+            DashboardStatCard(
+                title: "After-wake doom scroll",
+                value: formattedDuration(sleepSummary.averagePostWakeDoomScrollDuration),
+                detail: "7-night average, inferred",
+                symbolName: "arrow.up.right.circle.fill"
+            ),
+            DashboardStatCard(
+                title: "Before-sleep doom scroll",
+                value: formattedDuration(sleepSummary.averagePreSleepDoomScrollDuration),
+                detail: "7-night average, inferred",
+                symbolName: "arrow.down.right.circle.fill"
+            )
+        ]
+    }
+
+    func loadSleepInsights() async {
+        sleepInsightsStatus = "Reading recent sleep intervals from Apple Health..."
+
+        do {
+            let windows = try await sleepHealthImporter.importRecentSleepWindows(days: 7)
+            let calendar = Calendar.current
+            let todayWakeTime = windows.first(where: { calendar.isDate($0.wakeTime, inSameDayAs: Date()) })?.wakeTime
+            let preSleepDurations = windows.map(\.preSleepDoomScrollDuration)
+            let postWakeDurations = windows.map(\.postWakeDoomScrollDuration)
+
+            sleepSummary = DashboardSleepSummary(
+                todayWakeTime: todayWakeTime,
+                averagePreSleepDoomScrollDuration: Self.average(preSleepDurations),
+                averagePostWakeDoomScrollDuration: Self.average(postWakeDurations),
+                nightCount: windows.count
+            )
+            sleepInsightsStatus = "Estimated from \(windows.count) recent night(s). Apple Health intervals do not prove that screen use occurred."
+        } catch let error as SleepHealthImportError {
+            sleepSummary = .empty
+            sleepInsightsStatus = error.errorDescription ?? "Sleep insights are unavailable."
+        } catch {
+            sleepSummary = .empty
+            sleepInsightsStatus = "Sleep insights could not be loaded. Try again after recording sleep in Apple Health."
+        }
     }
 
     var targetCards: [DashboardStatCard] {
@@ -187,6 +266,35 @@ final class DashboardViewModel: ObservableObject {
         readinessItems.allSatisfy(\.isComplete)
             ? "Everything needed for a quick daily review is available locally."
             : "Some parts of the daily review still need attention."
+    }
+
+    private var formattedWakeTime: String {
+        guard let wakeTime = sleepSummary.todayWakeTime else {
+            return "—"
+        }
+
+        return wakeTime.formatted(date: .omitted, time: .shortened)
+    }
+
+    private func formattedDuration(_ duration: TimeInterval?) -> String {
+        guard let duration else {
+            return "—"
+        }
+
+        let minutes = max(Int((duration / 60).rounded()), 0)
+        if minutes < 60 {
+            return "\(minutes) min"
+        }
+
+        return "\(minutes / 60)h \(minutes % 60)m"
+    }
+
+    private static func average(_ values: [TimeInterval]) -> TimeInterval? {
+        guard !values.isEmpty else {
+            return nil
+        }
+
+        return values.reduce(0, +) / Double(values.count)
     }
 }
 
