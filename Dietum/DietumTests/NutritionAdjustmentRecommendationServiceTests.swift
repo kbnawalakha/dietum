@@ -223,6 +223,29 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(viewModel.bodyFatEstimateText, "No body-fat estimate entered.")
     }
 
+    @MainActor
+    func testProgressPhotoRepositoryRoundTripsImageData() async throws {
+        let container = try DietumPersistenceStack.makeContainer(inMemory: true)
+        let repository = SwiftDataProgressPhotoRepository(modelContext: container.mainContext)
+        let capturedAt = Self.day(0)
+        let imageData = Data([0, 1, 2, 3])
+        let photo = ProgressPhotoMetadata(
+            capturedAt: capturedAt,
+            angle: .front,
+            photo: PhotoMetadata(
+                storageIdentifier: "progress-photo-front-01",
+                capturedAt: capturedAt,
+                imageData: imageData
+            )
+        )
+
+        try await repository.saveProgressPhoto(photo)
+        let results = try await repository.fetchProgressPhotos(in: DateInterval(start: Self.day(-1), end: Self.day(1)))
+
+        XCTAssertEqual(results.count, 1)
+        XCTAssertEqual(results.first?.photo.imageData, imageData)
+    }
+
     private static func day(_ dayOffset: Double) -> Date {
         Date(timeIntervalSince1970: 1_700_000_000 + (86_400 * dayOffset))
     }

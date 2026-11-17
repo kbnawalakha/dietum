@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import UIKit
 
 struct BodyFatReferenceBand: Identifiable, Hashable, Sendable {
     let id: String
@@ -63,14 +64,24 @@ final class ProgressPhotosViewModel: ObservableObject {
         }
     }
 
-    func stageMockPhoto(for angle: ProgressPhotoAngle) {
+    func stagePhoto(for angle: ProgressPhotoAngle, image: UIImage) {
+        guard let imageData = image.jpegData(compressionQuality: 0.85) else {
+            saveState = .failed("The selected photo could not be prepared for local storage.")
+            return
+        }
+
         captureSequence += 1
-        let storageIdentifier = "progress-photo-\(angle.rawValue)-mock-\(String(format: "%02d", captureSequence))"
+        let storageIdentifier = "progress-photo-\(angle.rawValue)-\(String(format: "%02d", captureSequence))"
         stagedPhotos[angle] = PhotoMetadata(
             storageIdentifier: storageIdentifier,
-            capturedAt: .now
+            capturedAt: .now,
+            imageData: imageData
         )
         saveState = .idle
+    }
+
+    func photoSelectionFailed() {
+        saveState = .failed("The selected photo could not be loaded. Please try another image.")
     }
 
     func saveStagedPhotos() async {
@@ -147,7 +158,7 @@ final class ProgressPhotosViewModel: ObservableObject {
         case .failed(let message):
             return message
         case .idle, .loaded:
-            return "Stage front, back, left, and right mock photos locally, then save the set."
+            return "Choose real photos for each angle, then save the set locally."
         }
     }
 
@@ -162,7 +173,7 @@ final class ProgressPhotosViewModel: ObservableObject {
 
     var stagedSummaryText: String {
         guard !stagedPhotos.isEmpty else {
-            return "Tap any angle card to stage a mock photo for that pose."
+            return "Choose a photo from your library or camera for any pose."
         }
 
         let orderedAngles = stagedPhotos.keys.sorted { angleOrder($0) < angleOrder($1) }

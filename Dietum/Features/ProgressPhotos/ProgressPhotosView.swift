@@ -1,7 +1,12 @@
 import SwiftUI
+import PhotosUI
+import UIKit
 
 struct ProgressPhotosView: View {
     @StateObject private var viewModel: ProgressPhotosViewModel
+    @State private var pickerItem: PhotosPickerItem?
+    @State private var selectedAngle: ProgressPhotoAngle?
+    @State private var isCameraPresented = false
 
     init(viewModel: ProgressPhotosViewModel = ProgressPhotosViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -25,17 +30,27 @@ struct ProgressPhotosView: View {
 
                         LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
                             ForEach(ProgressPhotoAngle.allCases, id: \.self) { angle in
-                                Button {
-                                    viewModel.stageMockPhoto(for: angle)
+                                Menu {
+                                    Button {
+                                        selectedAngle = angle
+                                    } label: {
+                                        Label("Choose from library", systemImage: "photo.on.rectangle")
+                                    }
+
+                                    Button {
+                                        selectedAngle = angle
+                                        isCameraPresented = true
+                                    } label: {
+                                        Label("Take photo", systemImage: "camera")
+                                    }
                                 } label: {
                                     ProgressPhotoAngleTile(
                                         angle: angle,
                                         stagedPhoto: viewModel.stagedPhoto(for: angle)
                                     )
                                 }
-                                .buttonStyle(.plain)
                                 .accessibilityLabel("\(angle.displayName) progress photo")
-                                .accessibilityHint("Stages a deterministic mock photo for the \(angle.caption.lowercased()) angle.")
+                                .accessibilityHint("Choose a real photo from your library or camera for the \(angle.caption.lowercased()) angle.")
                             }
                         }
 
@@ -220,6 +235,49 @@ struct ProgressPhotosView: View {
         .task {
             await viewModel.loadRecentPhotos()
         }
+        .photosPicker(
+            isPresented: Binding(
+                get: { selectedAngle != nil && !isCameraPresented },
+                set: { isPresented in
+                    if !isPresented {
+                        selectedAngle = nil
+                        pickerItem = nil
+                    }
+                }
+            ),
+            selection: $pickerItem,
+            matching: .images
+        )
+        .onChange(of: pickerItem) { _, newItem in
+            guard let newItem, let angle = selectedAngle else {
+                return
+            }
+
+            Task {
+                guard let data = try? await newItem.loadTransferable(type: Data.self),
+                      let image = UIImage(data: data) else {
+                    await MainActor.run {
+                        viewModel.photoSelectionFailed()
+                    }
+                    return
+                }
+
+                await MainActor.run {
+                    viewModel.stagePhoto(for: angle, image: image)
+                    selectedAngle = nil
+                    pickerItem = nil
+                }
+            }
+        }
+        .sheet(isPresented: $isCameraPresented) {
+            CameraImagePicker { image in
+                if let selectedAngle {
+                    viewModel.stagePhoto(for: selectedAngle, image: image)
+                }
+                self.selectedAngle = nil
+                isCameraPresented = false
+            }
+        }
         .appScreenBackground()
     }
 }
@@ -263,12 +321,18 @@ private struct ComparisonPhotoCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.small) {
-            Image(systemName: "person.crop.rectangle")
-                .font(.title2)
-                .foregroundStyle(AppPalette.accent)
+            if let photo {
+                ProgressPhotoImage(photo: photo.photo, placeholderHeight: 84)
+                    .frame(maxWidth: .infinity, minHeight: 84)
+                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.card / 2, style: .continuous))
+            } else {
+                ProgressPhotoImage(
+                    photo: PhotoMetadata(storageIdentifier: "missing-progress-photo"),
+                    placeholderHeight: 84
+                )
                 .frame(maxWidth: .infinity, minHeight: 84)
-                .background(AppPalette.accentSoft.opacity(0.45))
                 .clipShape(RoundedRectangle(cornerRadius: AppRadius.card / 2, style: .continuous))
+            }
 
             Text(title)
                 .font(.caption.weight(.semibold))
@@ -312,14 +376,32 @@ private struct ProgressPhotoAngleTile: View {
                 .font(.headline)
                 .foregroundStyle(AppPalette.textPrimary)
 
-            Text(stagedPhoto == nil ? "Tap to stage a mock photo." : stagedPhotoText)
+            if let stagedPhoto, let imageData = stagedPhoto.imageData, let image = UIImage(data: imageData) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 92)
+                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.card / 2, style: .continuous))
+            } else {
+                RoundedRectangle(cornerRadius: AppRadius.card / 2, style: .continuous)
+                    .fill(AppPalette.accentSoft.opacity(0.45))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 92)
+                    .overlay {
+                        Image(systemName: "photo.on.rectangle")
+                            .foregroundStyle(AppPalette.accent)
+                    }
+            }
+
+            Text(stagedPhoto == nil ? "Choose a real photo." : stagedPhotoText)
                 .font(.caption)
                 .foregroundStyle(AppPalette.textSecondary)
 
             Spacer(minLength: 0)
 
             Label(
-                stagedPhoto == nil ? "Stage mock photo" : "Retake mock photo",
+                stagedPhoto == nil ? "Choose photo" : "Replace photo",
                 systemImage: stagedPhoto == nil ? "plus.circle.fill" : "arrow.clockwise"
             )
             .font(.caption.weight(.semibold))
@@ -350,7 +432,9 @@ private struct ProgressPhotoRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: AppSpacing.item) {
-            AppStatusPill(text: photo.angle.displayName, systemImage: "photo")
+            ProgressPhotoImage(photo: photo.photo, placeholderHeight: 64)
+                .frame(width: 64, height: 64)
+                .clipShape(RoundedRectangle(cornerRadius: AppRadius.card / 2, style: .continuous))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(photo.capturedAt.formatted(date: .abbreviated, time: .shortened))
@@ -384,5 +468,68 @@ private struct ProgressPhotoRow: View {
                 .offset(y: 24),
             alignment: .bottom
         )
+    }
+}
+
+private struct ProgressPhotoImage: View {
+    let photo: PhotoMetadata
+    let placeholderHeight: CGFloat
+
+    var body: some View {
+        Group {
+            if let imageData = photo.imageData, let image = UIImage(data: imageData) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                RoundedRectangle(cornerRadius: AppRadius.card / 2, style: .continuous)
+                    .fill(AppPalette.accentSoft.opacity(0.45))
+                    .overlay {
+                        Image(systemName: "photo.on.rectangle")
+                            .foregroundStyle(AppPalette.accent)
+                    }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(minHeight: placeholderHeight)
+        .clipped()
+        .accessibilityLabel("Progress photo")
+    }
+}
+
+private struct CameraImagePicker: UIViewControllerRepresentable {
+    let onImagePicked: (UIImage) -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onImagePicked: onImagePicked)
+    }
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.delegate = context.coordinator
+        picker.allowsEditing = false
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+
+    final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let onImagePicked: (UIImage) -> Void
+
+        init(onImagePicked: @escaping (UIImage) -> Void) {
+            self.onImagePicked = onImagePicked
+        }
+
+        func imagePickerController(
+            _ picker: UIImagePickerController,
+            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
+        ) {
+            if let image = info[.originalImage] as? UIImage {
+                onImagePicked(image)
+            }
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {}
     }
 }

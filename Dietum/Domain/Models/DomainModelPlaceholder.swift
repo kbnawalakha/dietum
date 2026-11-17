@@ -134,15 +134,18 @@ struct PhotoMetadata: Identifiable, Codable, Hashable, Sendable {
     var id: UUID
     var storageIdentifier: String
     var capturedAt: Date
+    var imageData: Data?
 
     init(
         id: UUID = UUID(),
         storageIdentifier: String,
-        capturedAt: Date = Date()
+        capturedAt: Date = Date(),
+        imageData: Data? = nil
     ) {
         self.id = id
         self.storageIdentifier = storageIdentifier
         self.capturedAt = capturedAt
+        self.imageData = imageData
     }
 }
 
