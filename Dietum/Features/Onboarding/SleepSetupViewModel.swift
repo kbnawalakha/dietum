@@ -38,6 +38,17 @@ final class SleepSetupViewModel: ObservableObject {
     @Published var sleepSchedule: String
     @Published var sleepNotes: String
     @Published private(set) var validationState: SleepSetupValidationState
+    @Published private(set) var importedSleep: ImportedSleepWindow?
+    @Published private(set) var healthImportState: HealthImportState = .idle
+
+    enum HealthImportState: Equatable {
+        case idle
+        case importing
+        case imported
+        case failed(String)
+    }
+
+    private let sleepHealthImporter: any SleepHealthImporting
 
     let fieldGroups: [SleepSetupFieldGroup] = [
         SleepSetupFieldGroup(
@@ -60,16 +71,49 @@ final class SleepSetupViewModel: ObservableObject {
     init(
         averageSleepHours: String = "",
         sleepSchedule: String = "",
-        sleepNotes: String = ""
+        sleepNotes: String = "",
+        sleepHealthImporter: any SleepHealthImporting = HealthKitSleepService()
     ) {
         self.averageSleepHours = averageSleepHours
         self.sleepSchedule = sleepSchedule
         self.sleepNotes = sleepNotes
+        self.sleepHealthImporter = sleepHealthImporter
+        self.importedSleep = nil
         self.validationState = Self.validate(
             averageSleepHours: averageSleepHours,
             sleepSchedule: sleepSchedule,
             sleepNotes: sleepNotes
         )
+    }
+
+    var healthImportStatusText: String {
+        switch healthImportState {
+        case .idle:
+            return "Import the latest sleep window from Apple Health when available."
+        case .importing:
+            return "Reading the latest sleep window from Apple Health..."
+        case .imported:
+            return importedSleep.map { "Imported \(formattedDuration($0.duration)) from Apple Health." } ?? "Sleep imported from Apple Health."
+        case .failed(let message):
+            return message
+        }
+    }
+
+    func importSleepFromHealthKit() async {
+        healthImportState = .importing
+
+        do {
+            let result = try await sleepHealthImporter.importLatestSleepWindow()
+            importedSleep = result
+            averageSleepHours = String(format: "%.1f", result.duration / 3_600)
+            sleepSchedule = "Bedtime \(formatted(time: result.bedtime)); wake \(formatted(time: result.wakeTime))"
+            validate()
+            healthImportState = .imported
+        } catch let error as SleepHealthImportError {
+            healthImportState = .failed(error.localizedDescription)
+        } catch {
+            healthImportState = .failed("Apple Health could not be read right now. Check Health permissions and try again.")
+        }
     }
 
     var isReady: Bool {
@@ -136,5 +180,13 @@ final class SleepSetupViewModel: ObservableObject {
         }
 
         return SleepSetupValidationState(issues: issues)
+    }
+
+    private func formattedDuration(_ duration: TimeInterval) -> String {
+        String(format: "%.1f hours", duration / 3_600)
+    }
+
+    private func formatted(time: Date) -> String {
+        time.formatted(date: .omitted, time: .shortened)
     }
 }

@@ -48,6 +48,43 @@ struct SleepSetupView: View {
                 AppSurfaceCard {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
+                            title: "Import from Apple Health",
+                            message: "Sleep and wake timing can be read from HealthKit after you approve access."
+                        )
+
+                        Button {
+                            Task {
+                                await viewModel.importSleepFromHealthKit()
+                            }
+                        } label: {
+                            Label("Import latest sleep", systemImage: "heart.text.square.fill")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.appToolbar)
+                        .disabled(viewModel.healthImportState == .importing)
+
+                        Text(viewModel.healthImportStatusText)
+                            .font(.subheadline)
+                            .foregroundStyle(AppPalette.textSecondary)
+                    }
+                }
+
+                AppSurfaceCard {
+                    VStack(alignment: .leading, spacing: AppSpacing.item) {
+                        AppSectionHeader(
+                            title: "Phone-use time",
+                            message: "iOS does not expose ordinary Screen Time totals to this app."
+                        )
+
+                        Text("A future Screen Time integration would require Apple Family Controls entitlement and user authorization. Until then, Dietum will not claim to import phone-use time automatically.")
+                            .font(.subheadline)
+                            .foregroundStyle(AppPalette.textSecondary)
+                    }
+                }
+
+                AppSurfaceCard {
+                    VStack(alignment: .leading, spacing: AppSpacing.item) {
+                        AppSectionHeader(
                             title: "Sleep baseline",
                             message: "Start with the amount of sleep and the current rhythm you want the app to remember."
                         )

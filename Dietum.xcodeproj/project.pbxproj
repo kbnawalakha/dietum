@@ -54,6 +54,7 @@
 		1000000000000000000000B7 /* SleepSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B2 /* SleepSetupView.swift */; };
 		1000000000000000000000B8 /* SleepSetupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B3 /* SleepSetupViewModel.swift */; };
 		1000000000000000000000B9 /* OnboardingDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B4 /* OnboardingDraft.swift */; };
+		1000000000000000000000C5 /* HealthKitSleepService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000C4 /* HealthKitSleepService.swift */; };
 		1000000000000000000000BB /* GoalSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000BC /* GoalSetupView.swift */; };
 		1000000000000000000000BE /* CheckInDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000BF /* CheckInDraft.swift */; };
 		1000000000000000000000C0 /* MealReminderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000C2 /* MealReminderView.swift */; };
@@ -133,6 +134,7 @@
 		1000000000000000000000B2 /* SleepSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepSetupView.swift; sourceTree = "<group>"; };
 		1000000000000000000000B3 /* SleepSetupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepSetupViewModel.swift; sourceTree = "<group>"; };
 		1000000000000000000000B4 /* OnboardingDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDraft.swift; sourceTree = "<group>"; };
+		1000000000000000000000C4 /* HealthKitSleepService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitSleepService.swift; sourceTree = "<group>"; };
 		1000000000000000000000BC /* GoalSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalSetupView.swift; sourceTree = "<group>"; };
 		1000000000000000000000BF /* CheckInDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInDraft.swift; sourceTree = "<group>"; };
 		1000000000000000000000C2 /* MealReminderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealReminderView.swift; sourceTree = "<group>"; };
@@ -190,6 +192,7 @@
 				100000000000000000000029 /* Support */,
 				1000000000000000000000A2 /* DietumTests */,
 				823EBF8930153B4700C96A81 /* Recovered References */,
+				10000000000000000000000C /* Products */,
 			);
 			path = Dietum;
 			sourceTree = "<group>";
@@ -259,6 +262,7 @@
 				1000000000000000000000B4 /* OnboardingDraft.swift */,
 				1000000000000000000000B2 /* SleepSetupView.swift */,
 				1000000000000000000000B3 /* SleepSetupViewModel.swift */,
+				1000000000000000000000C4 /* HealthKitSleepService.swift */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -495,7 +499,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastUpgradeCheck = 2650;
+				LastUpgradeCheck = 2720;
 				TargetAttributes = {
 					10000000000000000000000B = {
 						CreatedOnToolsVersion = 26.5;
@@ -557,6 +561,7 @@
 				1000000000000000000000B7 /* SleepSetupView.swift in Sources */,
 				1000000000000000000000B8 /* SleepSetupViewModel.swift in Sources */,
 				1000000000000000000000B9 /* OnboardingDraft.swift in Sources */,
+				1000000000000000000000C5 /* HealthKitSleepService.swift in Sources */,
 				10000000000000000000001E /* DomainModelPlaceholder.swift in Sources */,
 				10000000000000000000001F /* RepositoryPlaceholder.swift in Sources */,
 				100000000000000000000020 /* ServicePlaceholder.swift in Sources */,
@@ -630,6 +635,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -665,6 +671,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = Dietum/Info.plist;
+				CODE_SIGN_ENTITLEMENTS = Dietum/Dietum.entitlements;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -690,6 +697,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -724,6 +732,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = Dietum/Info.plist;
+				CODE_SIGN_ENTITLEMENTS = Dietum/Dietum.entitlements;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -751,6 +760,8 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
+				"CODE_SIGNING_ALLOWED[sdk=iphoneos*]" = YES;
+				"CODE_SIGNING_REQUIRED[sdk=iphoneos*]" = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_LANGUAGE = en;
@@ -773,6 +784,8 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
+				"CODE_SIGNING_ALLOWED[sdk=iphoneos*]" = YES;
+				"CODE_SIGNING_REQUIRED[sdk=iphoneos*]" = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_LANGUAGE = en;

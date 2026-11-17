@@ -284,7 +284,32 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(results.first?.photo.imageData, imageData)
     }
 
+    @MainActor
+    func testSleepSetupImportsHealthDataIntoEditableFields() async {
+        let bedtime = Self.day(-0.25)
+        let wakeTime = Self.day(0)
+        let importer = StubSleepHealthImporter(
+            result: ImportedSleepWindow(bedtime: bedtime, wakeTime: wakeTime)
+        )
+        let viewModel = SleepSetupViewModel(sleepHealthImporter: importer)
+
+        await viewModel.importSleepFromHealthKit()
+
+        XCTAssertEqual(viewModel.healthImportState, .imported)
+        XCTAssertEqual(viewModel.importedSleep?.bedtime, bedtime)
+        XCTAssertEqual(viewModel.averageSleepHours, "6.0")
+        XCTAssertTrue(viewModel.sleepSchedule.contains("Bedtime"))
+    }
+
     private static func day(_ dayOffset: Double) -> Date {
         Date(timeIntervalSince1970: 1_700_000_000 + (86_400 * dayOffset))
+    }
+}
+
+private struct StubSleepHealthImporter: SleepHealthImporting {
+    let result: ImportedSleepWindow
+
+    func importLatestSleepWindow() async throws -> ImportedSleepWindow {
+        result
     }
 }
