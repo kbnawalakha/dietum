@@ -128,14 +128,19 @@ final class KeychainAccountSessionStore: AccountSessionStoring, @unchecked Senda
 struct GoogleDriveConfiguration: Sendable {
     let clientID: String
     let redirectURI: String
+    let configuredScheme: String
 
     init(info: [String: Any] = Bundle.main.infoDictionary ?? [:]) {
         clientID = info["GoogleOAuthClientID"] as? String ?? ""
         redirectURI = info["GoogleOAuthRedirectURI"] as? String ?? ""
+        configuredScheme = info["GoogleOAuthScheme"] as? String ?? ""
     }
 
     var isConfigured: Bool {
-        isRealValue(clientID) && isRealValue(redirectURI) && callbackScheme != nil
+        isRealValue(clientID)
+            && isRealValue(redirectURI)
+            && isRealValue(configuredScheme)
+            && URL(string: redirectURI)?.scheme == configuredScheme
     }
 
     var missingConfigurationKeys: [String] {
@@ -146,11 +151,20 @@ struct GoogleDriveConfiguration: Sendable {
         if !isRealValue(redirectURI) || callbackScheme == nil {
             missing.append("GOOGLE_OAUTH_REDIRECT_URI")
         }
+        if !isRealValue(configuredScheme) {
+            missing.append("GOOGLE_OAUTH_SCHEME")
+        } else if let redirectScheme = URL(string: redirectURI)?.scheme, redirectScheme != configuredScheme {
+            missing.append("GOOGLE_OAUTH_SCHEME (must match the redirect URI scheme)")
+        }
         return missing
     }
 
     var callbackScheme: String? {
-        URL(string: redirectURI)?.scheme
+        guard isRealValue(configuredScheme) else {
+            return nil
+        }
+
+        return configuredScheme
     }
 
     private func isRealValue(_ value: String) -> Bool {
@@ -211,7 +225,15 @@ final class GoogleDriveAccountService: NSObject, ASWebAuthenticationPresentation
         }
 
         guard let callbackComponents = URLComponents(url: callbackURL, resolvingAgainstBaseURL: false),
-              let code = callbackComponents.queryItems?.first(where: { $0.name == "code" })?.value else {
+              let queryItems = callbackComponents.queryItems else {
+            throw AccountError.invalidCallback
+        }
+
+        if let error = queryItems.first(where: { $0.name == "error" })?.value {
+            throw error == "access_denied" ? AccountError.cancelled : AccountError.authorizationFailed
+        }
+
+        guard let code = queryItems.first(where: { $0.name == "code" })?.value else {
             throw AccountError.invalidCallback
         }
 
@@ -303,9 +325,16 @@ final class GoogleDriveAccountService: NSObject, ASWebAuthenticationPresentation
 
     private func formEncoded(_ values: [String: String]) -> Data {
         values
-            .map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $0.value)" }
+            .map { "\(formEncode($0.key))=\(formEncode($0.value))" }
             .joined(separator: "&")
             .data(using: .utf8) ?? Data()
+    }
+
+    private func formEncode(_ value: String) -> String {
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-._*"))
+        return value
+            .addingPercentEncoding(withAllowedCharacters: allowed)?
+            .replacingOccurrences(of: "%20", with: "+") ?? value
     }
 
     private struct GoogleTokenResponse: Decodable {

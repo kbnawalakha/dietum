@@ -181,10 +181,30 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
     func testOAuthPlaceholderConfigurationStaysDisabledUntilConfigured() {
         let configuration = GoogleDriveConfiguration(info: [
             "GoogleOAuthClientID": "$(GOOGLE_OAUTH_CLIENT_ID)",
-            "GoogleOAuthRedirectURI": "$(GOOGLE_OAUTH_REDIRECT_URI)"
+            "GoogleOAuthRedirectURI": "$(GOOGLE_OAUTH_REDIRECT_URI)",
+            "GoogleOAuthScheme": "$(GOOGLE_OAUTH_SCHEME)"
         ])
 
         XCTAssertFalse(configuration.isConfigured)
+    }
+
+    func testOAuthConfigurationRequiresMatchingCallbackScheme() {
+        let configuration = GoogleDriveConfiguration(info: [
+            "GoogleOAuthClientID": "client.apps.googleusercontent.com",
+            "GoogleOAuthRedirectURI": "com.example.dietum:/oauthredirect",
+            "GoogleOAuthScheme": "com.example.other"
+        ])
+
+        XCTAssertFalse(configuration.isConfigured)
+        XCTAssertTrue(configuration.missingConfigurationKeys.contains("GOOGLE_OAUTH_SCHEME (must match the redirect URI scheme)"))
+
+        let validConfiguration = GoogleDriveConfiguration(info: [
+            "GoogleOAuthClientID": "client.apps.googleusercontent.com",
+            "GoogleOAuthRedirectURI": "com.example.dietum:/oauthredirect",
+            "GoogleOAuthScheme": "com.example.dietum"
+        ])
+
+        XCTAssertTrue(validConfiguration.isConfigured)
     }
 
     func testOnboardingWorkoutDayToggleDeselectsOnSecondActivation() {

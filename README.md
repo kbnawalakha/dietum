@@ -50,6 +50,8 @@ The account screen is usable without configuration: tap **Skip for now** to stay
 - `GOOGLE_OAUTH_REDIRECT_URI` - the registered custom-scheme redirect URI
 - `GOOGLE_OAUTH_SCHEME` - the URL scheme used by that redirect URI
 
+For an iOS OAuth client, the redirect URI normally looks like `com.googleusercontent.apps.1234567890:/oauthredirect`; set `GOOGLE_OAUTH_SCHEME` to the exact scheme before the `:/oauthredirect` portion. The scheme must be registered in the Google Cloud OAuth client and must match the app’s `CFBundleURLSchemes` value. If these settings remain as `$(...)` placeholders, the Google button stays disabled by design.
+
 The app requests the private `drive.appdata` scope and stores OAuth tokens in the iOS Keychain. Weekly backup scheduling uses `BGTaskScheduler`; iOS decides when an eligible background refresh runs.
 
 ## How To Run Tests

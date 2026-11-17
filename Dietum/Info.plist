@@ -28,6 +28,8 @@
 	<string>$(GOOGLE_OAUTH_CLIENT_ID)</string>
 	<key>GoogleOAuthRedirectURI</key>
 	<string>$(GOOGLE_OAUTH_REDIRECT_URI)</string>
+	<key>GoogleOAuthScheme</key>
+	<string>$(GOOGLE_OAUTH_SCHEME)</string>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.kbnawalakha.Dietum.weekly-backup</string>

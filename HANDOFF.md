@@ -66,6 +66,7 @@ codex/repo-foundation
 - Nutrition-insights device compile was attempted but stopped at the existing SwiftData macro-plugin malformed-response failure.
 - Settings-shell device compile was attempted but stopped at the existing SwiftData macro-plugin malformed-response failure.
 - The progress-photo day deletion regression test was added but could not execute because CoreSimulatorService exposed no matching simulator destination.
+- Google OAuth configuration now validates the explicit callback scheme against the redirect URI and reports placeholder/mismatch settings; real Google Cloud OAuth values are still required for a device sign-in.
 
 ## Exact Next Step
 
