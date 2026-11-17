@@ -8,6 +8,25 @@ struct LocalMealNutritionAnalysisService: MealFoodDetectionService {
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
         guard !normalizedDescription.isEmpty else {
+            if photo != nil {
+                return MealFoodDetectionResult(
+                    detectedFoods: [
+                        DetectedMealFood(
+                            name: "Photo meal estimate",
+                            confidence: 0.25,
+                            nutrition: NutritionAmounts(
+                                calories: 520,
+                                proteinGrams: 30,
+                                carbohydrateGrams: 55,
+                                fatGrams: 18,
+                                fiberGrams: 7
+                            )
+                        )
+                    ],
+                    notes: "Photo estimate created locally from a general mixed-meal profile. Add a short description of the visible foods for a more specific breakdown, then edit portions before saving."
+                )
+            }
+
             return MealFoodDetectionResult(
                 detectedFoods: [],
                 notes: "Describe the meal before analyzing it. Include broad ingredients such as chicken, rice, vegetables, eggs, or pasta."

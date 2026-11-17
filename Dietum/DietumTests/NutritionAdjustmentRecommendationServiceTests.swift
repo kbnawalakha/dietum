@@ -189,6 +189,18 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertTrue(result.notes?.contains("Local estimate") == true)
     }
 
+    func testLocalMealAnalysisReturnsEditableEstimateForPhotoWithoutDescription() async throws {
+        let result = try await LocalMealNutritionAnalysisService().analyzeMeal(
+            description: "",
+            photo: PhotoMetadata(storageIdentifier: "meal-photo", imageData: Data([1, 2, 3]))
+        )
+
+        XCTAssertEqual(result.detectedFoods.map(\.name), ["Photo meal estimate"])
+        XCTAssertEqual(result.detectedFoods.first?.nutrition.calories, 520)
+        XCTAssertEqual(result.detectedFoods.first?.nutrition.proteinGrams ?? -1, 30, accuracy: 0.001)
+        XCTAssertTrue(result.notes?.contains("Photo estimate") == true)
+    }
+
     @MainActor
     func testMealAnalysisProvidesEditableFallbackEstimateAndRecalculatesCalories() async {
         let viewModel = MealLoggingViewModel()

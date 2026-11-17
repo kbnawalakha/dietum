@@ -44,7 +44,7 @@ struct MealLoggingView: View {
                             onPhotoSelected: { viewModel.setSelectedPhoto($0) }
                         )
 
-                        Text(viewModel.hasSelectedPhoto ? "Selected local photo" : "No photo selected. A general food description is enough for the local estimate.")
+                        Text(viewModel.hasSelectedPhoto ? "Selected local photo. Add a description for a more specific analysis." : "No photo selected. A general food description is enough for the local estimate.")
                             .font(.subheadline)
                             .foregroundStyle(AppPalette.textSecondary)
 
