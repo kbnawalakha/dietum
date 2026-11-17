@@ -1,4 +1,5 @@
 import XCTest
+import UIKit
 @testable import Dietum
 
 final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
@@ -282,6 +283,22 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
 
         viewModel.selectBodyFatReference(BodyFatReferenceBand.guide[1])
         XCTAssertEqual(viewModel.bodyFatEstimateText, "Visual estimate: Active range (10-20%).")
+    }
+
+    @MainActor
+    func testProgressPhotoStagesAndAnalyzesBeforeSave() async {
+        let viewModel = ProgressPhotosViewModel()
+        let image = UIGraphicsImageRenderer(size: CGSize(width: 32, height: 32)).image { context in
+            UIColor.systemBlue.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 32, height: 32))
+        }
+
+        await viewModel.stagePhotoAndAnalyze(for: .left, image: image)
+
+        XCTAssertNotNil(viewModel.stagedPhoto(for: .left))
+        XCTAssertFalse(viewModel.chestBodyFatText.isEmpty)
+        XCTAssertFalse(viewModel.legsBodyFatText.isEmpty)
+        XCTAssertTrue(viewModel.bodyAnalysisText.contains("loaded") || viewModel.bodyAnalysisText.contains("Body detected"))
     }
 
     @MainActor

@@ -310,29 +310,20 @@ struct ProgressPhotosView: View {
                 }
 
                 await MainActor.run {
-                    viewModel.stagePhoto(for: angle, image: image)
-                    Task {
-                        await viewModel.analyzeBodyPhotos()
-                    }
                     isPhotoPickerPresented = false
-                    selectedAngle = nil
                     pickerItem = nil
                 }
+                await viewModel.stagePhotoAndAnalyze(for: angle, image: image)
+                await MainActor.run {
+                    selectedAngle = nil
+                }
             }
-        }
-        .onChange(of: isPhotoPickerPresented) { _, isPresented in
-            guard !isPresented, pickerItem == nil else {
-                return
-            }
-
-            selectedAngle = nil
         }
         .sheet(isPresented: $isCameraPresented) {
             CameraImagePicker { image in
                 if let selectedAngle {
-                    viewModel.stagePhoto(for: selectedAngle, image: image)
                     Task {
-                        await viewModel.analyzeBodyPhotos()
+                        await viewModel.stagePhotoAndAnalyze(for: selectedAngle, image: image)
                     }
                 }
                 self.selectedAngle = nil

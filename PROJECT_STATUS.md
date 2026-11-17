@@ -55,6 +55,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Grouped saved progress photos by capture date and added editable regional body-fat estimates for chest, arms, legs, back, and visceral fat
 - Relaxed body-photo analysis so valid uploaded images still receive an editable analysis when Vision pose detection is inconclusive
 - Made meal-photo and body-photo analysis start automatically after upload, while keeping estimates editable before local save
+- Fixed progress-photo picker timing so the selected pose is retained until PhotosUI delivers the image and the staged photo is analyzed
 
 # In Progress
 
@@ -88,6 +89,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Body-fat regional values are visual estimates, not clinical measurements; visceral fat cannot be measured from a photograph
 - Vision pose detection can be inconclusive for cropped, dark, side-profile, or simulator images; those images now fall back to editable estimates instead of failing outright
 - Current local Xcode verification can fail before app compilation when the SwiftData macro plugin returns a malformed response; rerun after CoreSimulator/Xcode services recover
+- Progress-photo regression coverage now verifies staging and editable estimate generation before save
 
 # Active Agents
 

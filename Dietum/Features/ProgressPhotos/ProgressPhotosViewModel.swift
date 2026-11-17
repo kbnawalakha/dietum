@@ -104,6 +104,11 @@ final class ProgressPhotosViewModel: ObservableObject {
         saveState = .idle
     }
 
+    func stagePhotoAndAnalyze(for angle: ProgressPhotoAngle, image: UIImage) async {
+        stagePhoto(for: angle, image: image)
+        await analyzeBodyPhotos()
+    }
+
     func photoSelectionFailed() {
         photoSelectionError = "The selected photo could not be loaded. Please try another image."
         saveState = .failed("The selected photo could not be loaded. Please try another image.")
