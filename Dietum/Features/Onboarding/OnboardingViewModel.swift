@@ -187,7 +187,6 @@ enum OnboardingField: String, CaseIterable, Hashable, Sendable {
     case workoutIntensity
     case averageSleepHours
     case mealCount
-    case preferredMealTimes
     case heavyMealSlot
     case lightMealSlot
     case dailyCalories
@@ -216,8 +215,6 @@ enum OnboardingField: String, CaseIterable, Hashable, Sendable {
             return "Sleep information"
         case .mealCount:
             return "Meal count"
-        case .preferredMealTimes:
-            return "Preferred meal times"
         case .heavyMealSlot:
             return "Heavy meal preference"
         case .lightMealSlot:
@@ -246,7 +243,6 @@ struct OnboardingDraft: Hashable, Sendable {
     var workoutIntensity: WorkoutIntensity = .moderate
     var averageSleepHours: String = ""
     var mealCount: Int = 3
-    var preferredMealTimes: String = ""
     var heavyMealPreference: String = ""
     var lightMealPreference: String = ""
     var dailyCalories: String = ""
@@ -260,7 +256,7 @@ struct OnboardingDraft: Hashable, Sendable {
     }
 
     var requiredFieldCount: Int {
-        16
+        15
     }
 
     var filledRequiredFieldCount: Int {
@@ -273,7 +269,6 @@ struct OnboardingDraft: Hashable, Sendable {
             !workoutDays.isEmpty,
             !averageSleepHours.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             mealCount > 0,
-            !preferredMealTimes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             !heavyMealPreference.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             !lightMealPreference.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             !dailyCalories.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
@@ -402,7 +397,7 @@ enum OnboardingDraftValidator {
         validateWorkoutDays(draft, issues: &issues)
         validateSleep(draft, issues: &issues)
         validateMealCount(draft, issues: &issues)
-        validateMealTimes(draft, issues: &issues)
+        validateMealPreferences(draft, issues: &issues)
         validateMealBalance(draft, issues: &issues)
         validateNutritionTargets(draft, issues: &issues)
 
@@ -489,12 +484,7 @@ enum OnboardingDraftValidator {
         }
     }
 
-    private static func validateMealTimes(_ draft: OnboardingDraft, issues: inout [OnboardingValidationIssue]) {
-        guard !draft.preferredMealTimes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            issues.append(OnboardingValidationIssue(field: .preferredMealTimes, message: "Describe the preferred meal times."))
-            return
-        }
-
+    private static func validateMealPreferences(_ draft: OnboardingDraft, issues: inout [OnboardingValidationIssue]) {
         guard !draft.heavyMealPreference.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             issues.append(OnboardingValidationIssue(field: .heavyMealSlot, message: "Describe which meal should feel heavier."))
             return

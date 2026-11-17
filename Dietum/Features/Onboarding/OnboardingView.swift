@@ -161,16 +161,6 @@ struct OnboardingView: View {
                             )
 
                             TextField(
-                                "Preferred meal times",
-                                text: viewModel.binding(for: \.preferredMealTimes),
-                                axis: .vertical
-                            )
-                            .textFieldStyle(.appTextField)
-                            .lineLimit(viewModel.draft.mealCount...viewModel.draft.mealCount)
-                            .frame(minHeight: CGFloat(viewModel.draft.mealCount) * 28, alignment: .top)
-                            .accessibilityHint("Provides one line for each meal in the selected meal count")
-
-                            TextField(
                                 "Heavy meal preference",
                                 text: viewModel.binding(for: \.heavyMealPreference),
                                 axis: .vertical
