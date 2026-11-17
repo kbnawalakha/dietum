@@ -583,6 +583,8 @@ private struct MealPhotoImage: View {
 
 struct MealHistoryView: View {
     @StateObject private var viewModel: MealHistoryViewModel
+    @State private var dayPendingDeletion: Date?
+    @State private var isDeleteConfirmationPresented = false
 
     init(viewModel: MealHistoryViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -642,6 +644,14 @@ struct MealHistoryView: View {
                             }
                         }
                         .buttonStyle(.plain)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                dayPendingDeletion = group.day
+                                isDeleteConfirmationPresented = true
+                            } label: {
+                                Label("Delete day", systemImage: "trash")
+                            }
+                        }
                     }
                 }
             }
@@ -653,6 +663,29 @@ struct MealHistoryView: View {
         .navigationTitle("Meal Photos")
         .navigationBarTitleDisplayMode(.inline)
         .appScreenBackground()
+        .confirmationDialog(
+            "Delete this day's meal photos?",
+            isPresented: $isDeleteConfirmationPresented,
+            titleVisibility: .visible
+        ) {
+            Button("Delete all meal photos", role: .destructive) {
+                guard let day = dayPendingDeletion else {
+                    return
+                }
+
+                Task {
+                    await viewModel.deleteMealPhotoDay(day)
+                    dayPendingDeletion = nil
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                dayPendingDeletion = nil
+            }
+        } message: {
+            if let day = dayPendingDeletion {
+                Text("This removes every saved meal photo from \(day.formatted(date: .abbreviated, time: .omitted)). Other dates stay on this device.")
+            }
+        }
         .task {
             await viewModel.loadHistory()
         }

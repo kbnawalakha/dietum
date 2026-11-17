@@ -291,6 +291,14 @@ struct ProgressPhotosView: View {
                                             ProgressPhotoRow(photo: photo)
                                         }
                                     }
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                        Button(role: .destructive) {
+                                            dayPendingDeletion = group.day
+                                            isDeleteConfirmationPresented = true
+                                        } label: {
+                                            Label("Delete day", systemImage: "trash")
+                                        }
+                                    }
                                 }
                             }
                         }

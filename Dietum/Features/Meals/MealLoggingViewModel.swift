@@ -461,4 +461,26 @@ final class MealHistoryViewModel: ObservableObject {
             loadState = .failed("Saved meal history could not be loaded right now.")
         }
     }
+
+    func deleteMealPhotoDay(_ day: Date) async {
+        let calendar = Calendar.current
+        let entriesForDay = entries.filter {
+            calendar.isDate($0.loggedAt, inSameDayAs: day) && $0.photoMetadata != nil
+        }
+        guard !entriesForDay.isEmpty else {
+            return
+        }
+
+        do {
+            for entry in entriesForDay {
+                try await mealEntryRepository.deleteMealEntry(id: entry.id)
+            }
+
+            entries.removeAll { entry in
+                calendar.isDate(entry.loggedAt, inSameDayAs: day) && entry.photoMetadata != nil
+            }
+        } catch {
+            loadState = .failed("Unable to delete that day's meal photos right now.")
+        }
+    }
 }

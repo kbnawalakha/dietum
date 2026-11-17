@@ -320,6 +320,52 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
     }
 
     @MainActor
+    func testMealHistoryDeletesOnlyPhotoEntriesForSelectedDay() async throws {
+        let container = try DietumPersistenceStack.makeContainer(inMemory: true)
+        let repository = SwiftDataMealEntryRepository(modelContext: container.mainContext)
+        let selectedDay = Self.day(0)
+        let otherDay = Self.day(-1)
+
+        try await repository.saveMealEntry(
+            MealEntry(
+                loggedAt: selectedDay,
+                mealType: .lunch,
+                photoMetadata: PhotoMetadata(storageIdentifier: "meal-selected", capturedAt: selectedDay),
+                nutrition: NutritionAmounts(calories: 600, proteinGrams: 30, carbohydrateGrams: 70, fatGrams: 20)
+            )
+        )
+        try await repository.saveMealEntry(
+            MealEntry(
+                loggedAt: selectedDay,
+                mealType: .dinner,
+                nutrition: NutritionAmounts(calories: 500)
+            )
+        )
+        try await repository.saveMealEntry(
+            MealEntry(
+                loggedAt: otherDay,
+                mealType: .breakfast,
+                photoMetadata: PhotoMetadata(storageIdentifier: "meal-other", capturedAt: otherDay),
+                nutrition: NutritionAmounts(calories: 400)
+            )
+        )
+
+        let viewModel = MealHistoryViewModel(mealEntryRepository: repository)
+        await viewModel.loadHistory()
+        await viewModel.deleteMealPhotoDay(selectedDay)
+
+        let remaining = try await repository.fetchMealEntries(
+            in: DateInterval(start: Self.day(-2), end: Self.day(1))
+        )
+        XCTAssertEqual(remaining.count, 2)
+        XCTAssertTrue(remaining.contains { $0.loggedAt == selectedDay && $0.photoMetadata == nil })
+        XCTAssertTrue(remaining.contains { $0.loggedAt == otherDay && $0.photoMetadata != nil })
+        XCTAssertTrue(viewModel.dayGroups.allSatisfy {
+            !Calendar.current.isDate($0.day, inSameDayAs: selectedDay)
+        })
+    }
+
+    @MainActor
     func testProgressPhotoBodyFatEstimateAcceptsMeasuredRangeOnly() {
         let viewModel = ProgressPhotosViewModel()
 

@@ -18,6 +18,7 @@ codex/repo-foundation
 - Today's saved meal photos remain visible on the meal page after a successful save.
 - Added Settings -> History -> Meal Photos with date-grouped daily calories, protein, carbohydrates, and fat totals.
 - Added drill-down views showing every saved meal photo for a selected date.
+- Added trailing swipe actions with confirmation before deleting a complete progress-photo day or meal-photo history day.
 - Added a regression test covering photo persistence and today's saved-meal refresh.
 
 - Added `BodyFatEstimateBreakdown` for chest, arms, legs, back, and visceral estimates.
