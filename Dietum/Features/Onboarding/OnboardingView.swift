@@ -213,6 +213,8 @@ struct OnboardingView: View {
 
                             TextField("Fiber", text: viewModel.binding(for: \.fiberGrams))
                                 .textFieldStyle(.roundedBorder)
+
+                            nutritionBreakdownView
                         }
                     }
                 }
@@ -289,6 +291,89 @@ struct OnboardingView: View {
     private func completeSetup() {
         onComplete()
         dismiss()
+    }
+
+    private var nutritionBreakdownView: some View {
+        let breakdown = viewModel.draft.nutritionBreakdown
+
+        return VStack(alignment: .leading, spacing: AppSpacing.small) {
+            Text("Calorie percentage calculator")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AppPalette.textPrimary)
+
+            Text("Percentages use the daily calorie target. Fiber percentage uses carbohydrate grams.")
+                .font(.footnote)
+                .foregroundStyle(AppPalette.textSecondary)
+
+            nutritionSummaryRow(
+                title: "Protein",
+                percentage: breakdown.proteinPercentage,
+                calories: breakdown.proteinCalories
+            )
+            nutritionSummaryRow(
+                title: "Carbohydrates",
+                percentage: breakdown.carbohydratePercentage,
+                calories: breakdown.carbohydrateCalories
+            )
+            nutritionSummaryRow(
+                title: "Fat",
+                percentage: breakdown.fatPercentage,
+                calories: breakdown.fatCalories
+            )
+
+            HStack {
+                Text("Fiber")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(AppPalette.textPrimary)
+
+                Spacer(minLength: 0)
+
+                Text(summaryPercentage(breakdown.fiberPercentageOfCarbohydrates, suffix: "% of carbs"))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(AppPalette.accent)
+            }
+
+            Text(summaryCalories(breakdown.fiberCalories, suffix: "fiber kcal estimate"))
+                .font(.footnote)
+                .foregroundStyle(AppPalette.textSecondary)
+        }
+        .padding(.top, AppSpacing.small)
+    }
+
+    private func nutritionSummaryRow(title: String, percentage: Double?, calories: Double?) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(AppPalette.textPrimary)
+
+                Spacer(minLength: 0)
+
+                Text(summaryPercentage(percentage, suffix: "%"))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(AppPalette.accent)
+            }
+
+            Text(summaryCalories(calories, suffix: "calories"))
+                .font(.footnote)
+                .foregroundStyle(AppPalette.textSecondary)
+        }
+    }
+
+    private func summaryPercentage(_ value: Double?, suffix: String) -> String {
+        guard let value else {
+            return "Enter values"
+        }
+
+        return "\(value.formatted(.number.precision(.fractionLength(0))))\(suffix)"
+    }
+
+    private func summaryCalories(_ value: Double?, suffix: String) -> String {
+        guard let value else {
+            return "Calories will appear when the values are valid."
+        }
+
+        return "\(value.formatted(.number.precision(.fractionLength(0)))) \(suffix)"
     }
 }
 

@@ -290,12 +290,70 @@ struct OnboardingDraft: Hashable, Sendable {
         "\(filledRequiredFieldCount)/\(requiredFieldCount)"
     }
 
+    var nutritionBreakdown: OnboardingNutritionBreakdown {
+        OnboardingNutritionBreakdown(
+            totalCalories: Double(dailyCalories.trimmingCharacters(in: .whitespacesAndNewlines)),
+            proteinGrams: Double(proteinGrams.trimmingCharacters(in: .whitespacesAndNewlines)),
+            carbohydrateGrams: Double(carbohydrateGrams.trimmingCharacters(in: .whitespacesAndNewlines)),
+            fatGrams: Double(fatGrams.trimmingCharacters(in: .whitespacesAndNewlines)),
+            fiberGrams: Double(fiberGrams.trimmingCharacters(in: .whitespacesAndNewlines))
+        )
+    }
+
     mutating func toggleWorkoutDay(_ day: Weekday) {
         if workoutDays.contains(day) {
             workoutDays.remove(day)
         } else {
             workoutDays.insert(day)
         }
+    }
+}
+
+struct OnboardingNutritionBreakdown: Hashable, Sendable {
+    let totalCalories: Double?
+    let proteinGrams: Double?
+    let carbohydrateGrams: Double?
+    let fatGrams: Double?
+    let fiberGrams: Double?
+
+    var proteinCalories: Double? {
+        proteinGrams.map { $0 * 4 }
+    }
+
+    var carbohydrateCalories: Double? {
+        carbohydrateGrams.map { $0 * 4 }
+    }
+
+    var fatCalories: Double? {
+        fatGrams.map { $0 * 9 }
+    }
+
+    var fiberCalories: Double? {
+        fiberGrams.map { $0 * 2 }
+    }
+
+    var proteinPercentage: Double? {
+        percentage(of: proteinCalories, total: totalCalories)
+    }
+
+    var carbohydratePercentage: Double? {
+        percentage(of: carbohydrateCalories, total: totalCalories)
+    }
+
+    var fatPercentage: Double? {
+        percentage(of: fatCalories, total: totalCalories)
+    }
+
+    var fiberPercentageOfCarbohydrates: Double? {
+        percentage(of: fiberGrams, total: carbohydrateGrams)
+    }
+
+    private func percentage(of value: Double?, total: Double?) -> Double? {
+        guard let value, let total, total > 0 else {
+            return nil
+        }
+
+        return (value / total) * 100
     }
 }
 

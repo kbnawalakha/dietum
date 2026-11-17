@@ -150,6 +150,26 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertFalse(draft.workoutDays.contains(.monday))
     }
 
+    func testOnboardingNutritionBreakdownCalculatesMacroPercentagesAndFiberFromCarbs() {
+        var draft = OnboardingDraft()
+        draft.dailyCalories = "2000"
+        draft.proteinGrams = "100"
+        draft.carbohydrateGrams = "200"
+        draft.fatGrams = "66.6667"
+        draft.fiberGrams = "20"
+
+        let breakdown = draft.nutritionBreakdown
+
+        XCTAssertEqual(breakdown.proteinCalories ?? 0, 400, accuracy: 0.001)
+        XCTAssertEqual(breakdown.carbohydrateCalories ?? 0, 800, accuracy: 0.001)
+        XCTAssertEqual(breakdown.fatCalories ?? 0, 600, accuracy: 0.001)
+        XCTAssertEqual(breakdown.proteinPercentage ?? 0, 20, accuracy: 0.001)
+        XCTAssertEqual(breakdown.carbohydratePercentage ?? 0, 40, accuracy: 0.001)
+        XCTAssertEqual(breakdown.fatPercentage ?? 0, 30, accuracy: 0.001)
+        XCTAssertEqual(breakdown.fiberPercentageOfCarbohydrates ?? 0, 10, accuracy: 0.001)
+        XCTAssertEqual(breakdown.fiberCalories ?? 0, 40, accuracy: 0.001)
+    }
+
     private static func day(_ dayOffset: Double) -> Date {
         Date(timeIntervalSince1970: 1_700_000_000 + (86_400 * dayOffset))
     }

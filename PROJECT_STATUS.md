@@ -45,6 +45,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Verified the optional account and backup flow with a successful build and 6-test XCTest run
 - Updated lifestyle workout-day controls so activating a selected day deselects it
 - Made the preferred meal-time text box grow and shrink with meal count
+- Added calorie-based macro percentage and fiber-from-carbohydrates calculations to onboarding
 
 # In Progress
 

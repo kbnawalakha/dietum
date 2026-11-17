@@ -38,6 +38,7 @@ codex/repo-foundation
 - Added configurable OAuth build settings and documented the device setup required to enable Drive access
 - Updated lifestyle workout-day controls to deselect on repeat activation and added regression coverage
 - Made the preferred meal-time text box grow and shrink with the selected meal count
+- Added onboarding calorie-based macro percentages, calorie summaries, and fiber percentage from carbohydrates
 
 ## Workstreams
 
@@ -96,6 +97,7 @@ codex/repo-foundation
 - The account/backup app build succeeded with elevated Xcode access
 - The account/backup XCTest run succeeded with 6 tests and 0 failures
 - The lifestyle toggle XCTest run succeeded with 7 tests and 0 failures
+- The nutrition calculator XCTest run succeeded with 8 tests and 0 failures
 
 ## Work Remaining
 
