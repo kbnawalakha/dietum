@@ -138,6 +138,17 @@ struct GoogleDriveConfiguration: Sendable {
         isRealValue(clientID) && isRealValue(redirectURI) && callbackScheme != nil
     }
 
+    var missingConfigurationKeys: [String] {
+        var missing: [String] = []
+        if !isRealValue(clientID) {
+            missing.append("GOOGLE_OAUTH_CLIENT_ID")
+        }
+        if !isRealValue(redirectURI) || callbackScheme == nil {
+            missing.append("GOOGLE_OAUTH_REDIRECT_URI")
+        }
+        return missing
+    }
+
     var callbackScheme: String? {
         URL(string: redirectURI)?.scheme
     }
@@ -349,9 +360,17 @@ final class AccountViewModel: ObservableObject {
     }
 
     var configurationMessage: String {
+        let configuration = GoogleDriveConfiguration()
+        guard !configuration.isConfigured else {
+            return "Sign in to authorize private app-data backups in Google Drive."
+        }
+
+        let keys = configuration.missingConfigurationKeys.joined(separator: " and ")
+        return "Google sign-in is disabled until \(keys) is configured in the Xcode build settings."
+    }
+
+    var isGoogleConfigured: Bool {
         GoogleDriveConfiguration().isConfigured
-            ? "Sign in to authorize private app-data backups in Google Drive."
-            : "Add GoogleOAuthClientID and GoogleOAuthRedirectURI to enable sign-in for this build."
     }
 
     func skipLogin() {
@@ -446,7 +465,7 @@ struct AccountView: View {
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             .buttonStyle(.appProminent)
-                            .disabled(viewModel.state == .working)
+                            .disabled(viewModel.state == .working || !viewModel.isGoogleConfigured)
 
                             Button("Skip for now") {
                                 viewModel.skipLogin()

@@ -190,6 +190,27 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
     }
 
     @MainActor
+    func testMealAnalysisProvidesEditableFallbackEstimateAndRecalculatesCalories() async {
+        let viewModel = MealLoggingViewModel()
+        viewModel.updateFoodDescription("a homemade bowl")
+
+        await viewModel.analyzeMeal()
+
+        XCTAssertEqual(viewModel.analysisState, .ready)
+        XCTAssertEqual(viewModel.detectedFoods.count, 1)
+        guard let foodID = viewModel.detectedFoods.first?.id else {
+            return XCTFail("Expected a fallback meal estimate")
+        }
+
+        viewModel.updateFoodMacros(id: foodID, protein: 30, carbohydrates: 40, fat: 10)
+
+        XCTAssertEqual(viewModel.nutritionTotals.calories, 370)
+        XCTAssertEqual(viewModel.nutritionTotals.proteinGrams, 30, accuracy: 0.001)
+        XCTAssertEqual(viewModel.nutritionTotals.carbohydrateGrams, 40, accuracy: 0.001)
+        XCTAssertEqual(viewModel.nutritionTotals.fatGrams, 10, accuracy: 0.001)
+    }
+
+    @MainActor
     func testProgressPhotoBodyFatEstimateAcceptsMeasuredRangeOnly() {
         let viewModel = ProgressPhotosViewModel()
 

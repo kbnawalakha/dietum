@@ -73,6 +73,10 @@ final class MealLoggingViewModel: ObservableObject {
         selectedPhoto != nil
     }
 
+    var canAnalyze: Bool {
+        !draft.foodDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || hasSelectedPhoto
+    }
+
     func setSelectedPhoto(_ image: UIImage) {
         selectedPhoto = image
         updateDraft { draft in
@@ -182,6 +186,12 @@ final class MealLoggingViewModel: ObservableObject {
             return
         }
 
+        guard canAnalyze else {
+            analysisState = .failed("Describe the food or choose a photo before analyzing.")
+            analysisNotes = "Add a general description such as chicken, rice, and vegetables."
+            return
+        }
+
         analysisState = .analyzing
         analysisNotes = nil
         selectedItemID = nil
@@ -267,6 +277,25 @@ final class MealLoggingViewModel: ObservableObject {
             }
 
             draft.detectedFoods[index].confidence = confidence
+        }
+        reviewedItemIDs.remove(id)
+        analysisState = .needsReview
+    }
+
+    func updateFoodMacros(id: DetectedMealFood.ID, protein: Double, carbohydrates: Double, fat: Double) {
+        updateDraft { draft in
+            guard let index = draft.detectedFoods.firstIndex(where: { $0.id == id }) else {
+                return
+            }
+
+            let fiber = draft.detectedFoods[index].nutrition.fiberGrams
+            draft.detectedFoods[index].nutrition = NutritionAmounts(
+                calories: Int((protein * 4 + carbohydrates * 4 + fat * 9).rounded()),
+                proteinGrams: max(0, protein),
+                carbohydrateGrams: max(0, carbohydrates),
+                fatGrams: max(0, fat),
+                fiberGrams: fiber
+            )
         }
         reviewedItemIDs.remove(id)
         analysisState = .needsReview

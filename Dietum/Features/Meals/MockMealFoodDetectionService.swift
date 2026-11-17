@@ -7,6 +7,13 @@ struct LocalMealNutritionAnalysisService: MealFoodDetectionService {
         let normalizedDescription = description
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
+        guard !normalizedDescription.isEmpty else {
+            return MealFoodDetectionResult(
+                detectedFoods: [],
+                notes: "Describe the meal before analyzing it. Include broad ingredients such as chicken, rice, vegetables, eggs, or pasta."
+            )
+        }
+
         let foods = Self.catalog.filter { item in
             item.keywords.contains { normalizedDescription.contains($0) }
         }.map { item in
@@ -19,8 +26,20 @@ struct LocalMealNutritionAnalysisService: MealFoodDetectionService {
 
         guard !foods.isEmpty else {
             return MealFoodDetectionResult(
-                detectedFoods: [],
-                notes: "No catalog match yet. Add recognizable ingredients such as chicken, rice, salmon, eggs, yogurt, vegetables, fruit, or pasta."
+                detectedFoods: [
+                    DetectedMealFood(
+                        name: "General meal estimate",
+                        confidence: 0.35,
+                        nutrition: NutritionAmounts(
+                            calories: 500,
+                            proteinGrams: 25,
+                            carbohydrateGrams: 55,
+                            fatGrams: 18,
+                            fiberGrams: 6
+                        )
+                    )
+                ],
+                notes: "Broad local estimate because the description did not match a known ingredient. Edit the food name and macros for a more accurate portion before saving."
             )
         }
 

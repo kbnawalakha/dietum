@@ -36,7 +36,7 @@ struct MealLoggingView: View {
                                 Label("Analyze meal", systemImage: "sparkles")
                             }
                             .buttonStyle(.appToolbar)
-                            .disabled(viewModel.analysisState == .analyzing)
+                            .disabled(viewModel.analysisState == .analyzing || !viewModel.canAnalyze)
                         }
 
                         MealPhotoInput(
@@ -135,6 +135,7 @@ struct MealLoggingView: View {
                                         },
                                         onUpdateName: { viewModel.updateFood(id: food.id, name: $0) },
                                         onUpdateConfidence: { viewModel.updateFoodConfidence(id: food.id, confidence: $0) },
+                                        onUpdateMacros: { viewModel.updateFoodMacros(id: food.id, protein: $0.protein, carbohydrates: $0.carbohydrates, fat: $0.fat) },
                                         onRemove: {
                                             viewModel.removeFood(id: food.id)
                                         }
@@ -170,7 +171,8 @@ struct MealLoggingView: View {
                             Text("Snack").tag(MealType.snack)
                             Text("Custom").tag(MealType.custom)
                         }
-                        .pickerStyle(.segmented)
+                        .pickerStyle(.menu)
+                        .accessibilityLabel("Meal type")
 
                         TextField("Optional notes", text: Binding(
                             get: { viewModel.draft.notes },
@@ -365,6 +367,7 @@ private struct MealDetectedFoodRow: View {
     let onToggleReviewed: () -> Void
     let onUpdateName: (String) -> Void
     let onUpdateConfidence: (Double?) -> Void
+    let onUpdateMacros: (MealMacroValues) -> Void
     let onRemove: () -> Void
 
     var body: some View {
@@ -429,6 +432,38 @@ private struct MealDetectedFoodRow: View {
                     .font(.caption)
                     .foregroundStyle(AppPalette.textSecondary)
 
+                Text("Adjust the estimate if the portion looks different. Calories update from protein, carbs, and fat.")
+                    .font(.caption)
+                    .foregroundStyle(AppPalette.textSecondary)
+
+                HStack(spacing: AppSpacing.small) {
+                    macroField(title: "Protein g", value: food.nutrition.proteinGrams) { newValue in
+                        onUpdateMacros(MealMacroValues(
+                            protein: newValue,
+                            carbohydrates: food.nutrition.carbohydrateGrams,
+                            fat: food.nutrition.fatGrams
+                        ))
+                    }
+                    macroField(title: "Carbs g", value: food.nutrition.carbohydrateGrams) { newValue in
+                        onUpdateMacros(MealMacroValues(
+                            protein: food.nutrition.proteinGrams,
+                            carbohydrates: newValue,
+                            fat: food.nutrition.fatGrams
+                        ))
+                    }
+                    macroField(title: "Fat g", value: food.nutrition.fatGrams) { newValue in
+                        onUpdateMacros(MealMacroValues(
+                            protein: food.nutrition.proteinGrams,
+                            carbohydrates: food.nutrition.carbohydrateGrams,
+                            fat: newValue
+                        ))
+                    }
+                }
+
+                Text("Estimated calories: \(food.nutrition.calories) kcal")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AppPalette.textPrimary)
+
                 Button(action: onToggleReviewed) {
                     Label(isReviewed ? "Mark as needing review" : "Confirm food", systemImage: isReviewed ? "arrow.uturn.backward" : "checkmark")
                 }
@@ -437,4 +472,23 @@ private struct MealDetectedFoodRow: View {
             }
         }
     }
+
+    private func macroField(title: String, value: Double, onChange: @escaping (Double) -> Void) -> some View {
+        TextField(
+            title,
+            value: Binding(
+                get: { value },
+                set: onChange
+            ),
+            format: .number.precision(.fractionLength(1))
+        )
+        .textFieldStyle(.roundedBorder)
+        .keyboardType(.decimalPad)
+    }
+}
+
+private struct MealMacroValues {
+    let protein: Double
+    let carbohydrates: Double
+    let fat: Double
 }
