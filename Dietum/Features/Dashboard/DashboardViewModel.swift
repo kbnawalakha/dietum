@@ -57,7 +57,6 @@ final class DashboardViewModel: ObservableObject {
     let quickActions: [DashboardActionItem] = [
         DashboardActionItem(title: "Log a meal", symbolName: "camera.fill", route: .mealLogging),
         DashboardActionItem(title: "Review habit streaks", symbolName: "chart.line.uptrend.xyaxis", route: .habitAdherence),
-        DashboardActionItem(title: "Export local data", symbolName: "square.and.arrow.up", route: .mealExport),
         DashboardActionItem(title: "Review nutrition insights", symbolName: "chart.bar.xaxis", route: .nutritionInsights),
         DashboardActionItem(title: "Start weekly check-in", symbolName: "calendar.badge.clock", route: .weeklyCheckIn),
         DashboardActionItem(title: "Open progress photos", symbolName: "photo.on.rectangle.angled", route: .progressPhotos),

@@ -35,6 +35,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Merged the weight logging/check-in slice into the app target
 - Merged the dashboard lane into the app target
 - Removed the meal-reminder UI and navigation surface from the app; existing export/model compatibility remains local-only
+- Removed the local export UI and navigation surface; export snapshot services remain available to the optional Drive backup path
 - Added the XCTest target setup and deterministic nutrition-adjustment unit tests
 - Added and hardened a lightweight GitHub Actions build workflow
 - Completed Phase 2: advanced meal-photo assistance, nutrition trend insights, habit/adherence summaries, local data export, improved progress-photo comparison, and smarter reminders
@@ -89,6 +90,8 @@ Milestone 0 — Repository and Architecture Foundation
 - Current local Xcode verification can fail before app compilation when the SwiftData macro plugin returns a malformed response; rerun after CoreSimulator/Xcode services recover
 - Progress-photo regression coverage now verifies staging and editable estimate generation before save
 - Meal reminders are no longer part of the active app surface; legacy reminder code remains only to preserve existing local export compatibility
+- Local export is no longer an active user-facing feature; its snapshot service remains internal for Drive backup compatibility
+- The export-removal compile check remains blocked by the local SwiftData macro-plugin malformed-response issue
 
 # Active Agents
 

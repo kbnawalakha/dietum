@@ -6,7 +6,6 @@ enum AppRoute: Hashable {
     case sleepSetup
     case mealLogging
     case habitAdherence
-    case mealExport
     case nutritionInsights
     case weeklyCheckIn
     case progressPhotos
@@ -26,8 +25,6 @@ enum AppRoute: Hashable {
             return "Log Meal"
         case .habitAdherence:
             return "Habit Streaks"
-        case .mealExport:
-            return "Export"
         case .nutritionInsights:
             return "Nutrition Insights"
         case .weeklyCheckIn:
@@ -55,8 +52,6 @@ enum AppRoute: Hashable {
             return "camera.fill"
         case .habitAdherence:
             return "chart.line.uptrend.xyaxis"
-        case .mealExport:
-            return "square.and.arrow.up"
         case .nutritionInsights:
             return "chart.bar.xaxis"
         case .weeklyCheckIn:

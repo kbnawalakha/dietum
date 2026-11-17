@@ -31,13 +31,6 @@ struct RootView: View {
                         .buttonStyle(.appToolbar)
 
                         Button {
-                            viewModel.showMealExport()
-                        } label: {
-                            Label(AppRoute.mealExport.title, systemImage: AppRoute.mealExport.systemImage)
-                        }
-                        .buttonStyle(.appToolbar)
-
-                        Button {
                             viewModel.showNutritionInsights()
                         } label: {
                             Label(AppRoute.nutritionInsights.title, systemImage: AppRoute.nutritionInsights.systemImage)
@@ -117,8 +110,6 @@ struct RootView: View {
                         container.makeMealLoggingView()
                     case .habitAdherence:
                         container.makeHabitAdherenceView()
-                    case .mealExport:
-                        container.makeMealExportView()
                     case .nutritionInsights:
                         container.makeNutritionTrendInsightsView()
                     case .weeklyCheckIn:
@@ -170,10 +161,6 @@ final class RootViewModel: ObservableObject {
 
     func showHabitAdherence() {
         path.append(.habitAdherence)
-    }
-
-    func showMealExport() {
-        path.append(.mealExport)
     }
 
     func showNutritionInsights() {
