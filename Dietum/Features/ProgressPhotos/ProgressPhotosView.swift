@@ -61,6 +61,21 @@ struct ProgressPhotosView: View {
                         Text(viewModel.stagedSummaryText)
                             .font(.subheadline)
                             .foregroundStyle(AppPalette.textSecondary)
+
+                        Button {
+                            Task {
+                                await viewModel.analyzeBodyPhotos()
+                            }
+                        } label: {
+                            Label("Analyze body photos", systemImage: "figure.stand")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.appToolbar)
+                        .disabled(!viewModel.canAnalyzeBodyPhotos)
+
+                        Text(viewModel.bodyAnalysisText)
+                            .font(.caption)
+                            .foregroundStyle(AppPalette.textSecondary)
                     }
                 }
 

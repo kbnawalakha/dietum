@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import UIKit
+import Vision
 
 struct BodyFatReferenceBand: Identifiable, Hashable, Sendable {
     let id: String
@@ -18,6 +19,13 @@ struct BodyFatReferenceBand: Identifiable, Hashable, Sendable {
 
 @MainActor
 final class ProgressPhotosViewModel: ObservableObject {
+    enum BodyAnalysisState: Equatable {
+        case idle
+        case analyzing
+        case analyzed(String)
+        case failed(String)
+    }
+
     enum SaveState: Equatable {
         case idle
         case saving
@@ -42,6 +50,7 @@ final class ProgressPhotosViewModel: ObservableObject {
     @Published var comparisonLatestID: UUID?
     @Published var saveState: SaveState = .idle
     @Published var loadState: LoadState = .idle
+    @Published private(set) var bodyAnalysisState: BodyAnalysisState = .idle
 
     private let progressPhotoRepository: any ProgressPhotoRepository
     private var captureSequence: Int = 0
@@ -114,6 +123,7 @@ final class ProgressPhotosViewModel: ObservableObject {
             notes = ""
             bodyFatPercentageText = ""
             selectedBodyFatReferenceID = nil
+            bodyAnalysisState = .idle
             saveState = .saved(Date())
             await loadRecentPhotos()
         } catch {
@@ -126,6 +136,7 @@ final class ProgressPhotosViewModel: ObservableObject {
         notes = ""
         bodyFatPercentageText = ""
         selectedBodyFatReferenceID = nil
+        bodyAnalysisState = .idle
         saveState = .idle
     }
 
@@ -159,6 +170,41 @@ final class ProgressPhotosViewModel: ObservableObject {
         }
 
         return "Visual estimate: \(band.title) (\(band.range))."
+    }
+
+    var bodyAnalysisText: String {
+        switch bodyAnalysisState {
+        case .idle:
+            return stagedPhotos.isEmpty ? "Upload at least one body photo to analyze it locally." : "Analyze the staged photos to check the body framing."
+        case .analyzing:
+            return "Checking the staged photos for a detectable human body..."
+        case .analyzed(let message), .failed(let message):
+            return message
+        }
+    }
+
+    var canAnalyzeBodyPhotos: Bool {
+        !stagedPhotos.isEmpty && bodyAnalysisState != .analyzing
+    }
+
+    func analyzeBodyPhotos() async {
+        guard !stagedPhotos.isEmpty else {
+            bodyAnalysisState = .failed("Stage at least one body photo before analyzing.")
+            return
+        }
+
+        bodyAnalysisState = .analyzing
+        let imageData = stagedPhotos.values.compactMap(\.imageData)
+        let detectedCount = await Task.detached(priority: .userInitiated) {
+            Self.detectedHumanBodyCount(in: imageData)
+        }.value
+
+        if detectedCount == 0 {
+            bodyAnalysisState = .failed("No clear human body was detected. Try a brighter, full-body photo with less obstruction.")
+        } else {
+            let photoWord = detectedCount == 1 ? "photo" : "photos"
+            bodyAnalysisState = .analyzed("Body detected in \(detectedCount) \(photoWord). Use the visual reference ranges below for a non-clinical body-fat estimate.")
+        }
     }
 
     func selectBodyFatReference(_ band: BodyFatReferenceBand) {
@@ -291,6 +337,25 @@ final class ProgressPhotosViewModel: ObservableObject {
 
         let date = latest.capturedAt.formatted(date: .abbreviated, time: .omitted)
         return "Latest entry: \(latest.angle.displayName) on \(date)."
+    }
+
+    nonisolated private static func detectedHumanBodyCount(in imageData: [Data]) -> Int {
+        imageData.reduce(into: 0) { count, data in
+            guard let image = UIImage(data: data), let cgImage = image.cgImage else {
+                return
+            }
+
+            let request = VNDetectHumanBodyPoseRequest()
+            let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+            do {
+                try handler.perform([request])
+                if !(request.results ?? []).isEmpty {
+                    count += 1
+                }
+            } catch {
+                return
+            }
+        }
     }
 
     var recentEntriesText: String {
