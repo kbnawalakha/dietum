@@ -73,11 +73,26 @@ struct SleepSetupView: View {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
                             title: "Phone-use time",
-                            message: "iOS does not expose ordinary Screen Time totals to this app."
+                            message: "Request Apple Screen Time access for this device."
                         )
 
-                        Text("A future Screen Time integration would require Apple Family Controls entitlement and user authorization. Until then, Dietum will not claim to import phone-use time automatically.")
+                        Button {
+                            Task {
+                                await viewModel.requestScreenTimeAccess()
+                            }
+                        } label: {
+                            Label("Allow Screen Time access", systemImage: "hourglass")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.appToolbar)
+                        .disabled(viewModel.screenTimeAuthorizationState == .requesting)
+
+                        Text(viewModel.screenTimeAuthorizationStatusText)
                             .font(.subheadline)
+                            .foregroundStyle(AppPalette.textSecondary)
+
+                        Text("Authorization is the first step. Apple requires a separate Device Activity report extension and approved Family Controls capability before Dietum can show actual usage totals.")
+                            .font(.caption)
                             .foregroundStyle(AppPalette.textSecondary)
                     }
                 }

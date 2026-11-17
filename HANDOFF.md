@@ -6,7 +6,7 @@
 
 ## Assigned Issue
 
-Fix body progress-photo uploads
+Enable Screen Time authorization and document the remaining Device Activity integration
 
 ## Branch
 
@@ -14,26 +14,29 @@ codex/repo-foundation
 
 ## Work Completed
 
-- Fixed the PhotosPicker presentation state so selecting a library image does not clear its pose before asynchronous loading completes.
-- Kept the selected pose alive until the image is successfully converted, staged, or reported as failed.
-- Preserved the existing local image-data persistence and body-photo analysis flow.
+- Added `Family Controls` and `Family Controls App and Website Usage` entitlements to the app.
+- Added a real authorization request using `AuthorizationCenter.shared.requestAuthorization(for: .individual)`.
+- Added Sleep Setup status and an actionable `Allow Screen Time access` button.
+- Kept the dashboard honest: it does not fabricate usage totals before Device Activity reporting is available.
 
 ## Files Changed
 
-- `Dietum/Features/ProgressPhotos/ProgressPhotosView.swift`
+- `Dietum/Dietum.entitlements`
+- `Dietum/Features/Onboarding/SleepSetupViewModel.swift`
+- `Dietum/Features/Onboarding/SleepSetupView.swift`
 - `PROJECT_STATUS.md`
 - `HANDOFF.md`
 
 ## Verification
 
-- Feature build: `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-progress-photo-build` succeeded.
-- Final: `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-progress-photo-tests` passed with 17 tests and 0 failures.
+- Feature build: `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-screen-time-build` succeeded.
+- Final: `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-screen-time-tests` passed with 17 tests and 0 failures.
 - `git diff --check` passed.
 
 ## Work Remaining
 
-- Actual upload behavior should still be checked with a real photo-library selection on a simulator or device.
-- Camera access requires a physical device or a simulator camera configuration.
+- Actual Screen Time totals are not yet available because the project does not have a Device Activity report extension.
+- Apple must approve the Family Controls capability for device distribution; simulator builds only verify compilation.
 
 ## Known Problems
 
@@ -41,4 +44,4 @@ codex/repo-foundation
 
 ## Exact Next Step
 
-- Verify selecting a real library image in Xcode on a simulator/device and confirm the staged preview updates for the selected pose.
+- Request Family Controls approval, then add the Device Activity report extension and connect its rendered usage report to the dashboard.

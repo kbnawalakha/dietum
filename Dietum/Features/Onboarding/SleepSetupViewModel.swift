@@ -1,4 +1,5 @@
 import Foundation
+import FamilyControls
 import SwiftUI
 
 struct SleepSetupFieldGroup: Identifiable, Hashable, Sendable {
@@ -40,11 +41,19 @@ final class SleepSetupViewModel: ObservableObject {
     @Published private(set) var validationState: SleepSetupValidationState
     @Published private(set) var importedSleep: ImportedSleepWindow?
     @Published private(set) var healthImportState: HealthImportState = .idle
+    @Published private(set) var screenTimeAuthorizationState: ScreenTimeAuthorizationState = .idle
 
     enum HealthImportState: Equatable {
         case idle
         case importing
         case imported
+        case failed(String)
+    }
+
+    enum ScreenTimeAuthorizationState: Equatable {
+        case idle
+        case requesting
+        case authorized
         case failed(String)
     }
 
@@ -96,6 +105,32 @@ final class SleepSetupViewModel: ObservableObject {
             return importedSleep.map { "Imported \(formattedDuration($0.duration)) from Apple Health." } ?? "Sleep imported from Apple Health."
         case .failed(let message):
             return message
+        }
+    }
+
+    var screenTimeAuthorizationStatusText: String {
+        switch screenTimeAuthorizationState {
+        case .idle:
+            return "Screen Time access has not been requested."
+        case .requesting:
+            return "Requesting Screen Time access..."
+        case .authorized:
+            return "Screen Time access was authorized. Usage totals still require the Device Activity report extension."
+        case .failed(let message):
+            return message
+        }
+    }
+
+    func requestScreenTimeAccess() async {
+        screenTimeAuthorizationState = .requesting
+
+        do {
+            try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+            screenTimeAuthorizationState = .authorized
+        } catch {
+            screenTimeAuthorizationState = .failed(
+                "Screen Time access was not granted. Enable Family Controls for this app in Xcode and try again."
+            )
         }
     }
 

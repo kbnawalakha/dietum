@@ -51,10 +51,11 @@ Milestone 0 — Repository and Architecture Foundation
 - Added dashboard sleep/phone signals with HealthKit-derived wake time and seven-night inferred doom-scroll averages
 - Hardened meal analysis cancellation and error handling, including clearing stale estimates when the description changes
 - Fixed progress-photo library uploads so the selected pose remains associated while the PhotosPicker image loads asynchronously
+- Added Family Controls entitlements and a user-triggered Screen Time authorization flow in Sleep Setup
 
 # In Progress
 
-- None
+- Screen Time totals still require Apple approval for the Family Controls capability plus a Device Activity report extension
 
 # Blocked
 
@@ -62,6 +63,8 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Next Tasks
 
+- Request Family Controls capability approval in the Apple Developer account
+- Add a Device Activity report extension to render authorized usage totals
 - Configure Google OAuth build settings for a device build if Drive backup is desired
 
 # Dependency Tracking
@@ -76,7 +79,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Progress-photo uploads are local-only; camera access still requires a physical device or a simulator camera configuration
 - `Dietum.xcodeproj/project.pbxproj` has an unrelated uncommitted Xcode-generated modification and remains intentionally untouched
 - Google Drive is intentionally disabled until `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_REDIRECT_URI`, and `GOOGLE_OAUTH_SCHEME` are configured
-- Phone usage is shown as unavailable until a separately authorized Family Controls / Screen Time integration is added; HealthKit only provides the in-bed intervals used for estimates
+- Phone usage totals remain unavailable until the Family Controls capability is approved and a Device Activity report extension is added; HealthKit only provides the in-bed intervals used for estimates
 
 # Active Agents
 
