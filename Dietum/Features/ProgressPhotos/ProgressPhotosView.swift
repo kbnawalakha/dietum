@@ -8,6 +8,8 @@ struct ProgressPhotosView: View {
     @State private var selectedAngle: ProgressPhotoAngle?
     @State private var isPhotoPickerPresented = false
     @State private var isCameraPresented = false
+    @State private var dayPendingDeletion: Date?
+    @State private var isDeleteConfirmationPresented = false
 
     init(viewModel: ProgressPhotosViewModel = ProgressPhotosViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -236,7 +238,7 @@ struct ProgressPhotosView: View {
                 AppSurfaceCard {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
-                            title: "Recent saved photos",
+                            title: "Saved photo dates",
                             message: viewModel.recentEntriesText
                         )
 
@@ -263,11 +265,29 @@ struct ProgressPhotosView: View {
                             VStack(alignment: .leading, spacing: AppSpacing.item) {
                                 ForEach(viewModel.recentPhotoGroups) { group in
                                     VStack(alignment: .leading, spacing: AppSpacing.small) {
-                                        Text(group.day.formatted(date: .abbreviated, time: .omitted))
-                                            .font(.headline)
-                                            .foregroundStyle(AppPalette.textPrimary)
+                                        HStack(alignment: .firstTextBaseline, spacing: AppSpacing.small) {
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(group.day.formatted(date: .abbreviated, time: .omitted))
+                                                    .font(.headline)
+                                                    .foregroundStyle(AppPalette.textPrimary)
+                                                Text("\(group.photos.count) saved photo\(group.photos.count == 1 ? "" : "s") with complete profile analysis")
+                                                    .font(.caption)
+                                                    .foregroundStyle(AppPalette.textSecondary)
+                                            }
 
-                                        ForEach(group.photos.prefix(8)) { photo in
+                                            Spacer(minLength: 0)
+
+                                            Button(role: .destructive) {
+                                                dayPendingDeletion = group.day
+                                                isDeleteConfirmationPresented = true
+                                            } label: {
+                                                Image(systemName: "trash")
+                                                    .accessibilityLabel("Delete all photos from \(group.day.formatted(date: .abbreviated, time: .omitted))")
+                                            }
+                                            .buttonStyle(.plain)
+                                        }
+
+                                        ForEach(group.photos) { photo in
                                             ProgressPhotoRow(photo: photo)
                                         }
                                     }
@@ -284,6 +304,29 @@ struct ProgressPhotosView: View {
         .scrollIndicators(.hidden)
         .navigationTitle("Progress Photos")
         .navigationBarTitleDisplayMode(.inline)
+        .confirmationDialog(
+            "Delete this day's photos?",
+            isPresented: $isDeleteConfirmationPresented,
+            titleVisibility: .visible
+        ) {
+            Button("Delete all photos", role: .destructive) {
+                guard let day = dayPendingDeletion else {
+                    return
+                }
+
+                Task {
+                    await viewModel.deletePhotoDay(day)
+                    dayPendingDeletion = nil
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                dayPendingDeletion = nil
+            }
+        } message: {
+            if let day = dayPendingDeletion {
+                Text("This removes every saved angle and its body-fat analysis from \(day.formatted(date: .abbreviated, time: .omitted)). Other dates stay on this device.")
+            }
+        }
         .task {
             await viewModel.loadRecentPhotos()
         }

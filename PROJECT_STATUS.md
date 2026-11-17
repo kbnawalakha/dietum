@@ -55,6 +55,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Relaxed body-photo analysis so valid uploaded images still receive an editable analysis when Vision pose detection is inconclusive
 - Made meal-photo and body-photo analysis start automatically after upload, while keeping estimates editable before local save
 - Fixed progress-photo picker timing so the selected pose is retained until PhotosUI delivers the image and the staged photo is analyzed
+- Added date-grouped progress-photo deletion so users can remove every saved angle and its complete body analysis for one day without affecting other dates
 
 # In Progress
 
@@ -96,6 +97,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Nutrition-insights compile verification is currently blocked by the local SwiftData macro-plugin malformed-response issue
 - Profile onboarding is now gated to first launch with a persisted completion flag; profile edits and secondary navigation live in the ellipsis Settings hub, and Dashboard Quick Start has been removed
 - Settings-shell compile verification is currently subject to the local SwiftData macro-plugin malformed-response issue
+- Progress-photo day deletion test execution is currently blocked when CoreSimulatorService has no available simulator destination
 
 # Active Agents
 

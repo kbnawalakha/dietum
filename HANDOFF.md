@@ -19,6 +19,7 @@ codex/repo-foundation
 - Added editable regional estimate fields and automatic general-range suggestions after body analysis.
 - Changed valid-image analysis fallback so Vision pose-detection misses no longer block estimates or make the Analyze button appear broken.
 - Grouped saved progress-photo rows by capture date.
+- Added destructive date-level deletion that removes every saved angle and associated analysis for the selected day.
 
 ## Files Changed
 
@@ -37,6 +38,7 @@ codex/repo-foundation
 - Sleep-signal update: `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -destination 'generic/platform=iOS' -derivedDataPath /private/tmp/dietum-sleep-signals-device CODE_SIGNING_ALLOWED=NO` succeeded.
 - The refreshed simulator test command was attempted but could not start because CoreSimulatorService was unavailable and no simulator destination was discoverable in this environment.
 - `git diff --check` passed.
+- `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-progress-delete-build CODE_SIGNING_ALLOWED=NO` reached the existing SwiftData macro-plugin malformed-response failure after the new progress-photo source compiled.
 
 ## Work Remaining
 
@@ -47,9 +49,11 @@ codex/repo-foundation
 - Dashboard sleep signals now have a visible refresh action and a direct Sleep Setup route; phone usage remains clearly marked as unavailable until the Screen Time capability and report extension exist.
 - Meal and body-photo uploads now trigger local estimates automatically; the detected foods, macros, body-fat ranges, and regional values remain editable before saving.
 - Progress-photo picker selection now retains its pose through PhotosUI dismissal and awaits staging plus analysis before clearing the selection.
+- Progress-photo history now shows capture dates as the primary records; use the trash action on a date to remove its full photo set and analysis.
 - Removed meal-reminder navigation and dashboard entry points per product direction; legacy reminder model/export types remain only for local compatibility.
 - Removed local-export navigation and dashboard entry points; retained snapshot services because the optional Drive backup uses them internally.
 - Profile onboarding is now a first-launch flow; the dashboard Quick Start and crowded toolbar were replaced by an ellipsis Settings hub for profile edits and all secondary routes.
+- Recent progress photos are presented as capture-date groups; each date can delete all saved angles and associated body-fat analysis together.
 
 ## Known Problems
 
@@ -61,6 +65,7 @@ codex/repo-foundation
 - Nutrition insights now receive the live SwiftData target repository and provide explicit refresh and log-meal actions.
 - Nutrition-insights device compile was attempted but stopped at the existing SwiftData macro-plugin malformed-response failure.
 - Settings-shell device compile was attempted but stopped at the existing SwiftData macro-plugin malformed-response failure.
+- The progress-photo day deletion regression test was added but could not execute because CoreSimulatorService exposed no matching simulator destination.
 
 ## Exact Next Step
 

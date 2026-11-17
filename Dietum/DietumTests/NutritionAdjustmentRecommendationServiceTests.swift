@@ -334,6 +334,50 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
     }
 
     @MainActor
+    func testProgressPhotoDayDeletionRemovesOnlyTheSelectedDate() async throws {
+        let container = try DietumPersistenceStack.makeContainer(inMemory: true)
+        let repository = SwiftDataProgressPhotoRepository(modelContext: container.mainContext)
+        let firstDay = Self.day(0)
+        let secondDay = Self.day(1)
+
+        for (index, angle) in [ProgressPhotoAngle.front, .back].enumerated() {
+            try await repository.saveProgressPhoto(
+                ProgressPhotoMetadata(
+                    capturedAt: firstDay,
+                    angle: angle,
+                    photo: PhotoMetadata(
+                        storageIdentifier: "progress-photo-first-\(index)",
+                        capturedAt: firstDay,
+                        imageData: Data([UInt8(index)])
+                    )
+                )
+            )
+        }
+
+        try await repository.saveProgressPhoto(
+            ProgressPhotoMetadata(
+                capturedAt: secondDay,
+                angle: .front,
+                photo: PhotoMetadata(
+                    storageIdentifier: "progress-photo-second",
+                    capturedAt: secondDay,
+                    imageData: Data([3])
+                )
+            )
+        )
+
+        let viewModel = ProgressPhotosViewModel(progressPhotoRepository: repository)
+        await viewModel.loadRecentPhotos()
+        XCTAssertEqual(viewModel.recentPhotoGroups.count, 2)
+
+        await viewModel.deletePhotoDay(firstDay)
+
+        XCTAssertEqual(viewModel.recentPhotos.count, 1)
+        XCTAssertEqual(viewModel.recentPhotoGroups.count, 1)
+        XCTAssertTrue(Calendar.current.isDate(viewModel.recentPhotos[0].capturedAt, inSameDayAs: secondDay))
+    }
+
+    @MainActor
     func testSleepSetupImportsHealthDataIntoEditableFields() async {
         let bedtime = Self.day(-0.25)
         let wakeTime = Self.day(0)

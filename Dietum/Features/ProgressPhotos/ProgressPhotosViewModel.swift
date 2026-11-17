@@ -425,7 +425,7 @@ final class ProgressPhotosViewModel: ObservableObject {
             return "Saved progress photos will appear here once you stage and save a local set."
         }
 
-        return "Showing the most recent saved entries from your local history."
+        return "Each date contains one complete local profile set and its editable body analysis."
     }
 
     var recentPhotoGroups: [ProgressPhotoDayGroup] {
@@ -437,6 +437,27 @@ final class ProgressPhotosViewModel: ObservableObject {
         return grouped
             .map { ProgressPhotoDayGroup(day: $0.key, photos: $0.value.sorted { $0.capturedAt > $1.capturedAt }) }
             .sorted { $0.day > $1.day }
+    }
+
+    func deletePhotoDay(_ day: Date) async {
+        let calendar = Calendar.current
+        let photos = recentPhotos.filter { calendar.isDate($0.capturedAt, inSameDayAs: day) }
+        guard !photos.isEmpty else {
+            return
+        }
+
+        do {
+            for photo in photos {
+                try await progressPhotoRepository.deleteProgressPhoto(id: photo.id)
+            }
+
+            recentPhotos.removeAll { photo in
+                calendar.isDate(photo.capturedAt, inSameDayAs: day)
+            }
+            updateComparisonSelection()
+        } catch {
+            saveState = .failed("Unable to delete that day's progress photos right now.")
+        }
     }
 
     func stagedPhoto(for angle: ProgressPhotoAngle) -> PhotoMetadata? {
