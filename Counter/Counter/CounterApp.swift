@@ -60,6 +60,7 @@ final class PlaybackModel: ObservableObject {
     func close() {
         stop()
         url = nil
+        input = ""
         error = nil
     }
 }
@@ -156,6 +157,8 @@ struct CounterView: View {
                             .foregroundStyle(.orange).font(.callout)
                             .accessibilityAddTraits(.updatesFrequently)
                     }
+                    Label("Links aren’t saved. Closing the player clears the current link.", systemImage: "hand.raised")
+                        .font(.footnote).foregroundStyle(.secondary)
                     Text("Direct MP4, MOV and HLS streams use the iPhone player. Other links open inside Counter. Website restrictions, unsupported formats, or protected content may prevent playback. An internet connection is required.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }.padding(20)
