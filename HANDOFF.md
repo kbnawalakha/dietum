@@ -16,7 +16,7 @@ codex/repo-foundation
 
 - Added `BodyFatEstimateBreakdown` for chest, arms, legs, back, and visceral estimates.
 - Persisted the optional breakdown through the SwiftData progress-photo model.
-- Added editable regional estimate fields and automatic general-range suggestions after body analysis.
+- Added automatic regional estimate cards and general-range suggestions after body analysis; regional values are no longer manually editable.
 - Changed valid-image analysis fallback so Vision pose-detection misses no longer block estimates or make the Analyze button appear broken.
 - Grouped saved progress-photo rows by capture date.
 - Added destructive date-level deletion that removes every saved angle and associated analysis for the selected day.
@@ -59,7 +59,7 @@ codex/repo-foundation
 
 - Unrelated pre-existing Xcode scheme/project edits, `build/`, and `pass` / `pass.pub` remain uncommitted and were not staged.
 - The latest device compile was blocked by the local SwiftData macro plugin returning malformed responses; the simulator service was also unavailable for XCTest execution.
-- Added a regression test for staging a photo and generating editable estimates before save.
+- Added a regression test for staging a photo and generating automatic estimates before save.
 - The reminder-removal device compile was attempted but stopped at the existing SwiftData macro-plugin malformed-response failure before a complete app build.
 - The export-removal device compile was attempted and hit the same existing SwiftData macro-plugin malformed-response failure before a complete app build.
 - Nutrition insights now receive the live SwiftData target repository and provide explicit refresh and log-meal actions.

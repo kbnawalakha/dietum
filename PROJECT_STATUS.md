@@ -51,7 +51,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Hardened meal analysis cancellation and error handling, including clearing stale estimates when the description changes
 - Fixed progress-photo library uploads so the selected pose remains associated while the PhotosPicker image loads asynchronously
 - Added a user-triggered Screen Time authorization flow in Sleep Setup; Family Controls remains optional until Apple approval
-- Grouped saved progress photos by capture date and added editable regional body-fat estimates for chest, arms, legs, back, and visceral fat
+- Grouped saved progress photos by capture date and added automatic regional body-fat estimates for chest, arms, legs, back, and visceral fat
 - Relaxed body-photo analysis so valid uploaded images still receive an editable analysis when Vision pose detection is inconclusive
 - Made meal-photo and body-photo analysis start automatically after upload, while keeping estimates editable before local save
 - Fixed progress-photo picker timing so the selected pose is retained until PhotosUI delivers the image and the staged photo is analyzed
@@ -87,9 +87,9 @@ Milestone 0 — Repository and Architecture Foundation
 - The default device build intentionally excludes Family Controls because the current provisioning profile does not include that capability
 - Dashboard sleep signals now expose an explicit HealthKit refresh and Sleep Setup path; phone usage totals remain unavailable until Family Controls and a Device Activity report extension are provisioned
 - Body-fat regional values are visual estimates, not clinical measurements; visceral fat cannot be measured from a photograph
-- Vision pose detection can be inconclusive for cropped, dark, side-profile, or simulator images; those images now fall back to editable estimates instead of failing outright
+- Vision pose detection can be inconclusive for cropped, dark, side-profile, or simulator images; those images now fall back to automatic general-range estimates instead of failing outright
 - Current local Xcode verification can fail before app compilation when the SwiftData macro plugin returns a malformed response; rerun after CoreSimulator/Xcode services recover
-- Progress-photo regression coverage now verifies staging and editable estimate generation before save
+- Progress-photo regression coverage now verifies staging and automatic estimate generation before save
 - Meal reminders are no longer part of the active app surface; legacy reminder code remains only to preserve existing local export compatibility
 - Local export is no longer an active user-facing feature; its snapshot service remains internal for Drive backup compatibility
 - The export-removal compile check remains blocked by the local SwiftData macro-plugin malformed-response issue

@@ -114,15 +114,15 @@ struct ProgressPhotosView: View {
 
                         AppSectionHeader(
                             title: "Regional estimates",
-                            message: "Upload a photo to generate editable, non-clinical estimates before saving. Visceral fat cannot be measured from a photo."
+                            message: "Upload a photo to generate automatic, non-clinical estimates before saving. Visceral fat cannot be measured from a photo."
                         )
 
                         LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
-                            bodyFatField(title: "Chest (%)", text: $viewModel.chestBodyFatText)
-                            bodyFatField(title: "Arms (%)", text: $viewModel.armsBodyFatText)
-                            bodyFatField(title: "Legs (%)", text: $viewModel.legsBodyFatText)
-                            bodyFatField(title: "Back (%)", text: $viewModel.backBodyFatText)
-                            bodyFatField(title: "Visceral (%)", text: $viewModel.visceralBodyFatText)
+                            bodyFatEstimateCard(title: "Chest", value: viewModel.chestBodyFatText)
+                            bodyFatEstimateCard(title: "Arms", value: viewModel.armsBodyFatText)
+                            bodyFatEstimateCard(title: "Legs", value: viewModel.legsBodyFatText)
+                            bodyFatEstimateCard(title: "Back", value: viewModel.backBodyFatText)
+                            bodyFatEstimateCard(title: "Visceral", value: viewModel.visceralBodyFatText)
                         }
 
                         VStack(alignment: .leading, spacing: AppSpacing.small) {
@@ -376,10 +376,24 @@ struct ProgressPhotosView: View {
         .appScreenBackground()
     }
 
-    private func bodyFatField(title: String, text: Binding<String>) -> some View {
-        TextField(title, text: text)
-            .textFieldStyle(.appTextField)
-            .keyboardType(.decimalPad)
+    private func bodyFatEstimateCard(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: AppSpacing.small) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(AppPalette.textSecondary)
+
+            Text(value.isEmpty ? "—" : "(value)%")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(AppPalette.textPrimary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(AppSpacing.item)
+        .background(AppPalette.surface)
+        .overlay(
+            RoundedRectangle(cornerRadius: AppRadius.card / 2, style: .continuous)
+                .stroke(AppPalette.surfaceBorder, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.card / 2, style: .continuous))
     }
 }
 
