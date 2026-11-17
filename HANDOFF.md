@@ -61,3 +61,11 @@ codex/repo-foundation
 ## Exact Next Step
 
 - Request Family Controls approval, then add the Device Activity report extension and connect its rendered usage report to the dashboard.
+
+## Counter — Separate Local App (2026-11-17)
+
+User requested an independent iPhone-only video-link player called Counter and no GitHub publication. Added `Counter/Counter.xcodeproj/project.pbxproj`, `Counter/Counter/{CounterApp.swift,LinkResolver.swift,WebsitePlayer.swift,Info.plist}`, `Counter/Tests/main.swift`, and `Counter/README.md`; updated `PROJECT_STATUS.md` and this handoff. Existing Dietum changes and unrelated untracked files were left untouched.
+
+Validation: unsigned generic iOS build succeeded, and 13 standalone URL-validation/routing checks passed. No existing Counter baseline was available. Simulator discovery failed because CoreSimulatorService was inaccessible. Initial project-generation Python failed due to f-string quoting; corrected. First project build failed because a dictionary was used as a build-setting value; moved ATS settings into Info.plist. Initial test compile failed because throwing expressions were inside assert autoclosures; corrected and reran successfully.
+
+Remaining: choose signing team/bundle ID in Xcode, install on the user's iPhone, and verify direct MP4/HLS, website controls, fullscreen rotation, and offline retry. Website/DRM restrictions prevent guaranteed universal playback. No GitHub push, per user request. Next step: open `Counter/Counter.xcodeproj`, configure signing, and run on iPhone.

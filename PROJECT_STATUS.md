@@ -100,3 +100,11 @@ Milestone 0 — Repository and Architecture Foundation
 # Last Updated
 
 2026-11-17
+
+## Separate Local App — Counter (2026-11-17)
+
+- User-assigned task: build an iPhone-only video-link player named Counter, without publishing to GitHub.
+- Added an independent Xcode project under `Counter/`; Dietum app source is unchanged.
+- Native direct-stream playback, embedded website playback, manual player switching, link validation, loading/error/offline states, and reload/close controls implemented.
+- Unsigned generic iPhone build succeeded; 13 resolver checks passed. Simulator service unavailable; device installation and real website playback remain unverified.
+- No pre-existing Counter test baseline existed. Dietum tests are unrelated to this independent project and were not run.

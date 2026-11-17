@@ -1,0 +1,22 @@
+// !$*UTF8*$!
+{ archiveVersion = 1; classes = {}; objectVersion = 56; objects = {
+000000000000000000000001 = { isa = PBXProject; buildConfigurationList = 000000000000000000000002; compatibilityVersion = "Xcode 14.0"; mainGroup = 000000000000000000000003; productRefGroup = 000000000000000000000004; targets = (000000000000000000000005); attributes = { LastUpgradeCheck = 1600; }; };
+000000000000000000000002 = { isa = XCConfigurationList; buildConfigurations = (00000000000000000000000A, 00000000000000000000000B); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+000000000000000000000003 = { isa = PBXGroup; children = (000000000000000000000006, 000000000000000000000004); sourceTree = "<group>"; };
+000000000000000000000004 = { isa = PBXGroup; children = (000000000000000000000007); name = Products; sourceTree = "<group>"; };
+000000000000000000000005 = { isa = PBXNativeTarget; buildConfigurationList = 000000000000000000000008; buildPhases = (000000000000000000000009); buildRules = (); dependencies = (); name = Counter; productName = Counter; productReference = 000000000000000000000007; productType = "com.apple.product-type.application"; };
+000000000000000000000006 = { isa = PBXGroup; children = (000000000000000000000014, 000000000000000000000015, 000000000000000000000016); path = Counter; sourceTree = "<group>"; };
+000000000000000000000007 = { isa = PBXFileReference; explicitFileType = wrapper.application; path = Counter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+000000000000000000000008 = { isa = XCConfigurationList; buildConfigurations = (00000000000000000000000C, 00000000000000000000000D); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+000000000000000000000009 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (00000000000000000000001E, 00000000000000000000001F, 000000000000000000000020); runOnlyForDeploymentPostprocessing = 0; };
+00000000000000000000000A = { isa = XCBuildConfiguration; name = Debug; buildSettings = { SDKROOT = iphoneos; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SWIFT_VERSION = 5.0; CLANG_ENABLE_MODULES = YES; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; }; };
+00000000000000000000000B = { isa = XCBuildConfiguration; name = Release; buildSettings = { SDKROOT = iphoneos; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SWIFT_VERSION = 5.0; CLANG_ENABLE_MODULES = YES; SWIFT_OPTIMIZATION_LEVEL = "-O"; }; };
+00000000000000000000000C = { isa = XCBuildConfiguration; name = Debug; buildSettings = { PRODUCT_NAME = Counter; PRODUCT_BUNDLE_IDENTIFIER = com.local.counter; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = Counter; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"; INFOPLIST_FILE = Counter/Info.plist; TARGETED_DEVICE_FAMILY = 1; SUPPORTS_MACCATALYST = NO; SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO; SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; CODE_SIGN_STYLE = Automatic; }; };
+00000000000000000000000D = { isa = XCBuildConfiguration; name = Release; buildSettings = { PRODUCT_NAME = Counter; PRODUCT_BUNDLE_IDENTIFIER = com.local.counter; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = Counter; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"; INFOPLIST_FILE = Counter/Info.plist; TARGETED_DEVICE_FAMILY = 1; SUPPORTS_MACCATALYST = NO; SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO; SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; CODE_SIGN_STYLE = Automatic; }; };
+000000000000000000000014 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterApp.swift; sourceTree = "<group>"; };
+00000000000000000000001E = { isa = PBXBuildFile; fileRef = 000000000000000000000014; };
+000000000000000000000015 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkResolver.swift; sourceTree = "<group>"; };
+00000000000000000000001F = { isa = PBXBuildFile; fileRef = 000000000000000000000015; };
+000000000000000000000016 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebsitePlayer.swift; sourceTree = "<group>"; };
+000000000000000000000020 = { isa = PBXBuildFile; fileRef = 000000000000000000000016; };
+}; rootObject = 000000000000000000000001; }
