@@ -94,6 +94,8 @@ Milestone 0 — Repository and Architecture Foundation
 - The export-removal compile check remains blocked by the local SwiftData macro-plugin malformed-response issue
 - Nutrition insights now load the persisted active nutrition target and expose refresh/log-meal actions for empty or failed states
 - Nutrition-insights compile verification is currently blocked by the local SwiftData macro-plugin malformed-response issue
+- Profile onboarding is now gated to first launch with a persisted completion flag; profile edits and secondary navigation live in the ellipsis Settings hub, and Dashboard Quick Start has been removed
+- Settings-shell compile verification is currently subject to the local SwiftData macro-plugin malformed-response issue
 
 # Active Agents
 
@@ -117,3 +119,9 @@ Milestone 0 — Repository and Architecture Foundation
 - Metronome uses monotonic deadlines and drops missed beats after stalls; closes/stops on player close or app inactivity. Rhythm is independent of video playback.
 - System fullscreen/Picture in Picture do not include the inline overlay. Live-device audio and interaction verification remain outstanding.
 - Final overlay verification: unsigned iPhone build succeeded with Xcode plugin access; existing 13 link checks and whitespace checks passed.
+
+### Counter no-history requirement (2026-11-17)
+
+- Confirmed no link persistence, analytics, URL logging, or restored sessions in Counter; embedded websites already use nonpersistent WebKit storage.
+- Closing the player now also clears the URL input; added a visible no-history notice and README explanation.
+- Video-synchronized rhythm guidance remains a separate pending request: audio beat vs. visible motion vs. manually marked timeline has not yet been selected or implemented.

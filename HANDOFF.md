@@ -49,6 +49,7 @@ codex/repo-foundation
 - Progress-photo picker selection now retains its pose through PhotosUI dismissal and awaits staging plus analysis before clearing the selection.
 - Removed meal-reminder navigation and dashboard entry points per product direction; legacy reminder model/export types remain only for local compatibility.
 - Removed local-export navigation and dashboard entry points; retained snapshot services because the optional Drive backup uses them internally.
+- Profile onboarding is now a first-launch flow; the dashboard Quick Start and crowded toolbar were replaced by an ellipsis Settings hub for profile edits and all secondary routes.
 
 ## Known Problems
 
@@ -59,6 +60,7 @@ codex/repo-foundation
 - The export-removal device compile was attempted and hit the same existing SwiftData macro-plugin malformed-response failure before a complete app build.
 - Nutrition insights now receive the live SwiftData target repository and provide explicit refresh and log-meal actions.
 - Nutrition-insights device compile was attempted but stopped at the existing SwiftData macro-plugin malformed-response failure.
+- Settings-shell device compile was attempted but stopped at the existing SwiftData macro-plugin malformed-response failure.
 
 ## Exact Next Step
 
@@ -79,3 +81,9 @@ Assigned request: add a manual BPM metronome overlay to Counter. Changed `Counte
 Baseline: unsigned iPhone build and 13 existing link checks passed before edits. Initial overlay build failed because the sandbox prevented the SwiftUI State macro plugin from returning a valid response; retried with Xcode plugin access. Device checks still needed: sound/video mixing, timing under load, tempo interaction, website controls, and background/close cancellation. The overlay is inline only and does not follow system fullscreen or Picture in Picture. Next step: run Counter on the user's iPhone and test the manual rhythm overlay with actual video playback.
 
 Final overlay verification: elevated unsigned generic iPhone build succeeded; 13 link checks and `git diff --check` passed. Existing unrelated Dietum source/scheme edits were not included. Local Git metadata requires elevated access to create the commit; no remote push will be made.
+
+### Counter no saved historical links (2026-11-17)
+
+Assigned request: do not save historical links. Inspected all Counter sources: current URL is memory-only, WebKit uses a nonpersistent data store, and there is no history persistence or URL logging. Changed `Counter/Counter/CounterApp.swift` to clear input on player close and show a no-history notice; updated `Counter/README.md`, `PROJECT_STATUS.md`, and this handoff. Baseline iPhone build and 13 URL checks passed. No unrelated Dietum changes were included; no push requested.
+
+Remaining: test close/relaunch and WebKit storage on an actual phone. The user's separate video-synchronization request remains unimplemented pending selection of audio beat, visible motion, or timeline cues. Website/network-provider records are outside Counter's control.

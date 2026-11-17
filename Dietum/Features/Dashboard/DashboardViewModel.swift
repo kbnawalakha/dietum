@@ -9,13 +9,6 @@ struct DashboardStatCard: Identifiable, Hashable, Sendable {
     var symbolName: String
 }
 
-struct DashboardActionItem: Identifiable, Hashable, Sendable {
-    var id = UUID()
-    var title: String
-    var symbolName: String
-    var route: AppRoute
-}
-
 struct DashboardReadinessItem: Identifiable, Hashable, Sendable {
     var id = UUID()
     var title: String
@@ -53,17 +46,6 @@ final class DashboardViewModel: ObservableObject {
     @Published private(set) var isLoadingSleepInsights = false
 
     private let sleepHealthImporter: any SleepHealthImporting
-
-    let quickActions: [DashboardActionItem] = [
-        DashboardActionItem(title: "Log a meal", symbolName: "camera.fill", route: .mealLogging),
-        DashboardActionItem(title: "Review habit streaks", symbolName: "chart.line.uptrend.xyaxis", route: .habitAdherence),
-        DashboardActionItem(title: "Review nutrition insights", symbolName: "chart.bar.xaxis", route: .nutritionInsights),
-        DashboardActionItem(title: "Start weekly check-in", symbolName: "calendar.badge.clock", route: .weeklyCheckIn),
-        DashboardActionItem(title: "Open progress photos", symbolName: "photo.on.rectangle.angled", route: .progressPhotos),
-        DashboardActionItem(title: "Open progress charts", symbolName: "chart.line.uptrend.xyaxis", route: .progressCharts),
-        DashboardActionItem(title: "Review calorie adjustment", symbolName: "slider.horizontal.3", route: .nutritionAdjustment),
-        DashboardActionItem(title: "Open onboarding", symbolName: "arrow.right.circle.fill", route: .onboarding)
-    ]
 
     init(
         todayCaloriesTarget: Int = 2_400,

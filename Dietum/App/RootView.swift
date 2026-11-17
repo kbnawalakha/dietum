@@ -15,85 +15,13 @@ struct RootView: View {
                 .navigationTitle("Dietum")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
-                    ToolbarItemGroup(placement: .topBarLeading) {
+                    ToolbarItem(placement: .topBarTrailing) {
                         Button {
-                            viewModel.showMealLogging()
+                            viewModel.showSettings()
                         } label: {
-                            Label(AppRoute.mealLogging.title, systemImage: AppRoute.mealLogging.systemImage)
+                            Image(systemName: "ellipsis")
+                                .accessibilityLabel("Settings")
                         }
-                        .buttonStyle(.appToolbar)
-
-                        Button {
-                            viewModel.showHabitAdherence()
-                        } label: {
-                            Label(AppRoute.habitAdherence.title, systemImage: AppRoute.habitAdherence.systemImage)
-                        }
-                        .buttonStyle(.appToolbar)
-
-                        Button {
-                            viewModel.showNutritionInsights()
-                        } label: {
-                            Label(AppRoute.nutritionInsights.title, systemImage: AppRoute.nutritionInsights.systemImage)
-                        }
-                        .buttonStyle(.appToolbar)
-                    }
-
-                    ToolbarItemGroup(placement: .topBarTrailing) {
-                        Button {
-                            viewModel.showWeeklyCheckIn()
-                        } label: {
-                            Label(AppRoute.weeklyCheckIn.title, systemImage: AppRoute.weeklyCheckIn.systemImage)
-                        }
-                        .buttonStyle(.appToolbar)
-
-                        Button {
-                            viewModel.showProgressPhotos()
-                        } label: {
-                            Label(AppRoute.progressPhotos.title, systemImage: AppRoute.progressPhotos.systemImage)
-                        }
-                        .buttonStyle(.appToolbar)
-
-                        Button {
-                            viewModel.showProgressCharts()
-                        } label: {
-                            Label(AppRoute.progressCharts.title, systemImage: AppRoute.progressCharts.systemImage)
-                        }
-                        .buttonStyle(.appToolbar)
-
-                        Button {
-                            viewModel.showNutritionAdjustment()
-                        } label: {
-                            Label(AppRoute.nutritionAdjustment.title, systemImage: AppRoute.nutritionAdjustment.systemImage)
-                        }
-                        .buttonStyle(.appToolbar)
-
-                        Button {
-                            viewModel.showOnboarding()
-                        } label: {
-                            Label(AppRoute.onboarding.title, systemImage: AppRoute.onboarding.systemImage)
-                        }
-                        .buttonStyle(.appToolbar)
-
-                        Button {
-                            viewModel.showGoalSetup()
-                        } label: {
-                            Label(AppRoute.goalSetup.title, systemImage: AppRoute.goalSetup.systemImage)
-                        }
-                        .buttonStyle(.appToolbar)
-
-                        Button {
-                            viewModel.showSleepSetup()
-                        } label: {
-                            Label(AppRoute.sleepSetup.title, systemImage: AppRoute.sleepSetup.systemImage)
-                        }
-                        .buttonStyle(.appToolbar)
-
-                        Button {
-                            viewModel.isAccountPresented = true
-                        } label: {
-                            Label("Account & Backup", systemImage: "person.crop.circle")
-                        }
-                        .buttonStyle(.appToolbar)
                     }
                 }
                 .navigationDestination(for: AppRoute.self) { route in
@@ -102,6 +30,11 @@ struct RootView: View {
                         container.makeOnboardingView {
                             viewModel.completeOnboarding()
                         }
+                    case .settings:
+                        SettingsView(
+                            container: container,
+                            onAccount: { viewModel.isAccountPresented = true }
+                        )
                     case .goalSetup:
                         container.makeGoalSetupView()
                     case .sleepSetup:
@@ -149,59 +82,100 @@ final class RootViewModel: ObservableObject {
     @Published var shouldPresentAccount: Bool
     @Published var isAccountPresented = false
 
+    private let profileSetupCompletedKey = "dietum.profile.setup-completed"
+
     init() {
         let accountSetupCompleted = UserDefaults.standard.bool(forKey: "dietum.account.setup-completed")
+        let profileSetupCompleted = UserDefaults.standard.bool(forKey: profileSetupCompletedKey)
         shouldPresentAccount = !accountSetupCompleted
-        shouldPresentOnboarding = accountSetupCompleted
+        shouldPresentOnboarding = accountSetupCompleted && !profileSetupCompleted
     }
 
-    func showMealLogging() {
-        path.append(.mealLogging)
-    }
-
-    func showHabitAdherence() {
-        path.append(.habitAdherence)
-    }
-
-    func showNutritionInsights() {
-        path.append(.nutritionInsights)
-    }
-
-    func showWeeklyCheckIn() {
-        path.append(.weeklyCheckIn)
-    }
-
-    func showProgressPhotos() {
-        path.append(.progressPhotos)
-    }
-
-    func showProgressCharts() {
-        path.append(.progressCharts)
-    }
-
-    func showNutritionAdjustment() {
-        path.append(.nutritionAdjustment)
-    }
-
-    func showOnboarding() {
-        path.append(.onboarding)
-    }
-
-    func showGoalSetup() {
-        path.append(.goalSetup)
-    }
-
-    func showSleepSetup() {
-        path.append(.sleepSetup)
+    func showSettings() {
+        path.append(.settings)
     }
 
     func completeOnboarding() {
+        UserDefaults.standard.set(true, forKey: profileSetupCompletedKey)
         shouldPresentOnboarding = false
         path.removeAll()
     }
 
     func completeAccountSetup() {
         shouldPresentAccount = false
-        shouldPresentOnboarding = true
+        shouldPresentOnboarding = !UserDefaults.standard.bool(forKey: profileSetupCompletedKey)
+    }
+}
+
+struct SettingsView: View {
+    let container: AppContainer
+    let onAccount: () -> Void
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: AppSpacing.section) {
+                AppHeroCard(
+                    eyebrow: "Settings",
+                    title: "Keep setup in one place.",
+                    message: "Your profile is collected once at launch. Use Settings whenever you want to review or change it."
+                )
+
+                settingsSection(
+                    title: "Profile",
+                    message: "Edit the values that shape your nutrition and sleep context.",
+                    routes: [.onboarding, .goalSetup, .sleepSetup]
+                )
+
+                settingsSection(
+                    title: "Tracking",
+                    message: "Open the logging and history flows from this settings hub.",
+                    routes: [.mealLogging, .weeklyCheckIn, .progressPhotos, .progressCharts]
+                )
+
+                settingsSection(
+                    title: "Insights",
+                    message: "Review local trends and user-approved recommendations.",
+                    routes: [.nutritionInsights, .nutritionAdjustment, .habitAdherence]
+                )
+
+                AppSurfaceCard {
+                    VStack(alignment: .leading, spacing: AppSpacing.item) {
+                        AppSectionHeader(
+                            title: "Account and backup",
+                            message: "Optional Google Drive backup remains separate from your local profile."
+                        )
+
+                        Button(action: onAccount) {
+                            Label("Account & Backup", systemImage: "person.crop.circle")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.appToolbar)
+                    }
+                }
+            }
+            .padding(.horizontal, AppSpacing.screen)
+            .padding(.top, AppSpacing.screen)
+            .padding(.bottom, AppSpacing.screen * 1.5)
+        }
+        .scrollIndicators(.hidden)
+        .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)
+        .appScreenBackground()
+    }
+
+    private func settingsSection(title: String, message: String, routes: [AppRoute]) -> some View {
+        AppSurfaceCard {
+            VStack(alignment: .leading, spacing: AppSpacing.item) {
+                AppSectionHeader(title: title, message: message)
+
+                ForEach(routes, id: \.self) { route in
+                    NavigationLink(value: route) {
+                        Label(route.title, systemImage: route.systemImage)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .buttonStyle(.appToolbar)
+                }
+            }
+        }
     }
 }

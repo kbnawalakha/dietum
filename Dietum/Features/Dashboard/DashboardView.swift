@@ -84,23 +84,6 @@ struct DashboardView: View {
                 AppSurfaceCard {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
-                            title: "Quick start",
-                            message: "Jump into the next step from a single place."
-                        )
-
-                        ForEach(viewModel.quickActions) { action in
-                            NavigationLink(value: action.route) {
-                                Label(action.title, systemImage: action.symbolName)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                            .buttonStyle(.appProminent)
-                        }
-                    }
-                }
-
-                AppSurfaceCard {
-                    VStack(alignment: .leading, spacing: AppSpacing.item) {
-                        AppSectionHeader(
                             title: "Readiness",
                             message: viewModel.readinessSummaryText
                         )

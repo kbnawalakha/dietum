@@ -2,6 +2,7 @@ import Foundation
 
 enum AppRoute: Hashable {
     case onboarding
+    case settings
     case goalSetup
     case sleepSetup
     case mealLogging
@@ -17,6 +18,8 @@ enum AppRoute: Hashable {
         switch self {
         case .onboarding:
             return "Setup"
+        case .settings:
+            return "Settings"
         case .goalSetup:
             return "Goal Setup"
         case .sleepSetup:
@@ -44,6 +47,8 @@ enum AppRoute: Hashable {
         switch self {
         case .onboarding:
             return "sparkles"
+        case .settings:
+            return "ellipsis"
         case .goalSetup:
             return "target"
         case .sleepSetup:
