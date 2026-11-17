@@ -56,6 +56,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Made meal-photo and body-photo analysis start automatically after upload, while keeping estimates editable before local save
 - Fixed progress-photo picker timing so the selected pose is retained until PhotosUI delivers the image and the staged photo is analyzed
 - Added date-grouped progress-photo deletion so users can remove every saved angle and its complete body analysis for one day without affecting other dates
+- Fixed meal saving so selected meal photos persist with their nutrition entries, remain visible on today's meal page, and are available under Settings -> History -> Meal Photos with date-grouped daily totals and photo drill-down
 
 # In Progress
 
@@ -101,6 +102,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Google sign-in requires real `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_REDIRECT_URI`, and matching `GOOGLE_OAUTH_SCHEME` build settings; placeholder values intentionally keep the button disabled
 - Fixed `SwiftDataNutritionTargetRepository` protocol conformance by adding the missing active nutrition-target save adapter
 - Elevated generic simulator build and test-bundle compilation now succeed; existing Swift concurrency warnings remain
+- Meal-history `build-for-testing` verification succeeded; simulator test execution was not run in this pass
 
 # Active Agents
 

@@ -192,7 +192,7 @@ struct MealLoggingView: View {
                         ), axis: .vertical)
                         .textFieldStyle(.appTextField)
 
-                        Text("This is a local estimate based on the general description. Review, correct, and confirm every food before saving.")
+                        Text("This is a local estimate based on the general description. Review and correct anything needed before saving.")
                             .font(.caption)
                             .foregroundStyle(AppPalette.textSecondary)
 
@@ -208,6 +208,22 @@ struct MealLoggingView: View {
                         .disabled(viewModel.analysisState == .analyzing)
                     }
                 }
+
+                let todayPhotoEntries = viewModel.todaySavedMeals.filter { $0.photoMetadata != nil }
+                if !todayPhotoEntries.isEmpty {
+                    AppSurfaceCard {
+                        VStack(alignment: .leading, spacing: AppSpacing.item) {
+                            AppSectionHeader(
+                                title: "Today's saved meal photos",
+                                message: "Saved photos stay visible here for the rest of today. Older dates are in Settings → History → Meal Photos."
+                            )
+
+                            ForEach(todayPhotoEntries) { entry in
+                                MealPhotoEntryRow(entry: entry)
+                            }
+                        }
+                    }
+                }
             }
             .padding(.horizontal, AppSpacing.screen)
             .padding(.top, AppSpacing.screen)
@@ -217,6 +233,9 @@ struct MealLoggingView: View {
         .navigationTitle("Log Meal")
         .navigationBarTitleDisplayMode(.inline)
         .appScreenBackground()
+        .task {
+            await viewModel.loadTodayMeals()
+        }
     }
 }
 
@@ -485,7 +504,7 @@ private struct MealDetectedFoodRow: View {
                     Label(isReviewed ? "Mark as needing review" : "Confirm food", systemImage: isReviewed ? "arrow.uturn.backward" : "checkmark")
                 }
                 .buttonStyle(.appToolbar)
-                .accessibilityHint("Confirmation is required before this meal draft can be saved.")
+                .accessibilityHint("Review the estimate before saving the meal.")
             }
         }
     }
@@ -508,4 +527,174 @@ private struct MealMacroValues {
     let protein: Double
     let carbohydrates: Double
     let fat: Double
+}
+
+private struct MealPhotoEntryRow: View {
+    let entry: MealEntry
+
+    var body: some View {
+        HStack(alignment: .top, spacing: AppSpacing.item) {
+            MealPhotoImage(metadata: entry.photoMetadata, placeholderHeight: 72)
+                .frame(width: 72, height: 72)
+                .clipShape(RoundedRectangle(cornerRadius: AppRadius.card / 2, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(entry.mealType.rawValue.capitalized)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(AppPalette.textPrimary)
+                Text(entry.loggedAt.formatted(date: .omitted, time: .shortened))
+                    .font(.caption)
+                    .foregroundStyle(AppPalette.textSecondary)
+                Text("\(entry.nutrition.calories) kcal · \(entry.nutrition.proteinGrams.formatted(.number.precision(.fractionLength(0)))) g protein")
+                    .font(.caption)
+                    .foregroundStyle(AppPalette.textSecondary)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, AppSpacing.small)
+        .overlay(Divider(), alignment: .bottom)
+    }
+}
+
+private struct MealPhotoImage: View {
+    let metadata: PhotoMetadata?
+    let placeholderHeight: CGFloat
+
+    var body: some View {
+        if let imageData = metadata?.imageData, let image = UIImage(data: imageData) {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity)
+                .frame(height: placeholderHeight)
+        } else {
+            RoundedRectangle(cornerRadius: AppRadius.card / 2, style: .continuous)
+                .fill(AppPalette.accentSoft.opacity(0.45))
+                .frame(maxWidth: .infinity)
+                .frame(height: placeholderHeight)
+                .overlay {
+                    Image(systemName: "photo")
+                        .foregroundStyle(AppPalette.accent)
+                }
+        }
+    }
+}
+
+struct MealHistoryView: View {
+    @StateObject private var viewModel: MealHistoryViewModel
+
+    init(viewModel: MealHistoryViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: AppSpacing.section) {
+                AppHeroCard(
+                    eyebrow: "Meal history",
+                    title: "Review saved meal photos by date.",
+                    message: "Tap a date to see every saved photo and that day's nutrition totals."
+                )
+
+                switch viewModel.loadState {
+                case .idle, .loading:
+                    HStack(spacing: AppSpacing.item) {
+                        ProgressView()
+                        Text("Loading saved meal photos...")
+                            .font(.subheadline)
+                            .foregroundStyle(AppPalette.textSecondary)
+                    }
+                case .failed(let message):
+                    AppSurfaceCard {
+                        Text(message)
+                            .font(.subheadline)
+                            .foregroundStyle(AppPalette.textSecondary)
+                    }
+                case .loaded where viewModel.dayGroups.isEmpty:
+                    AppSurfaceCard {
+                        Text("No saved meal photos yet. Save a meal with a photo from the dashboard meal tracker.")
+                            .font(.subheadline)
+                            .foregroundStyle(AppPalette.textSecondary)
+                    }
+                case .loaded:
+                    ForEach(viewModel.dayGroups) { group in
+                        NavigationLink {
+                            MealPhotoDayDetailView(group: group)
+                        } label: {
+                            AppSurfaceCard {
+                                VStack(alignment: .leading, spacing: AppSpacing.item) {
+                                    HStack {
+                                        Text(group.day.formatted(date: .abbreviated, time: .omitted))
+                                            .font(.headline)
+                                            .foregroundStyle(AppPalette.textPrimary)
+                                        Spacer(minLength: 0)
+                                        Image(systemName: "chevron.right")
+                                            .foregroundStyle(AppPalette.accent)
+                                    }
+
+                                    Text("\(group.photoEntries.count) meal photo\(group.photoEntries.count == 1 ? "" : "s")")
+                                        .font(.subheadline)
+                                        .foregroundStyle(AppPalette.textSecondary)
+
+                                    NutritionBreakdownView(nutrition: group.nutrition)
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .padding(.horizontal, AppSpacing.screen)
+            .padding(.top, AppSpacing.screen)
+            .padding(.bottom, AppSpacing.screen * 1.5)
+        }
+        .scrollIndicators(.hidden)
+        .navigationTitle("Meal Photos")
+        .navigationBarTitleDisplayMode(.inline)
+        .appScreenBackground()
+        .task {
+            await viewModel.loadHistory()
+        }
+    }
+}
+
+private struct MealPhotoDayDetailView: View {
+    let group: MealPhotoDayGroup
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: AppSpacing.section) {
+                AppHeroCard(
+                    eyebrow: "Meal photos",
+                    title: group.day.formatted(date: .abbreviated, time: .omitted),
+                    message: "All saved meal photos from this date, with the complete daily nutrition total."
+                )
+
+                AppSurfaceCard {
+                    NutritionBreakdownView(nutrition: group.nutrition)
+                }
+
+                AppSurfaceCard {
+                    VStack(alignment: .leading, spacing: AppSpacing.item) {
+                        AppSectionHeader(
+                            title: "Saved photos",
+                            message: "Photos remain stored locally with their meal entries."
+                        )
+
+                        ForEach(group.photoEntries) { entry in
+                            MealPhotoEntryRow(entry: entry)
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, AppSpacing.screen)
+            .padding(.top, AppSpacing.screen)
+            .padding(.bottom, AppSpacing.screen * 1.5)
+        }
+        .scrollIndicators(.hidden)
+        .navigationTitle("Meal Photos")
+        .navigationBarTitleDisplayMode(.inline)
+        .appScreenBackground()
+    }
 }

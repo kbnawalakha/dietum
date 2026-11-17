@@ -41,6 +41,8 @@ struct RootView: View {
                         container.makeSleepSetupView()
                     case .mealLogging:
                         container.makeMealLoggingView()
+                    case .mealHistory:
+                        container.makeMealHistoryView()
                     case .habitAdherence:
                         container.makeHabitAdherenceView()
                     case .nutritionInsights:
@@ -129,7 +131,13 @@ struct SettingsView: View {
                 settingsSection(
                     title: "Tracking",
                     message: "Open the logging and history flows from this settings hub.",
-                    routes: [.weeklyCheckIn, .progressPhotos, .progressCharts]
+                    routes: [.weeklyCheckIn]
+                )
+
+                settingsSection(
+                    title: "History",
+                    message: "Review saved meal photos and progress records by date.",
+                    routes: [.mealHistory, .progressPhotos, .progressCharts]
                 )
 
                 settingsSection(

@@ -60,6 +60,12 @@ struct AppContainer {
         )
     }
 
+    func makeMealHistoryView() -> MealHistoryView {
+        MealHistoryView(
+            viewModel: MealHistoryViewModel(mealEntryRepository: mealEntryRepository)
+        )
+    }
+
     func makeNutritionTrendInsightsView() -> NutritionTrendInsightsView {
         NutritionTrendInsightsView(
             viewModel: NutritionTrendInsightsViewModel(

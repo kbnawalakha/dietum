@@ -6,13 +6,19 @@
 
 ## Assigned Issue
 
-Group progress photos by date and persist regional body-fat estimates
+Fix meal saving and add date-grouped meal photo history
 
 ## Branch
 
 codex/repo-foundation
 
 ## Work Completed
+
+- Meal saves now persist selected photo image data and no longer require manual review toggles before saving a valid estimate.
+- Today's saved meal photos remain visible on the meal page after a successful save.
+- Added Settings -> History -> Meal Photos with date-grouped daily calories, protein, carbohydrates, and fat totals.
+- Added drill-down views showing every saved meal photo for a selected date.
+- Added a regression test covering photo persistence and today's saved-meal refresh.
 
 - Added `BodyFatEstimateBreakdown` for chest, arms, legs, back, and visceral estimates.
 - Persisted the optional breakdown through the SwiftData progress-photo model.
@@ -22,6 +28,13 @@ codex/repo-foundation
 - Added destructive date-level deletion that removes every saved angle and associated analysis for the selected day.
 
 ## Files Changed
+
+- `Dietum/Features/Meals/MealLoggingViewModel.swift`
+- `Dietum/Features/Meals/MealLoggingView.swift`
+- `Dietum/App/AppRoute.swift`
+- `Dietum/App/AppContainer.swift`
+- `Dietum/App/RootView.swift`
+- `Dietum/DietumTests/NutritionAdjustmentRecommendationServiceTests.swift`
 
 - `Dietum/Domain/Models/DomainModelPlaceholder.swift`
 - `Dietum/Data/SwiftData/Models/StoredProgressPhotoMetadata.swift`
@@ -33,6 +46,9 @@ codex/repo-foundation
 
 ## Verification
 
+- `xcodebuild build-for-testing -project Dietum.xcodeproj -scheme Dietum -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-meal-history-tests CODE_SIGNING_ALLOWED=NO` succeeded with `TEST BUILD SUCCEEDED`.
+- The simulator test runner was not invoked because this verification used the generic simulator destination; the new regression is compiled into the test bundle.
+
 - Feature build: `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-body-fat-build` succeeded.
 - Final: `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-body-fat-tests` passed with 17 tests and 0 failures.
 - Sleep-signal update: `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -destination 'generic/platform=iOS' -derivedDataPath /private/tmp/dietum-sleep-signals-device CODE_SIGNING_ALLOWED=NO` succeeded.
@@ -41,6 +57,8 @@ codex/repo-foundation
 - `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-progress-delete-build CODE_SIGNING_ALLOWED=NO` reached the existing SwiftData macro-plugin malformed-response failure after the new progress-photo source compiled.
 
 ## Work Remaining
+
+- Run the new meal-save regression and the full XCTest suite on an available booted simulator when CoreSimulatorService is available.
 
 - Body-fat regional values are estimates and should be replaced or edited with measured data when available.
 - Vision pose detection remains best-effort; valid images with inconclusive framing use an editable general-range fallback.
@@ -72,7 +90,7 @@ codex/repo-foundation
 
 ## Exact Next Step
 
-- Request Family Controls approval, then add the Device Activity report extension and connect its rendered usage report to the dashboard.
+- Run the full simulator XCTest suite when CoreSimulatorService is available, then continue with the Device Activity report extension if Family Controls approval is granted.
 
 ## Counter — Separate Local App (2026-11-17)
 

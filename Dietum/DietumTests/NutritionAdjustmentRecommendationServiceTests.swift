@@ -290,6 +290,36 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
     }
 
     @MainActor
+    func testMealSavePersistsSelectedPhotoWithoutManualReviewToggle() async throws {
+        let container = try DietumPersistenceStack.makeContainer(inMemory: true)
+        let repository = SwiftDataMealEntryRepository(modelContext: container.mainContext)
+        let viewModel = MealLoggingViewModel(
+            draft: MealLoggingDraft(foodDescription: "chicken rice"),
+            mealEntryRepository: repository
+        )
+        let image = UIGraphicsImageRenderer(size: CGSize(width: 24, height: 24)).image { context in
+            UIColor.systemGreen.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 24, height: 24))
+        }
+
+        viewModel.setSelectedPhoto(image)
+        await viewModel.analyzeMeal()
+
+        XCTAssertTrue(viewModel.canSave)
+        XCTAssertTrue(viewModel.reviewedItemIDs.isEmpty)
+
+        await viewModel.saveDraft()
+
+        let entries = try await repository.fetchMealEntries(
+            in: DateInterval(start: Calendar.current.startOfDay(for: .now), end: .distantFuture)
+        )
+        XCTAssertEqual(viewModel.analysisState, .saved)
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertNotNil(entries.first?.photoMetadata?.imageData)
+        XCTAssertEqual(viewModel.todaySavedMeals.count, 1)
+    }
+
+    @MainActor
     func testProgressPhotoBodyFatEstimateAcceptsMeasuredRangeOnly() {
         let viewModel = ProgressPhotosViewModel()
 

@@ -52,6 +52,7 @@ final class MealLoggingViewModel: ObservableObject {
     @Published var photoSelectionError: String?
     @Published private(set) var reviewedItemIDs: Set<DetectedMealFood.ID> = []
     @Published private(set) var selectedPhoto: UIImage?
+    @Published private(set) var todaySavedMeals: [MealEntry] = []
 
     private let detectionService: MealFoodDetectionService
     private let mealEntryRepository: (any MealEntryRepository)?
@@ -104,7 +105,7 @@ final class MealLoggingViewModel: ObservableObject {
         case .ready:
             return "Review the detected foods and make any corrections before saving."
         case .needsReview:
-            return "Some foods still need attention before the meal can be saved."
+            return "Some foods may need attention. You can review them before saving."
         case .saved:
             return "Meal draft saved locally for now."
         case .failed(let message):
@@ -114,10 +115,9 @@ final class MealLoggingViewModel: ObservableObject {
 
     var canSave: Bool {
         !draft.detectedFoods.isEmpty
-            && analysisState != .analyzing
+            && (analysisState == .ready || analysisState == .needsReview)
             && draft.detectedFoods.allSatisfy { food in
                 !food.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                    && reviewedItemIDs.contains(food.id)
             }
     }
 
@@ -350,10 +350,18 @@ final class MealLoggingViewModel: ObservableObject {
             return
         }
 
+        let capturedAt = Date()
         let entry = MealEntry(
+            loggedAt: capturedAt,
             mealType: draft.mealType,
             notes: draft.trimmedNotes.isEmpty ? nil : draft.trimmedNotes,
-            photoMetadata: selectedPhoto == nil ? nil : PhotoMetadata(storageIdentifier: "meal-photo-selected"),
+            photoMetadata: selectedPhoto.map {
+                PhotoMetadata(
+                    storageIdentifier: "meal-photo-\(UUID().uuidString)",
+                    capturedAt: capturedAt,
+                    imageData: $0.jpegData(compressionQuality: 0.85)
+                )
+            },
             items: draft.detectedFoods.map { MealItem(name: $0.name, nutrition: $0.nutrition) },
             nutrition: nutritionTotals
         )
@@ -361,12 +369,96 @@ final class MealLoggingViewModel: ObservableObject {
         do {
             try await mealEntryRepository.saveMealEntry(entry)
             analysisState = .saved
+            await loadTodayMeals()
         } catch {
             analysisState = .failed("Meal could not be saved locally. Try again.")
         }
     }
 
+    func loadTodayMeals() async {
+        guard let mealEntryRepository else {
+            todaySavedMeals = []
+            return
+        }
+
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: .now)
+        let end = calendar.date(byAdding: .day, value: 1, to: start) ?? .now
+
+        do {
+            todaySavedMeals = try await mealEntryRepository.fetchMealEntries(
+                in: DateInterval(start: start, end: end)
+            )
+        } catch {
+            todaySavedMeals = []
+        }
+    }
+
     private func updateDraft(_ mutation: (inout MealLoggingDraft) -> Void) {
         mutation(&draft)
+    }
+}
+
+struct MealPhotoDayGroup: Identifiable, Hashable, Sendable {
+    let day: Date
+    let entries: [MealEntry]
+
+    var id: Date { day }
+
+    var photoEntries: [MealEntry] {
+        entries.filter { $0.photoMetadata != nil }
+    }
+
+    var nutrition: NutritionAmounts {
+        entries.reduce(into: NutritionAmounts()) { totals, entry in
+            totals.calories += entry.nutrition.calories
+            totals.proteinGrams += entry.nutrition.proteinGrams
+            totals.carbohydrateGrams += entry.nutrition.carbohydrateGrams
+            totals.fatGrams += entry.nutrition.fatGrams
+            totals.fiberGrams += entry.nutrition.fiberGrams
+        }
+    }
+}
+
+@MainActor
+final class MealHistoryViewModel: ObservableObject {
+    enum LoadState: Equatable {
+        case idle
+        case loading
+        case loaded
+        case failed(String)
+    }
+
+    @Published private(set) var entries: [MealEntry] = []
+    @Published private(set) var loadState: LoadState = .idle
+
+    private let mealEntryRepository: any MealEntryRepository
+
+    init(mealEntryRepository: any MealEntryRepository) {
+        self.mealEntryRepository = mealEntryRepository
+    }
+
+    var dayGroups: [MealPhotoDayGroup] {
+        let calendar = Calendar.current
+        return Dictionary(grouping: entries) { entry in
+            calendar.startOfDay(for: entry.loggedAt)
+        }
+        .map { MealPhotoDayGroup(day: $0.key, entries: $0.value.sorted { $0.loggedAt > $1.loggedAt }) }
+        .filter { !$0.photoEntries.isEmpty }
+        .sorted { $0.day > $1.day }
+    }
+
+    func loadHistory() async {
+        loadState = .loading
+
+        do {
+            entries = try await mealEntryRepository.fetchMealEntries(
+                in: DateInterval(start: .distantPast, end: .distantFuture)
+            )
+            loadState = .loaded
+        } catch {
+            entries = []
+            loadState = .failed("Saved meal history could not be loaded right now.")
+        }
     }
 }
