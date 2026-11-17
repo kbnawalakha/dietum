@@ -329,6 +329,13 @@ final class MealLoggingViewModel: ObservableObject {
 
     func saveDraft() async {
         guard canSave else {
+            if draft.detectedFoods.isEmpty {
+                analysisState = .failed("Analyze the meal before saving it.")
+                analysisNotes = "Choose a photo or describe the food, then tap Analyze meal."
+            } else {
+                analysisState = .needsReview
+                analysisNotes = reviewStatusText
+            }
             return
         }
 

@@ -200,7 +200,7 @@ struct MealLoggingView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .buttonStyle(.appProminent)
-                        .disabled(!viewModel.canSave)
+                        .disabled(viewModel.analysisState == .analyzing)
                     }
                 }
             }

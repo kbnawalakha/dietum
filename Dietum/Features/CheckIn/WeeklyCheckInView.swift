@@ -104,7 +104,7 @@ struct WeeklyCheckInView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .buttonStyle(.appProminent)
-                        .disabled(!viewModel.canSave)
+                        .disabled(viewModel.saveState == .loading)
                     }
                 }
 

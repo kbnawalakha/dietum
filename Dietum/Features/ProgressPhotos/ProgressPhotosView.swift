@@ -164,7 +164,7 @@ struct ProgressPhotosView: View {
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             .buttonStyle(.appProminent)
-                            .disabled(!viewModel.canSave)
+                            .disabled(viewModel.saveState == .saving)
                         }
                     }
                 }
