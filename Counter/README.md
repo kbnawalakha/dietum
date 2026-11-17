@@ -24,3 +24,9 @@ swiftc -module-cache-path /private/tmp/counter-swift-cache Counter/LinkResolver.
 ```
 
 Before distributing, test live direct MP4, live HLS, website playback, fullscreen rotation, bad links, and offline retry on a physical iPhone. Device signing and live playback testing remain outstanding. Nothing has been pushed to GitHub.
+
+## Rhythm overlay
+
+The inline video/website player includes a manual metronome in its upper-right corner. Tap Start for visual beats; open Tempo settings to adjust 30–240 BPM, see the four-beat count, or enable audible clicks. Changing tempo restarts the count at beat one. Click sound defaults off. The metronome stops when the player closes or the app leaves the foreground. It runs independently of video pause/seek and does not detect or synchronize to the video's rhythm.
+
+The overlay belongs to Counter's inline player; iOS/website-provided fullscreen playback and Picture in Picture do not carry this overlay. Physical-device checks for audio mixing, pulse timing, and controls over real websites remain required.

@@ -66,6 +66,8 @@ final class PlaybackModel: ObservableObject {
 
 struct CounterView: View {
     @StateObject private var model = PlaybackModel()
+    @StateObject private var metronome = MetronomeModel()
+    @Environment(\.scenePhase) private var scenePhase
     @FocusState private var editingLink: Bool
 
     var body: some View {
@@ -110,11 +112,12 @@ struct CounterView: View {
                                 Label(model.webMode ? "Website player" : "Video player", systemImage: "play.rectangle")
                                     .font(.headline)
                                 Spacer()
-                                Button("Close", systemImage: "xmark.circle.fill") { model.close() }
+                                Button("Close", systemImage: "xmark.circle.fill") { metronome.stop(); model.close() }
                                     .labelStyle(.iconOnly).accessibilityLabel("Close player")
                             }
                             Text(url.host ?? "Video").font(.caption).foregroundStyle(.secondary)
                             if model.isLoading { ProgressView("Loading…").tint(.mint) }
+                            Group {
                             if model.webMode {
                                 WebsitePlayer(url: url, loading: $model.isLoading, error: $model.error)
                                     .id(model.reloadID)
@@ -125,6 +128,8 @@ struct CounterView: View {
                                     .frame(height: 240)
                                     .clipShape(RoundedRectangle(cornerRadius: 16))
                             }
+                            }
+                            .overlay(alignment: .topTrailing) { MetronomeOverlay(model: metronome) }
                             HStack {
                                 Button("Reload", systemImage: "arrow.clockwise") { model.open(forceWebsite: model.webMode, forceNative: !model.webMode) }
                                 Spacer()
@@ -161,6 +166,10 @@ struct CounterView: View {
             .toolbar { ToolbarItemGroup(placement: .keyboard) { Spacer(); Button("Done") { editingLink = false } } }
         }
         .preferredColorScheme(.dark)
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active { metronome.stop() }
+        }
+        .onDisappear { metronome.stop() }
     }
     private func play() { editingLink = false; model.open() }
 }

@@ -71,3 +71,11 @@ User requested an independent iPhone-only video-link player called Counter and n
 Validation: unsigned generic iOS build succeeded, and 13 standalone URL-validation/routing checks passed. No existing Counter baseline was available. Simulator discovery failed because CoreSimulatorService was inaccessible. Initial project-generation Python failed due to f-string quoting; corrected. First project build failed because a dictionary was used as a build-setting value; moved ATS settings into Info.plist. Initial test compile failed because throwing expressions were inside assert autoclosures; corrected and reran successfully.
 
 Remaining: choose signing team/bundle ID in Xcode, install on the user's iPhone, and verify direct MP4/HLS, website controls, fullscreen rotation, and offline retry. Website/DRM restrictions prevent guaranteed universal playback. No GitHub push, per user request. Next step: open `Counter/Counter.xcodeproj`, configure signing, and run on iPhone.
+
+### Counter manual metronome overlay (2026-11-17)
+
+Assigned request: add a manual BPM metronome overlay to Counter. Changed `Counter/Counter/CounterApp.swift`, added `Counter/Counter/MetronomeOverlay.swift`, registered it in `Counter/Counter.xcodeproj/project.pbxproj`, and updated `Counter/README.md`, `PROJECT_STATUS.md`, and this handoff. Added tempo settings (30–240), visual pulse and four-beat count, start/stop, optional in-memory synthesized click audio, and lifecycle cancellation. No GitHub push requested or performed.
+
+Baseline: unsigned iPhone build and 13 existing link checks passed before edits. Initial overlay build failed because the sandbox prevented the SwiftUI State macro plugin from returning a valid response; retried with Xcode plugin access. Device checks still needed: sound/video mixing, timing under load, tempo interaction, website controls, and background/close cancellation. The overlay is inline only and does not follow system fullscreen or Picture in Picture. Next step: run Counter on the user's iPhone and test the manual rhythm overlay with actual video playback.
+
+Final overlay verification: elevated unsigned generic iPhone build succeeded; 13 link checks and `git diff --check` passed. Existing unrelated Dietum source/scheme edits were not included. Local Git metadata requires elevated access to create the commit; no remote push will be made.

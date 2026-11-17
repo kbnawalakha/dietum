@@ -110,3 +110,10 @@ Milestone 0 — Repository and Architecture Foundation
 - Native direct-stream playback, embedded website playback, manual player switching, link validation, loading/error/offline states, and reload/close controls implemented.
 - Unsigned generic iPhone build succeeded; 13 resolver checks passed. Simulator service unavailable; device installation and real website playback remain unverified.
 - No pre-existing Counter test baseline existed. Dietum tests are unrelated to this independent project and were not run.
+
+### Counter manual rhythm overlay (2026-11-17)
+
+- Added a compact overlay over both inline players, manual 30–240 BPM controls, start/stop, visual pulse/four-beat count, and optional synthesized click audio.
+- Metronome uses monotonic deadlines and drops missed beats after stalls; closes/stops on player close or app inactivity. Rhythm is independent of video playback.
+- System fullscreen/Picture in Picture do not include the inline overlay. Live-device audio and interaction verification remain outstanding.
+- Final overlay verification: unsigned iPhone build succeeded with Xcode plugin access; existing 13 link checks and whitespace checks passed.
