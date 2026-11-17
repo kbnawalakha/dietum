@@ -6,7 +6,7 @@
 
 ## Assigned Issue
 
-Dashboard sleep and phone-use signals
+Fix body progress-photo uploads
 
 ## Branch
 
@@ -14,42 +14,31 @@ codex/repo-foundation
 
 ## Work Completed
 
-- Extended the HealthKit sleep importer to distinguish bedtime, sleep onset, wake time, and out-of-bed time.
-- Added inferred pre-sleep and post-wake doom-scroll durations from those intervals.
-- Added seven-night averaging and today wake-time loading to the dashboard view model.
-- Added dashboard cards for phone usage, wake time, and both inferred doom-scroll averages.
-- Kept phone usage explicitly unavailable because ordinary iOS apps cannot read Screen Time totals without the separate Family Controls capability.
-- Added deterministic dashboard coverage for the average calculations and formatted values.
-- Hardened meal analysis so cancellation does not show a false error and failures provide actionable retry guidance.
-- Clear prior detected foods when the meal description changes so stale estimates are not reused.
+- Fixed the PhotosPicker presentation state so selecting a library image does not clear its pose before asynchronous loading completes.
+- Kept the selected pose alive until the image is successfully converted, staged, or reported as failed.
+- Preserved the existing local image-data persistence and body-photo analysis flow.
 
 ## Files Changed
 
-- `Dietum/Features/Onboarding/HealthKitSleepService.swift`
-- `Dietum/Features/Dashboard/DashboardViewModel.swift`
-- `Dietum/Features/Dashboard/DashboardView.swift`
-- `Dietum/DietumTests/NutritionAdjustmentRecommendationServiceTests.swift`
+- `Dietum/Features/ProgressPhotos/ProgressPhotosView.swift`
 - `PROJECT_STATUS.md`
 - `HANDOFF.md`
 
 ## Verification
 
-- Baseline: `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-baseline-tests` passed with 16 tests and 0 failures.
-- Feature build: `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-dashboard-build` succeeded.
-- Final: `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-dashboard-tests-2` passed with 17 tests and 0 failures.
-- Meal-analysis regression verification: `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-meal-analysis-tests` passed with 17 tests and 0 failures.
+- Feature build: `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-progress-photo-build` succeeded.
+- Final: `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-progress-photo-tests` passed with 17 tests and 0 failures.
 - `git diff --check` passed.
 
 ## Work Remaining
 
-- Actual phone-usage totals require a separately authorized Screen Time / Family Controls integration; the dashboard currently shows `Unavailable` rather than fabricating a number.
-- Google OAuth build settings still need to be configured before real Drive backup can be exercised on a device.
+- Actual upload behavior should still be checked with a real photo-library selection on a simulator or device.
+- Camera access requires a physical device or a simulator camera configuration.
 
 ## Known Problems
 
-- Unrelated pre-existing Xcode scheme/project edits and `pass` / `pass.pub` remain uncommitted and were not staged.
-- HealthKit-derived doom-scroll values are estimates of time in bed before sleep and after wake, not proof that the screen was active.
+- Unrelated pre-existing Xcode scheme/project edits, `build/`, and `pass` / `pass.pub` remain uncommitted and were not staged.
 
 ## Exact Next Step
 
-- Configure Google OAuth for device testing, then decide whether to pursue the separate Family Controls entitlement for real Screen Time totals.
+- Verify selecting a real library image in Xcode on a simulator/device and confirm the staged preview updates for the selected pose.

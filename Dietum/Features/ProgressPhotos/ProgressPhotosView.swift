@@ -6,6 +6,7 @@ struct ProgressPhotosView: View {
     @StateObject private var viewModel: ProgressPhotosViewModel
     @State private var pickerItem: PhotosPickerItem?
     @State private var selectedAngle: ProgressPhotoAngle?
+    @State private var isPhotoPickerPresented = false
     @State private var isCameraPresented = false
 
     init(viewModel: ProgressPhotosViewModel = ProgressPhotosViewModel()) {
@@ -33,6 +34,7 @@ struct ProgressPhotosView: View {
                                 Menu {
                                     Button {
                                         selectedAngle = angle
+                                        isPhotoPickerPresented = true
                                     } label: {
                                         Label("Choose from library", systemImage: "photo.on.rectangle")
                                     }
@@ -265,15 +267,7 @@ struct ProgressPhotosView: View {
             await viewModel.loadRecentPhotos()
         }
         .photosPicker(
-            isPresented: Binding(
-                get: { selectedAngle != nil && !isCameraPresented },
-                set: { isPresented in
-                    if !isPresented {
-                        selectedAngle = nil
-                        pickerItem = nil
-                    }
-                }
-            ),
+            isPresented: $isPhotoPickerPresented,
             selection: $pickerItem,
             matching: .images
         )
@@ -287,16 +281,27 @@ struct ProgressPhotosView: View {
                       let image = UIImage(data: data) else {
                     await MainActor.run {
                         viewModel.photoSelectionFailed()
+                        isPhotoPickerPresented = false
+                        selectedAngle = nil
+                        pickerItem = nil
                     }
                     return
                 }
 
                 await MainActor.run {
                     viewModel.stagePhoto(for: angle, image: image)
+                    isPhotoPickerPresented = false
                     selectedAngle = nil
                     pickerItem = nil
                 }
             }
+        }
+        .onChange(of: isPhotoPickerPresented) { _, isPresented in
+            guard !isPresented, pickerItem == nil else {
+                return
+            }
+
+            selectedAngle = nil
         }
         .sheet(isPresented: $isCameraPresented) {
             CameraImagePicker { image in

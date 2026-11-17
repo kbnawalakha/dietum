@@ -50,6 +50,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Added calorie-based macro percentage and fiber-from-carbohydrates calculations to onboarding
 - Added dashboard sleep/phone signals with HealthKit-derived wake time and seven-night inferred doom-scroll averages
 - Hardened meal analysis cancellation and error handling, including clearing stale estimates when the description changes
+- Fixed progress-photo library uploads so the selected pose remains associated while the PhotosPicker image loads asynchronously
 
 # In Progress
 
@@ -72,7 +73,7 @@ Milestone 0 — Repository and Architecture Foundation
 
 - Unrelated uncommitted files remain in the working tree: `pass` and `pass.pub`
 - Elevated hardening verification completed successfully after the sandbox-only restriction was bypassed
-- Existing progress-photo metadata does not include rendered image assets, so comparison cards use privacy-safe placeholders
+- Progress-photo uploads are local-only; camera access still requires a physical device or a simulator camera configuration
 - `Dietum.xcodeproj/project.pbxproj` has an unrelated uncommitted Xcode-generated modification and remains intentionally untouched
 - Google Drive is intentionally disabled until `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_REDIRECT_URI`, and `GOOGLE_OAUTH_SCHEME` are configured
 - Phone usage is shown as unavailable until a separately authorized Family Controls / Screen Time integration is added; HealthKit only provides the in-bed intervals used for estimates
