@@ -41,8 +41,15 @@ struct MealLoggingView: View {
 
                         MealPhotoInput(
                             selectedImage: viewModel.selectedPhoto,
-                            onPhotoSelected: { viewModel.setSelectedPhoto($0) }
+                            onPhotoSelected: { viewModel.setSelectedPhoto($0) },
+                            onPhotoSelectionFailed: { viewModel.photoSelectionFailed() }
                         )
+
+                        if let photoSelectionError = viewModel.photoSelectionError {
+                            Text(photoSelectionError)
+                                .font(.caption)
+                                .foregroundStyle(AppPalette.textSecondary)
+                        }
 
                         Text(viewModel.hasSelectedPhoto ? "Selected local photo. Add a description for a more specific analysis." : "No photo selected. A general food description is enough for the local estimate.")
                             .font(.subheadline)
@@ -246,6 +253,7 @@ private struct NutritionBreakdownView: View {
 private struct MealPhotoInput: View {
     let selectedImage: UIImage?
     let onPhotoSelected: (UIImage) -> Void
+    let onPhotoSelectionFailed: () -> Void
 
     @State private var pickerItem: PhotosPickerItem?
     @State private var isCameraPresented = false
@@ -298,6 +306,10 @@ private struct MealPhotoInput: View {
             Task {
                 guard let data = try? await newItem.loadTransferable(type: Data.self),
                       let image = UIImage(data: data) else {
+                    await MainActor.run {
+                        onPhotoSelectionFailed()
+                        pickerItem = nil
+                    }
                     return
                 }
 

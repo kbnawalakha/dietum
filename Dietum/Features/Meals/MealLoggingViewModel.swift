@@ -49,6 +49,7 @@ final class MealLoggingViewModel: ObservableObject {
     @Published var analysisState: AnalysisState = .idle
     @Published var analysisNotes: String?
     @Published var selectedItemID: DetectedMealFood.ID?
+    @Published var photoSelectionError: String?
     @Published private(set) var reviewedItemIDs: Set<DetectedMealFood.ID> = []
     @Published private(set) var selectedPhoto: UIImage?
 
@@ -63,6 +64,7 @@ final class MealLoggingViewModel: ObservableObject {
         self.draft = draft
         self.detectionService = detectionService
         self.mealEntryRepository = mealEntryRepository
+        self.photoSelectionError = nil
     }
 
     var detectedFoods: [DetectedMealFood] {
@@ -79,6 +81,7 @@ final class MealLoggingViewModel: ObservableObject {
 
     func setSelectedPhoto(_ image: UIImage) {
         selectedPhoto = image
+        photoSelectionError = nil
         updateDraft { draft in
             draft.photoDescription = "Selected local meal photo"
         }
@@ -86,6 +89,10 @@ final class MealLoggingViewModel: ObservableObject {
         analysisNotes = nil
         selectedItemID = nil
         reviewedItemIDs = []
+    }
+
+    func photoSelectionFailed() {
+        photoSelectionError = "The meal photo could not be loaded. Try choosing another photo or add a description instead."
     }
 
     var headline: String {
@@ -199,7 +206,12 @@ final class MealLoggingViewModel: ObservableObject {
         do {
             let result = try await detectionService.analyzeMeal(
                 description: draft.foodDescription,
-                photo: selectedPhoto == nil ? nil : PhotoMetadata(storageIdentifier: "meal-photo-selected")
+                photo: selectedPhoto.map {
+                    PhotoMetadata(
+                        storageIdentifier: "meal-photo-selected",
+                        imageData: $0.jpegData(compressionQuality: 0.85)
+                    )
+                }
             )
             updateDraft { draft in
                 draft.detectedFoods = result.detectedFoods
