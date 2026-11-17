@@ -43,6 +43,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Added deterministic quality coverage for reminder controls, habit adherence, and local export payloads
 - Added optional Google account sign-in, Keychain token storage, private Drive backup upload, skip flow, and weekly background scheduling
 - Verified the optional account and backup flow with a successful build and 6-test XCTest run
+- Updated lifestyle workout-day controls so activating a selected day deselects it
 
 # In Progress
 

@@ -140,6 +140,16 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertFalse(configuration.isConfigured)
     }
 
+    func testOnboardingWorkoutDayToggleDeselectsOnSecondActivation() {
+        var draft = OnboardingDraft()
+
+        draft.toggleWorkoutDay(.monday)
+        XCTAssertTrue(draft.workoutDays.contains(.monday))
+
+        draft.toggleWorkoutDay(.monday)
+        XCTAssertFalse(draft.workoutDays.contains(.monday))
+    }
+
     private static func day(_ dayOffset: Double) -> Date {
         Date(timeIntervalSince1970: 1_700_000_000 + (86_400 * dayOffset))
     }

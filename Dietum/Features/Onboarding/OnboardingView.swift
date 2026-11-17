@@ -113,11 +113,15 @@ struct OnboardingView: View {
                                                 .padding(.vertical, AppSpacing.small)
                                         }
                                         .buttonStyle(.plain)
+                                        .contentShape(Capsule())
                                         .foregroundStyle(viewModel.draft.workoutDays.contains(day) ? .white : AppPalette.accent)
                                         .background(
                                             Capsule()
                                                 .fill(viewModel.draft.workoutDays.contains(day) ? AppPalette.accent : AppPalette.accentSoft)
                                         )
+                                        .accessibilityLabel(day.rawValue.capitalized)
+                                        .accessibilityValue(viewModel.draft.workoutDays.contains(day) ? "Selected" : "Not selected")
+                                        .accessibilityHint("Activate again to deselect this workout day")
                                     }
                                 }
                             }
@@ -275,11 +279,7 @@ struct OnboardingView: View {
 
     private func toggleWorkoutDay(_ day: Weekday) {
         viewModel.updateDraft { draft in
-            if draft.workoutDays.contains(day) {
-                draft.workoutDays.remove(day)
-            } else {
-                draft.workoutDays.insert(day)
-            }
+            draft.toggleWorkoutDay(day)
         }
     }
 

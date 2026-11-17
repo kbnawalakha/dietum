@@ -36,6 +36,7 @@ codex/repo-foundation
 - Added an optional account setup screen with a local skip path
 - Added Google OAuth via `ASWebAuthenticationSession`, Keychain token storage, private `drive.appdata` upload, and weekly `BGTaskScheduler` scheduling
 - Added configurable OAuth build settings and documented the device setup required to enable Drive access
+- Updated lifestyle workout-day controls to deselect on repeat activation and added regression coverage
 
 ## Workstreams
 
@@ -82,6 +83,7 @@ codex/repo-foundation
 - `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-hardening-escalated-tests`
 - `git diff --check`
 - `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-quality-tests-2`
+- `xcodebuild test -project Dietum.xcodeproj -scheme Dietum -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/dietum-lifestyle-tests`
 
 ## Test Results
 
@@ -92,6 +94,7 @@ codex/repo-foundation
 - The expanded XCTest run succeeded with 5 tests and 0 failures
 - The account/backup app build succeeded with elevated Xcode access
 - The account/backup XCTest run succeeded with 6 tests and 0 failures
+- The lifestyle toggle XCTest run succeeded with 7 tests and 0 failures
 
 ## Work Remaining
 
