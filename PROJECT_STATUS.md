@@ -53,6 +53,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Fixed progress-photo library uploads so the selected pose remains associated while the PhotosPicker image loads asynchronously
 - Added Family Controls entitlements and a user-triggered Screen Time authorization flow in Sleep Setup
 - Grouped saved progress photos by capture date and added editable regional body-fat estimates for chest, arms, legs, back, and visceral fat
+- Relaxed body-photo analysis so valid uploaded images still receive an editable analysis when Vision pose detection is inconclusive
 
 # In Progress
 
@@ -82,6 +83,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Google Drive is intentionally disabled until `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_REDIRECT_URI`, and `GOOGLE_OAUTH_SCHEME` are configured
 - Phone usage totals remain unavailable until the Family Controls capability is approved and a Device Activity report extension is added; HealthKit only provides the in-bed intervals used for estimates
 - Body-fat regional values are visual estimates, not clinical measurements; visceral fat cannot be measured from a photograph
+- Vision pose detection can be inconclusive for cropped, dark, side-profile, or simulator images; those images now fall back to editable estimates instead of failing outright
 
 # Active Agents
 

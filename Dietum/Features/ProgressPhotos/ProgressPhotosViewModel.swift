@@ -225,12 +225,25 @@ final class ProgressPhotosViewModel: ObservableObject {
 
         bodyAnalysisState = .analyzing
         let imageData = stagedPhotos.values.compactMap(\.imageData)
+        let validImageCount = imageData.reduce(into: 0) { count, data in
+            if UIImage(data: data) != nil {
+                count += 1
+            }
+        }
+
+        guard validImageCount > 0 else {
+            bodyAnalysisState = .failed("The staged photo data could not be decoded. Choose the photo again and retry.")
+            return
+        }
+
         let detectedCount = await Task.detached(priority: .userInitiated) {
             Self.detectedHumanBodyCount(in: imageData)
         }.value
 
         if detectedCount == 0 {
-            bodyAnalysisState = .failed("No clear human body was detected. Try a brighter, full-body photo with less obstruction.")
+            applySuggestedBodyFatBreakdown()
+            let photoWord = validImageCount == 1 ? "photo was" : "photos were"
+            bodyAnalysisState = .analyzed("The (photoWord) loaded, but pose detection was inconclusive. Review the editable visual estimates below; use a brighter, less obstructed full-body photo for stronger framing feedback.")
         } else {
             applySuggestedBodyFatBreakdown()
             let photoWord = detectedCount == 1 ? "photo" : "photos"

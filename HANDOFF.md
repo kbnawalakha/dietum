@@ -17,6 +17,7 @@ codex/repo-foundation
 - Added `BodyFatEstimateBreakdown` for chest, arms, legs, back, and visceral estimates.
 - Persisted the optional breakdown through the SwiftData progress-photo model.
 - Added editable regional estimate fields and automatic general-range suggestions after body analysis.
+- Changed valid-image analysis fallback so Vision pose-detection misses no longer block estimates or make the Analyze button appear broken.
 - Grouped saved progress-photo rows by capture date.
 
 ## Files Changed
@@ -38,6 +39,7 @@ codex/repo-foundation
 ## Work Remaining
 
 - Body-fat regional values are estimates and should be replaced or edited with measured data when available.
+- Vision pose detection remains best-effort; valid images with inconclusive framing use an editable general-range fallback.
 - Actual Screen Time totals are not yet available because the project does not have a Device Activity report extension.
 
 ## Known Problems
