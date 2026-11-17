@@ -53,3 +53,13 @@ swiftc -parse-as-library -module-cache-path /private/tmp/counter-swift-cache Cou
 ```
 
 Tests cover live level classification, bounded evidence, minimum holds, complete bar cycles, seeks, static movement despite audio, generated in-memory frames, cut rejection, output attachment/removal, and no-frame behavior. Real iPhone frame delivery, live audio-tap support, HLS/protected-stream behavior, CPU usage, and perceived alignment remain device checks.
+
+## Signed device build
+
+This checkout uses the development team already configured for Dietum and the distinct bundle identifier `com.kbnawalakha.Counter`. Xcode can build it with automatic provisioning. Select your connected iPhone and press Command-R to install and launch.
+
+```sh
+xcodebuild build -project Counter.xcodeproj -scheme Counter -destination 'generic/platform=iOS' -allowProvisioningUpdates
+```
+
+For a different Apple account, select your own team in Signing & Capabilities and use an available bundle identifier.

@@ -154,3 +154,9 @@ Milestone 0 — Repository and Architecture Foundation
 - Live five-level bar observes movement, holds levels at least 11 playback seconds, and completes cycles before changes. Seeks reset observation; pause freezes it. The entire-future-video plan and size/duration caps are removed.
 - This supersedes prior full-video/download-based Counter behavior. System-managed streaming buffers remain; native live audio/protected-stream support and iPhone visual/CPU checks remain unverified.
 - Final streaming verification: iPhone build, link/signal/live-meter checks, in-memory frame/output lifecycle tests, source persistence checks, and whitespace checks passed.
+
+### Counter device-build signing fix (2026-11-17)
+
+- Reproduced the user's default device-build failure: Counter required a development team.
+- Configured Debug/Release with the existing Dietum development team and Counter's own `com.kbnawalakha.Counter` bundle identifier; automatic provisioning enabled.
+- Signed generic iPhone build succeeded. Physical installation/playback still needs Xcode Run on the user's phone.

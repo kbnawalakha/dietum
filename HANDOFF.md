@@ -137,3 +137,13 @@ Baseline link/rhythm/whole-video checks and unsigned iPhone build passed. Initia
 Remaining: real iPhone/HLS frame delivery, optional audio-tap support, protected/no-frame stream behavior, thermal/CPU behavior, and perceived bar alignment. Next step: run Counter on iPhone, open a native stream, tap Start live rhythm, then test pause, seek, close/reload, and manual fallback. No GitHub push.
 
 Final streaming-only verification: unsigned generic iPhone build succeeded; 13 link checks, 18 signal/tempo checks, live hold/phase/memory/seek tests, in-memory frame/output lifecycle checks, and `git diff --check` passed. Runtime-source inspection found no URLSession, download task, AVAssetReader/Writer, or media-file creation path; the sole filesystem operation removes the old analysis directory. Changes saved locally only, excluding unrelated Dietum edits.
+
+### Counter build-failure follow-up (2026-11-17)
+
+Assigned request: resolve Counter failing to build when opening in Xcode. Baseline signed build failed with `Signing for "Counter" requires a development team`; link/live rhythm tests passed. Changed `Counter/Counter.xcodeproj/project.pbxproj` to use the existing Dietum development team in Debug and Release and the separate `com.kbnawalakha.Counter` identifier. Xcode also normalized project formatting while open; preserved that formatting and removed a transient duplicate team setting. Updated `PROJECT_STATUS.md`, this handoff, and Counter setup documentation.
+
+Verification: `xcodebuild build -project Counter/Counter.xcodeproj -scheme Counter -destination 'generic/platform=iOS' -derivedDataPath /private/tmp/counter-user-build -allowProvisioningUpdates` succeeded with signing. Project plist lint and whitespace checks passed. A sandboxed `codesign --verify --deep --strict` could not use the certificate trust store and returned CSSMERR_TP_NOT_TRUSTED; retried with certificate-store access.
+
+Remaining: select the connected iPhone in Xcode and press Command-R to install/launch; device runtime behavior remains unverified. No app logic changed. No GitHub push; unrelated Dietum and Xcode user-state files excluded.
+
+Final signing verification: the normalized project passed a second signed iPhone build, and `codesign --verify --deep --strict` passed with certificate-store access. Only Counter project/setup documentation and coordination docs are committed.
