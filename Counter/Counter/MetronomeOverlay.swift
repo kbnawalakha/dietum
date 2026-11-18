@@ -219,10 +219,11 @@ struct MetronomeOverlay: View {
                 RhythmBar(position: model.running ? 1 - abs(2 * phase - 1) : 0)
             }
             if model.program.active {
-                Text(model.stagePaused ? "Paused" : "\(model.program.level.rawValue) · \(clock(model.program.remaining))")
+                Text(model.stagePaused ? "Paused" : model.program.level.rawValue)
                     .font(.caption.monospacedDigit())
-                if model.program.phase == .stage || model.program.overrideSegment {
-                    Text("Beat duration: \(model.program.segmentDuration)s").font(.caption2.monospacedDigit())
+                if model.program.phase == .stage {
+                    Text("Time remaining: \(clock(model.program.remaining))")
+                        .font(.caption.monospacedDigit()).accessibilityLabel("Stage time remaining \(clock(model.program.remaining))")
                 }
                 if model.program.elapsed - model.program.lastBleepAt < 8 {
                     Text(model.program.lastBleep).font(.caption2).lineLimit(2).frame(maxWidth: 170)
@@ -257,10 +258,10 @@ struct MetronomeOverlay: View {
                     Text("Normal plan: 15–20 min · 5–6 varying stages\n15–30s breaks · Normal Slow ≤20% per stage\nNormal stages start below Ultra and finish Ultra; Bleepy is exempt.")
                         .font(.callout).foregroundStyle(.secondary)
                     if model.program.active {
-                        Text("Stage \(model.program.stage)/\(model.program.stageCount) · Program \(clock(model.program.sessionRemaining)) left")
-                        Text(model.program.phase == .stage || model.program.overrideSegment ? "Current beat duration: \(model.program.segmentDuration)s" : "Break duration: \(model.program.breakDuration)s")
-                        Text("Slow \(Int(model.program.stageSlowTime))s / \(Int(model.program.stageActiveTime))s · Ultrafast \(Int(model.program.ultraFraction * 100))%")
-                            .font(.caption).foregroundStyle(.secondary)
+                        Text("Stage \(model.program.stage)/\(model.program.stageCount)")
+                        if model.program.phase == .stage {
+                            Text("Time remaining: \(clock(model.program.remaining))").monospacedDigit()
+                        }
                     }
                     if let message = model.playbackMessage { Text(message).font(.callout).foregroundStyle(.orange) }
                     HStack {

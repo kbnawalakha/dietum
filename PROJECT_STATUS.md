@@ -227,3 +227,8 @@ Milestone 0 — Repository and Architecture Foundation
 - Added a three-second fortune wheel with 11 numbered sectors, a fixed pointer, selected-outcome reveal, and matching settings legend. The outcome applies only after settling; its unrestricted override behavior remains.
 - Wheel/program freeze with playback or manual pause; stop/close/completion cancels pending spins. Reduced Motion shows a static wheel and delayed reveal.
 - Interval, phase coverage, reveal ordering, pointer alignment and cancellation tests passed; signed iPhone build passed before the final settings-wheel placement change. Rendered spin/result preview inspected successfully.
+
+### Counter stage-only Time remaining (2026-11-17)
+
+- Removed beat duration/change timing, whole-program remaining time and break countdowns from the manual meter/settings.
+- Current stage countdown is labeled Time remaining; speed labels and stage numbers remain. Scheduling/Bleepy behavior is unchanged.

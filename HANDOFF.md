@@ -267,3 +267,13 @@ Baseline prior Bleepy/link tests passed. Expanded suite passed normal and overri
 Remaining: phone spin smoothness, overlay sizing, VoiceOver/reduced-motion behavior, and perceived timing/audio. Next step: Command-R, start manual rhythm while video plays, and wait for the next 1–5 minute Bleepy trigger. No media/link persistence and no GitHub push; unrelated Dietum changes excluded.
 
 Final wheel verification: signed generic iPhone build passed with the compact player/settings layout. All stage/override/wheel and existing link/live/embed-input checks passed, as did scoped whitespace checks. The final compact preview was rendered and visually inspected. No remote push.
+
+### Counter Time remaining display (2026-11-17)
+
+Assigned request: hide time for beat changes and show only stage completion time as Time remaining. Changed `Counter/Counter/MetronomeOverlay.swift`, `Counter/README.md`, `PROJECT_STATUS.md`, and this handoff. Removed full beat durations, break countdowns, whole-program remaining time, and other second counters from the manual meter/settings; retained the stage-only countdown with the requested label. Breaks show their state without a running countdown. No scheduler, wheel, playback, storage, or sound behavior changed.
+
+Baseline stage/override/wheel tests passed. Scoped whitespace/source checks passed. Signed iPhone build verification follows. No new implementation-mirroring tests were added for this display-only change.
+
+Remaining: phone visual confirmation. Next step: Command-R and inspect the manual meter/settings: Time remaining refers only to the current stage. No GitHub push; unrelated staged Dietum work is excluded.
+
+Final countdown verification: signed generic iPhone build succeeded. The only manual running countdown in source is stage Time remaining; scoped whitespace checks passed. No failed commands in this follow-up.
