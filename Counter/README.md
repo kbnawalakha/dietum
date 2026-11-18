@@ -7,7 +7,7 @@ Standalone iPhone-only video-link player, built with SwiftUI, AVKit and WebKit. 
 1. Open `Counter.xcodeproj` in Xcode.
 2. Select the Counter target, then Signing & Capabilities. Choose your development team and a unique bundle identifier if needed.
 3. Connect your iPhone, enable Developer Mode if required, select it as the destination, and run.
-4. Paste a video or website link and tap Open video.
+4. Choose Link for a video/page URL, or Embedded video for an embed URL or iframe/video HTML code. Paste it and tap Open video.
 
 Direct MP4, M4V, MOV and HLS (.m3u8) links use the native player. Website links open in the embedded browser, where you may need to tap the site's play button. Use Try native player for direct streams without a filename extension, or Try website player when native playback fails. Native player controls support fullscreen playback.
 
@@ -111,3 +111,11 @@ swiftc -parse-as-library -module-cache-path /private/tmp/counter-swift-cache Cou
 ```
 
 The suite exercises 200 seeds, both program styles, artificial and scheduled Bleepy edits, complete 15–20 minute sessions, 5–6 stages, progressive Ultra endings, non-Ultra starts, minimum segment lengths, caps, and stale/paused playback evidence. Real WebKit integration tests confirm muted-but-playing videos remain playing and paused videos report stopped, without media files.
+
+## Embed-code input
+
+Select **Embedded video** above the input field, then paste either an embed URL (such as a provider's `/embed/...` link) or its iframe/HTML video embed code. Supported code forms include iframe/video `src` and a video element's nested source `src`. Pasting HTML with the Paste control selects Embedded video automatically; code entered in the Link tab is also recognized.
+
+Counter extracts the first player source URL, decodes common HTML entities, validates HTTP/HTTPS, and opens the URL in the embedded player. It never renders the pasted markup or its scripts/event handlers. Protocol-relative source URLs use HTTPS. Inline `srcdoc`-only content and non-web URL schemes are rejected. Embedded mode uses WebKit even for a direct video URL; Try native player remains available.
+
+Input and extracted URLs remain in memory and clear when the player closes. Video tracking/manual playback gating use the existing embedded support and remain subject to the provider's playback/frame-access restrictions. Real provider embed URLs still need iPhone checks.

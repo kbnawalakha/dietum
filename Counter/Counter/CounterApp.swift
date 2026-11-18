@@ -11,6 +11,7 @@ struct CounterApp: App {
 @MainActor
 final class PlaybackModel: ObservableObject {
     @Published var input = ""
+    @Published var inputMode: VideoInputMode = .link
     @Published var url: URL?
     @Published var player: AVPlayer?
     @Published var error: String?
@@ -27,7 +28,7 @@ final class PlaybackModel: ObservableObject {
             let resolved = try resolver.resolve(input)
             stop()
             url = resolved
-            webMode = !forceNative && (forceWebsite || !resolver.isDirectVideo(resolved))
+            webMode = !forceNative && (forceWebsite || inputMode == .embedded || input.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("<") || !resolver.isDirectVideo(resolved))
             error = nil
             isLoading = true
             reloadID = UUID()
@@ -85,18 +86,25 @@ struct CounterView: View {
                             .foregroundStyle(.secondary)
                     }
                     VStack(spacing: 14) {
+                        Picker("Video input", selection: $model.inputMode) {
+                            ForEach(VideoInputMode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                        }.pickerStyle(.segmented)
                         HStack {
                             Image(systemName: "link").foregroundStyle(.mint)
-                            TextField("Paste a video or website link", text: $model.input)
-                                .keyboardType(.URL)
+                            TextField(model.inputMode == .embedded ? "Paste embed URL or embed code" : "Paste a video or website link", text: $model.input, axis: .vertical)
+                                .lineLimit(1...5)
+                                .keyboardType(model.inputMode == .embedded ? .default : .URL)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
                                 .submitLabel(.go)
                                 .focused($editingLink)
                                 .onSubmit { play() }
-                                .accessibilityLabel("Video or website URL")
+                                .accessibilityLabel(model.inputMode == .embedded ? "Embed URL or embed HTML" : "Video or website URL")
                             PasteButton(payloadType: String.self) { values in
-                                if let value = values.first { model.input = value }
+                                if let value = values.first {
+                                    model.input = value
+                                    if value.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("<") { model.inputMode = .embedded }
+                                }
                             }
                             .labelStyle(.iconOnly)
                             .accessibilityLabel("Paste video link")

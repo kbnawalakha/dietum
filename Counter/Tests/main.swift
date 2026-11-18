@@ -149,3 +149,22 @@ assert(embeddedMeter.ready)
 assert(embeddedMeter.samples.count <= 64)
 assert(embeddedMeter.measuredBPM != nil && abs(embeddedMeter.measuredBPM! - 144) < 0.001)
 print("Embedded bridge checks passed: validation, duplicate/iframe filtering, pause, player switch, seek, blocked access, bounded motion-derived cadence")
+
+assert(resolved(#"<iframe src="https://example.com/embed/123?autoplay=1&amp;mode=inline" allow="autoplay"></iframe>"#).absoluteString == "https://example.com/embed/123?autoplay=1&mode=inline")
+assert(resolved("<IFRAME width='320' SRC='//example.com/embed/abc'></IFRAME>").absoluteString == "https://example.com/embed/abc")
+assert(resolved("<iframe src=https://example.com/embed/abc></iframe>").host == "example.com")
+assert(resolved("<div><iframe title='A > B' src='https:&#x2f;&#X2F;example.com/embed?a=1&#38;b=2'></iframe></div>").absoluteString == "https://example.com/embed?a=1&b=2")
+assert(resolved("<video controls src='https://example.com/movie.mp4'></video>").pathExtension == "mp4")
+assert(resolved("<video controls><source src='https://example.com/movie.mp4' type='video/mp4'></video>").pathExtension == "mp4")
+assert(resolved("<iframe src='https://example.com/embed' onload='alert(1)'></iframe><script>alert(2)</script>").absoluteString == "https://example.com/embed")
+assert(resolved("//example.com/embed").absoluteString == "https://example.com/embed")
+for invalid in ["<iframe srcdoc='<script>alert(1)</script>'></iframe>", "<iframe src='javascript:alert(1)'></iframe>",
+                "<iframe src='data:text/html;base64,abcd'></iframe>", "<iframe src='file:///tmp/a'></iframe>",
+                "<iframe src='https://user:password@example.com'></iframe>", "<iframe src=''></iframe>",
+                "<iframe data-src='https://example.com'></iframe>", "<iframe src=\"https://example.com>",
+                "<div>No embedded video</div>", "<iframe src='https://example.com'>" + String(repeating: "x", count: 65536)] {
+    do { _ = try resolver.resolve(invalid); fatalError("Accepted invalid embedded input") }
+    catch is LinkError { }
+    catch { fatalError("Unexpected embed error") }
+}
+print("Embed input checks passed: iframe/video/source markup, quoted/unquoted src, entities, protocol-relative links, ignored code, malformed/unsafe rejection")

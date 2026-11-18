@@ -230,3 +230,11 @@ Baseline previous stage, live-meter and embedded tests passed. New tests initial
 Remaining: actual iPhone UI, soft-click volume, Bleepy mixing, and external-site playback-state reliability. Custom players without observable HTML video state stay paused with a visible notice. Manual/video pauses extend wall-clock time but not the running-time budget. Closing/reloading/backgrounding ends the program. Next step: Command-R, enable Manual rhythm, choose Stages or Fixed tempo, Start, then pause/resume the video and inspect beat duration/closing Ultra. No GitHub push; unrelated Dietum files excluded.
 
 Final revision verification: signed generic iPhone build passed after all changes. The 200-seed bounded-program/playback-gate suite, existing live-meter/bridge regressions, embedded script checks, actual WebKit muted-play/pause integration, and scoped whitespace checks passed. No interim audio-loudness/capture code remains. Saved locally only; device UI/volume checks remain.
+
+### Counter embed URLs and HTML as input (2026-11-17)
+
+Assigned request: allow embedded videos as input. Changed `Counter/Counter/LinkResolver.swift`, `Counter/Counter/CounterApp.swift`, `Counter/Tests/main.swift`, `Counter/README.md`, `PROJECT_STATUS.md`, and this handoff. Added Link/Embedded video selection, multiline embed input, automatic HTML paste recognition, and WebKit routing for embedded input. Resolver accepts iframe/video/source/embed src attributes, decodes common/numeric entities and protocol-relative links, and validates HTTP/HTTPS. Supplied markup/scripts/handlers are never executed; only the extracted source URL is opened. Input/URLs remain memory-only and clear on close.
+
+Baseline existing link/live/bridge checks passed before edits. Expanded parser tests passed for quoted/unquoted/mixed-case attributes, wrappers, HTML video sources, numeric/query entities, ignored scripts, protocol-relative URLs, and malformed/unsafe/srcdoc-only rejection. Signed generic iPhone build succeeded; scoped whitespace checks passed. No failed commands in this follow-up.
+
+Remaining: verify actual provider embed URLs/code on iPhone; site embedding, login, DRM, and frame-access limits still apply. Next step: Command-R, select Embedded video, paste an embed URL or iframe/video code, and tap Open video. No GitHub push; unrelated Dietum changes remain excluded.

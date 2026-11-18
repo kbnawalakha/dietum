@@ -201,3 +201,10 @@ Milestone 0 — Repository and Architecture Foundation
 - Applied clarification: manual rhythm pauses when **no video is playing**; silent/muted playback and disabling clicks do not pause it. Native state and embedded playback-only metadata feed a stale-safe gate.
 - Reused the existing click toggle, now soft and on by default. Replaced Change in with current beat-segment duration.
 - 200-seed program/gate tests and real WebKit muted-play/pause checks pass. Signed iPhone build passes; actual phone UI/audio checks remain.
+
+### Counter embedded-video input (2026-11-17)
+
+- Added Link / Embedded video input selection with a multiline embed field.
+- Accepts embed URLs and iframe/video/source HTML; extracts and validates only the player src URL, decodes entities/protocol-relative sources, and routes embedded mode through WebKit.
+- Pasted markup/scripts are not rendered; malformed/source-less and non-HTTP(S) inputs are rejected. Existing no-storage/no-history behavior remains.
+- Embed parser regressions and signed iPhone build passed; actual provider/device playback remains a manual check.
