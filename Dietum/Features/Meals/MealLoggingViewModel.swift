@@ -99,7 +99,9 @@ final class MealLoggingViewModel: ObservableObject {
     var headline: String {
         switch analysisState {
         case .idle:
-            return "Describe the meal, then review the Vision and USDA nutrition estimate."
+            return canAnalyze
+                ? "Description ready. Tap Analyze meal to calculate the nutrition estimate."
+                : "Describe the meal, then tap Analyze meal to calculate the nutrition estimate."
         case .analyzing:
             return "Identifying foods and looking up nutrition data."
         case .ready:
@@ -196,7 +198,7 @@ final class MealLoggingViewModel: ObservableObject {
     var reviewPillText: String {
         switch analysisState {
         case .idle:
-            return "Awaiting analysis"
+            return canAnalyze ? "Ready to analyze" : "Describe the food"
         case .analyzing:
             return "Analyzing"
         case .ready:

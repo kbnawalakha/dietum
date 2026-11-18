@@ -28,15 +28,6 @@ struct MealLoggingView: View {
                         HStack(spacing: AppSpacing.item) {
                             AppStatusPill(text: viewModel.reviewPillText, systemImage: "fork.knife")
                             Spacer(minLength: 0)
-                            Button {
-                                Task {
-                                    await viewModel.analyzeMeal()
-                                }
-                            } label: {
-                                Label(viewModel.hasSelectedPhoto ? "Done & analyze" : "Analyze meal", systemImage: "sparkles")
-                            }
-                            .buttonStyle(.appToolbar)
-                            .disabled(viewModel.analysisState == .analyzing)
                         }
 
                         MealPhotoInput(
@@ -68,6 +59,23 @@ struct MealLoggingView: View {
                         .textFieldStyle(.appTextField)
                         .lineLimit(2...4)
                         .accessibilityLabel("Meal ingredients or foods")
+                        .submitLabel(.done)
+                        .onSubmit {
+                            Task {
+                                await viewModel.analyzeMeal()
+                            }
+                        }
+
+                        Button {
+                            Task {
+                                await viewModel.analyzeMeal()
+                            }
+                        } label: {
+                            Label(viewModel.hasSelectedPhoto ? "Done & analyze" : "Analyze meal", systemImage: "sparkles")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.appProminent)
+                        .disabled(viewModel.analysisState == .analyzing)
 
                         if viewModel.analysisState == .analyzing {
                             HStack(spacing: AppSpacing.item) {
