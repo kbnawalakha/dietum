@@ -63,6 +63,123 @@ struct MealIngredientListParser: Sendable {
     }
 }
 
+struct NutritionLabelReading: Sendable, Hashable {
+    let name: String
+    let servingSizeGrams: Double
+    let nutritionPer100Grams: NutritionAmounts
+}
+
+struct NutritionLabelReader: Sendable {
+    func read(imageData: Data) async throws -> NutritionLabelReading? {
+        guard let source = CGImageSourceCreateWithData(imageData as CFData, nil),
+              let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
+            throw FoodDataCentralMealAnalysisError.invalidImage
+        }
+
+        let lines = try await recognizeLines(in: image)
+        return Self.parse(lines: lines)
+    }
+
+    private func recognizeLines(in image: CGImage) async throws -> [String] {
+        try await withCheckedThrowingContinuation { continuation in
+            let request = VNRecognizeTextRequest { request, error in
+                if error != nil {
+                    continuation.resume(throwing: FoodDataCentralMealAnalysisError.visionFailed)
+                    return
+                }
+
+                let lines = (request.results as? [VNRecognizedTextObservation] ?? [])
+                    .compactMap { $0.topCandidates(1).first?.string }
+                continuation.resume(returning: lines)
+            }
+            request.recognitionLevel = .accurate
+            request.usesLanguageCorrection = true
+
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    try VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
+                } catch {
+                    continuation.resume(throwing: FoodDataCentralMealAnalysisError.visionFailed)
+                }
+            }
+        }
+    }
+
+    private static func parse(lines: [String]) -> NutritionLabelReading? {
+        let normalizedLines = lines.map { $0.replacingOccurrences(of: ",", with: "") }
+        guard let servingLine = normalizedLines.first(where: { $0.localizedCaseInsensitiveContains("serving size") }),
+              let servingSizeGrams = grams(in: servingLine),
+              let calories = value(in: normalizedLines, containing: ["calories"]) else {
+            return nil
+        }
+
+        let perServing = NutritionAmounts(
+            calories: Int(calories.rounded()),
+            proteinGrams: value(in: normalizedLines, containing: ["protein"]) ?? 0,
+            carbohydrateGrams: value(in: normalizedLines, containing: ["total carbohydrate", "total carb"]) ?? 0,
+            fatGrams: value(in: normalizedLines, containing: ["total fat"]) ?? 0,
+            fiberGrams: value(in: normalizedLines, containing: ["dietary fiber", "fiber"]) ?? 0,
+            micronutrients: NutritionMicronutrients(
+                sugarGrams: value(in: normalizedLines, containing: ["total sugars", "sugars"]) ?? 0,
+                saturatedFatGrams: value(in: normalizedLines, containing: ["saturated fat"]) ?? 0,
+                cholesterolMilligrams: value(in: normalizedLines, containing: ["cholesterol"]) ?? 0,
+                sodiumMilligrams: value(in: normalizedLines, containing: ["sodium"]) ?? 0,
+                calciumMilligrams: value(in: normalizedLines, containing: ["calcium"]) ?? 0,
+                ironMilligrams: value(in: normalizedLines, containing: ["iron"]) ?? 0,
+                vitaminAMicrograms: value(in: normalizedLines, containing: ["vitamin a"]) ?? 0,
+                vitaminCMilligrams: value(in: normalizedLines, containing: ["vitamin c"]) ?? 0,
+                vitaminDMicrograms: value(in: normalizedLines, containing: ["vitamin d"]) ?? 0,
+                vitaminEMilligrams: value(in: normalizedLines, containing: ["vitamin e"]) ?? 0,
+                vitaminKMicrograms: value(in: normalizedLines, containing: ["vitamin k"]) ?? 0,
+                thiaminMilligrams: value(in: normalizedLines, containing: ["thiamin", "thiamine"]) ?? 0,
+                riboflavinMilligrams: value(in: normalizedLines, containing: ["riboflavin"]) ?? 0,
+                niacinMilligrams: value(in: normalizedLines, containing: ["niacin"]) ?? 0,
+                vitaminB6Milligrams: value(in: normalizedLines, containing: ["vitamin b6"]) ?? 0,
+                folateMicrograms: value(in: normalizedLines, containing: ["folate"]) ?? 0,
+                vitaminB12Micrograms: value(in: normalizedLines, containing: ["vitamin b12"]) ?? 0
+            )
+        )
+
+        let name = normalizedLines.first(where: {
+            !$0.localizedCaseInsensitiveContains("nutrition facts") &&
+            !$0.localizedCaseInsensitiveContains("serving size") &&
+            !$0.localizedCaseInsensitiveContains("calories")
+        }) ?? "Packaged food label"
+
+        return NutritionLabelReading(
+            name: name,
+            servingSizeGrams: servingSizeGrams,
+            nutritionPer100Grams: perServing.scaled(by: 100 / servingSizeGrams)
+        )
+    }
+
+    private static func value(in lines: [String], containing labels: [String]) -> Double? {
+        guard let line = lines.first(where: { line in
+            labels.contains { line.localizedCaseInsensitiveContains($0) }
+        }) else {
+            return nil
+        }
+        return firstNumber(in: line)
+    }
+
+    private static func grams(in line: String) -> Double? {
+        firstNumber(in: line, pattern: "\\(([0-9]+(?:\\.[0-9]+)?)\\s*g\\)")
+            ?? firstNumber(in: line, pattern: "([0-9]+(?:\\.[0-9]+)?)\\s*g")
+    }
+
+    private static func firstNumber(in line: String, pattern: String = "([0-9]+(?:\\.[0-9]+)?)") -> Double? {
+        guard let expression = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) else {
+            return nil
+        }
+        let range = NSRange(line.startIndex..<line.endIndex, in: line)
+        guard let match = expression.firstMatch(in: line, range: range),
+              let numberRange = Range(match.range(at: 1), in: line) else {
+            return nil
+        }
+        return Double(line[numberRange])
+    }
+}
+
 struct FoodDataCentralMealAnalysisService: MealFoodDetectionService {
     private let configuration: FoodDataCentralConfiguration
     private let session: URLSession
@@ -76,14 +193,19 @@ struct FoodDataCentralMealAnalysisService: MealFoodDetectionService {
     }
 
     func analyzeMeal(description: String, photo: PhotoMetadata?) async throws -> MealFoodDetectionResult {
-        guard configuration.isConfigured else {
+        let describedQueries = Self.queryTerms(from: description)
+        var labelReading: NutritionLabelReading?
+        if let imageData = photo?.imageData {
+            labelReading = try? await NutritionLabelReader().read(imageData: imageData)
+        }
+
+        guard configuration.isConfigured || labelReading != nil else {
             throw FoodDataCentralMealAnalysisError.missingAPIKey
         }
 
-        let describedQueries = Self.queryTerms(from: description)
         let photoQueries: [VisionFoodLabel]
         var photoWarning: String?
-        if let imageData = photo?.imageData {
+        if let imageData = photo?.imageData, labelReading == nil {
             do {
                 photoQueries = try await VisionFoodClassifier().classify(imageData: imageData)
             } catch {
@@ -98,13 +220,22 @@ struct FoodDataCentralMealAnalysisService: MealFoodDetectionService {
         }
 
         let queries = Self.uniqueQueries(describedQueries + photoQueries.map(\.query))
-        guard !queries.isEmpty else {
+        guard !queries.isEmpty || labelReading != nil else {
             throw FoodDataCentralMealAnalysisError.noFoodDetected
         }
 
-        var detectedFoods: [DetectedMealFood] = []
+        var detectedFoods: [DetectedMealFood] = labelReading.map { reading in
+            [DetectedMealFood(
+                name: reading.name,
+                confidence: 0.98,
+                estimatedWeightGrams: reading.servingSizeGrams,
+                servingSizeGrams: reading.servingSizeGrams,
+                servings: 1,
+                nutritionPer100Grams: reading.nutritionPer100Grams
+            )]
+        } ?? []
 
-        for query in queries.prefix(6) {
+        for query in queries.prefix(6) where configuration.isConfigured {
             guard let food = try await lookup(query: query) else {
                 continue
             }
@@ -124,11 +255,11 @@ struct FoodDataCentralMealAnalysisService: MealFoodDetectionService {
             throw FoodDataCentralMealAnalysisError.noNutritionData
         }
 
-        let source = photoQueries.isEmpty ? "your description" : "Apple Vision and your description"
+        let source = labelReading != nil ? "the nutrition label" : (photoQueries.isEmpty ? "your ingredient list" : "Apple Vision and your ingredient list")
         let warning = photoWarning.map { " \($0)" } ?? ""
         return MealFoodDetectionResult(
             detectedFoods: detectedFoods,
-            notes: "Nutrition comes from USDA FoodData Central using \(source). Values are per 100 g; adjust each portion before saving. Photo classification estimates food identity, not weight or hidden oils.\(warning)"
+            notes: labelReading != nil ? "The nutrition label was read as one serving. Adjust servings below before saving; values are converted to the shared per-100 g model.\(warning)" : "Nutrition comes from USDA FoodData Central using \(source). Values are per 100 g; adjust each portion before saving. Photo classification estimates food identity, not weight or hidden oils.\(warning)"
         )
     }
 

@@ -347,6 +347,43 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
     }
 
     @MainActor
+    func testNutritionLabelServingCountRecalculatesEditableTotals() async {
+        let service = TestMealFoodDetectionService(
+            result: MealFoodDetectionResult(
+                detectedFoods: [
+                    DetectedMealFood(
+                        name: "Packaged cereal",
+                        confidence: 0.98,
+                        estimatedWeightGrams: 30,
+                        servingSizeGrams: 30,
+                        servings: 1,
+                        nutritionPer100Grams: NutritionAmounts(
+                            calories: 400,
+                            proteinGrams: 10,
+                            carbohydrateGrams: 80,
+                            fatGrams: 5
+                        )
+                    )
+                ],
+                notes: "Nutrition label read"
+            )
+        )
+        let viewModel = MealLoggingViewModel(detectionService: service)
+        viewModel.setSelectedPhoto(UIImage())
+        await viewModel.analyzeMeal()
+
+        guard let foodID = viewModel.detectedFoods.first?.id else {
+            return XCTFail("Expected a nutrition-label food")
+        }
+
+        viewModel.updateFoodServings(id: foodID, servings: 2.5)
+
+        XCTAssertEqual(viewModel.detectedFoods.first?.estimatedWeightGrams ?? 0, 75, accuracy: 0.001)
+        XCTAssertEqual(viewModel.nutritionTotals.calories, 300)
+        XCTAssertEqual(viewModel.nutritionTotals.carbohydrateGrams, 60, accuracy: 0.001)
+    }
+
+    @MainActor
     func testMealSavePersistsSelectedPhotoWithoutManualReviewToggle() async throws {
         let container = try DietumPersistenceStack.makeContainer(inMemory: true)
         let repository = SwiftDataMealEntryRepository(modelContext: container.mainContext)

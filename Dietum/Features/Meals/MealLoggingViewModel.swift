@@ -363,6 +363,24 @@ final class MealLoggingViewModel: ObservableObject {
         analysisState = .needsReview
     }
 
+    func updateFoodServings(id: DetectedMealFood.ID, servings: Double) {
+        updateDraft { draft in
+            guard let index = draft.detectedFoods.firstIndex(where: { $0.id == id }),
+                  let servingSizeGrams = draft.detectedFoods[index].servingSizeGrams else {
+                return
+            }
+
+            let clampedServings = min(max(servings, 0.25), 50)
+            draft.detectedFoods[index].servings = clampedServings
+            draft.detectedFoods[index].estimatedWeightGrams = servingSizeGrams * clampedServings
+            draft.detectedFoods[index].nutrition = draft.detectedFoods[index].nutritionPer100Grams.scaled(
+                toGrams: draft.detectedFoods[index].estimatedWeightGrams
+            )
+        }
+        reviewedItemIDs.remove(id)
+        analysisState = .needsReview
+    }
+
     func removeFood(id: DetectedMealFood.ID) {
         updateDraft { draft in
             draft.detectedFoods.removeAll { $0.id == id }

@@ -148,6 +148,7 @@ struct MealLoggingView: View {
                                         onUpdateName: { viewModel.updateFood(id: food.id, name: $0) },
                                         onUpdateConfidence: { viewModel.updateFoodConfidence(id: food.id, confidence: $0) },
                                         onUpdateWeight: { viewModel.updateFoodWeight(id: food.id, grams: $0) },
+                                        onUpdateServings: { viewModel.updateFoodServings(id: food.id, servings: $0) },
                                         onUpdateMacros: { viewModel.updateFoodMacros(id: food.id, protein: $0.protein, carbohydrates: $0.carbohydrates, fat: $0.fat) },
                                         onRemove: {
                                             viewModel.removeFood(id: food.id)
@@ -447,6 +448,7 @@ private struct MealDetectedFoodRow: View {
     let onUpdateName: (String) -> Void
     let onUpdateConfidence: (Double?) -> Void
     let onUpdateWeight: (Double) -> Void
+    let onUpdateServings: (Double) -> Void
     let onUpdateMacros: (MealMacroValues) -> Void
     let onRemove: () -> Void
 
@@ -512,11 +514,18 @@ private struct MealDetectedFoodRow: View {
                     .font(.caption)
                     .foregroundStyle(AppPalette.textSecondary)
 
-                Text("Adjust the portion in grams when the serving looks different. Calories update from the per-100 g estimate.")
+                Text(food.servingSizeGrams == nil ? "Adjust the portion in grams when the serving looks different." : "This nutrition label was read per serving. Enter the number of servings and the totals will update before saving.")
                     .font(.caption)
                     .foregroundStyle(AppPalette.textSecondary)
 
-                macroField(title: "Portion g", value: food.estimatedWeightGrams, onChange: onUpdateWeight)
+                if food.servingSizeGrams != nil {
+                    macroField(title: "Servings", value: food.servings, onChange: onUpdateServings)
+                    Text("Total portion: \(food.estimatedWeightGrams.formatted(.number.precision(.fractionLength(0)))) g")
+                        .font(.caption)
+                        .foregroundStyle(AppPalette.textSecondary)
+                } else {
+                    macroField(title: "Portion g", value: food.estimatedWeightGrams, onChange: onUpdateWeight)
+                }
 
                 HStack(spacing: AppSpacing.small) {
                     macroField(title: "Protein g", value: food.nutrition.proteinGrams) { newValue in

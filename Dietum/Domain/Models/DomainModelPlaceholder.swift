@@ -175,7 +175,11 @@ struct NutritionAmounts: Codable, Hashable, Sendable {
     }
 
     func scaled(toGrams grams: Double) -> NutritionAmounts {
-        let multiplier = max(0, grams) / 100
+        scaled(by: max(0, grams) / 100)
+    }
+
+    func scaled(by multiplier: Double) -> NutritionAmounts {
+        let multiplier = max(0, multiplier)
         return NutritionAmounts(
             calories: Int((Double(calories) * multiplier).rounded()),
             proteinGrams: proteinGrams * multiplier,
