@@ -233,3 +233,9 @@ Milestone 0 — Repository and Architecture Foundation
 
 - Removed beat duration/change timing, whole-program remaining time and break countdowns from the manual meter/settings.
 - Current stage countdown is labeled Time remaining; speed labels and stage numbers remain. Scheduling/Bleepy behavior is unchanged.
+
+### Counter randomized countdown reveal (2026-11-17)
+
+- Each manual stage independently has a 50% chance to hide Time remaining for its first random 30–60 running seconds; otherwise it is visible immediately.
+- Shared visibility state covers the meter and settings. Pause freezes reveal time; new stages reroll. Independent RNG leaves pacing/Bleepy randomness unchanged.
+- Visibility and existing scheduler tests plus signed iPhone build passed. Counter code/docs and coordination notes are committed separately from unrelated Dietum edits.

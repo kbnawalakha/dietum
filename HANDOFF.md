@@ -278,3 +278,11 @@ Baseline stage/override/wheel tests passed. Scoped whitespace/source checks pass
 Remaining: phone visual confirmation. Next step: Command-R and inspect the manual meter/settings: Time remaining refers only to the current stage. No GitHub push; unrelated staged Dietum work is excluded.
 
 Final countdown verification: signed generic iPhone build succeeded. The only manual running countdown in source is stage Time remaining; scoped whitespace checks passed. No failed commands in this follow-up.
+
+### Counter randomized Time remaining reveal (2026-11-17)
+
+Assigned request: sometimes hide the stage time for a random first 30–60 seconds. Changed `Counter/Counter/{ManualStageProgram.swift,MetronomeOverlay.swift}`, `Counter/Tests/Stages/StageChecks.swift`, `Counter/README.md`, `PROJECT_STATUS.md`, and this handoff. A 50% per-stage choice either shows Time remaining immediately or hides it for 30–60 running stage seconds. The meter/settings use one shared computed visibility property. Video/manual pauses freeze reveal time; each new stage rerolls. A separate seeded RNG avoids changing beat/stage/Bleepy pacing. An early-ending stage can remain hidden until completion.
+
+Baseline stage tests passed. Expanded checks passed mixed hidden/visible selection, inclusive delay range, before/at-deadline reveal, pause, next-stage reset, and stop, alongside all existing stage/Bleepy checks. Signed generic iPhone build and scoped whitespace checks passed. No failed commands.
+
+Remaining: phone visual confirmation. Next step: Command-R, start manual stages, and observe visibility across multiple stages. No persistence or GitHub push. Existing unrelated edits to shared status/handoff documents and staged Dietum-phone work were present before this task; Counter implementation/docs were committed separately. The concurrent Dietum document edits have since been committed independently, so these Counter coordination notes are saved in their own follow-up commit.
