@@ -59,6 +59,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Fixed meal saving so selected meal photos persist with their nutrition entries, remain visible on today's meal page, and are available under Settings -> History -> Meal Photos with date-grouped daily totals and photo drill-down
 - Added confirmation-required left-swipe deletion for saved progress-photo days and meal-photo history days
 - Replaced fixed meal-analysis servings with per-100 g nutrition values, realistic default portions, editable gram weights, and persisted gram quantities on saved meal items
+- Added between-photo progress comparison summaries showing overall and regional body-fat estimate changes in percentage points, with a visual-only fallback when comparable estimates are missing
 - Replaced mock meal detection with Apple Vision food classification and USDA FoodData Central nutrition lookups; missing configuration now fails clearly instead of inventing calories
 - Hardened meal tracking so description-based USDA lookup survives inconclusive photo classification, and repository save tests use an injected analyzer instead of requiring a live API key
 
@@ -109,6 +110,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Elevated generic simulator build and test-bundle compilation now succeed; existing Swift concurrency warnings remain
 - Meal-history `build-for-testing` verification succeeded; simulator test execution was not run in this pass
 - Real meal analysis now requires `USDA_FOOD_DATA_CENTRAL_API_KEY`; Vision identifies likely food labels, while USDA supplies per-100 g nutrition. A 2D photo cannot reliably infer exact portion weight, cooking oils, or hidden ingredients, so the editable estimate remains required
+- Body-photo comparisons now report changes from saved non-clinical estimates; they do not claim to measure visual or clinical body composition from pixels
 - If the USDA key is not configured, the meal screen will intentionally show a configuration error rather than create a fake estimate
 
 # Active Agents

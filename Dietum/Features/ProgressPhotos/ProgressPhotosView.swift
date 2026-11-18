@@ -223,6 +223,28 @@ struct ProgressPhotosView: View {
                                 ComparisonPhotoCard(title: "Earlier", photo: viewModel.comparisonBaseline)
                                 ComparisonPhotoCard(title: "Later", photo: viewModel.comparisonLatest)
                             }
+
+                            VStack(alignment: .leading, spacing: AppSpacing.small) {
+                                Text("What changed")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(AppPalette.textPrimary)
+
+                                ForEach(viewModel.comparisonChanges) { change in
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(change.title)
+                                            .font(.caption.weight(.semibold))
+                                            .foregroundStyle(AppPalette.textPrimary)
+                                        Text(change.detail)
+                                            .font(.caption)
+                                            .foregroundStyle(AppPalette.textSecondary)
+                                    }
+                                    .accessibilityElement(children: .combine)
+                                }
+
+                                Text("Numeric changes compare saved non-clinical estimates; use the photos for visual context.")
+                                    .font(.caption2)
+                                    .foregroundStyle(AppPalette.textSecondary)
+                            }
                         }
 
                         Text(viewModel.comparisonSelectionText)

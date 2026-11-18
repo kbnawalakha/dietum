@@ -24,6 +24,12 @@ struct ProgressPhotoDayGroup: Identifiable, Hashable, Sendable {
     var id: Date { day }
 }
 
+struct ProgressPhotoChange: Identifiable, Hashable, Sendable {
+    let id: String
+    let title: String
+    let detail: String
+}
+
 @MainActor
 final class ProgressPhotosViewModel: ObservableObject {
     enum BodyAnalysisState: Equatable {
@@ -340,6 +346,48 @@ final class ProgressPhotosViewModel: ObservableObject {
         return "Comparing \(first) with \(second)."
     }
 
+    var comparisonChanges: [ProgressPhotoChange] {
+        guard let comparisonBaseline, let comparisonLatest else {
+            return []
+        }
+
+        var changes: [ProgressPhotoChange] = []
+        if let change = makeChange(
+            id: "overall",
+            title: "Overall",
+            earlier: comparisonBaseline.bodyFatPercentage,
+            later: comparisonLatest.bodyFatPercentage
+        ) {
+            changes.append(change)
+        }
+
+        let earlierBreakdown = comparisonBaseline.bodyFatBreakdown
+        let laterBreakdown = comparisonLatest.bodyFatBreakdown
+        let regions: [(String, String, Double?, Double?)] = [
+            ("chest", "Chest", earlierBreakdown?.chestPercentage, laterBreakdown?.chestPercentage),
+            ("arms", "Arms", earlierBreakdown?.armsPercentage, laterBreakdown?.armsPercentage),
+            ("legs", "Legs", earlierBreakdown?.legsPercentage, laterBreakdown?.legsPercentage),
+            ("back", "Back", earlierBreakdown?.backPercentage, laterBreakdown?.backPercentage),
+            ("visceral", "Visceral", earlierBreakdown?.visceralPercentage, laterBreakdown?.visceralPercentage)
+        ]
+
+        for (id, title, earlier, later) in regions {
+            if let change = makeChange(id: id, title: title, earlier: earlier, later: later) {
+                changes.append(change)
+            }
+        }
+
+        if changes.isEmpty {
+            return [ProgressPhotoChange(
+                id: "unavailable",
+                title: "Analysis unavailable",
+                detail: "The two photos can still be compared visually, but both need the same saved estimate before numeric changes can be calculated."
+            )]
+        }
+
+        return changes
+    }
+
     var saveButtonTitle: String {
         switch saveState {
         case .saving:
@@ -501,6 +549,36 @@ final class ProgressPhotosViewModel: ObservableObject {
 
     private func angleOrder(_ angle: ProgressPhotoAngle) -> Int {
         ProgressPhotoAngle.allCases.firstIndex(of: angle) ?? 0
+    }
+
+    private func makeChange(
+        id: String,
+        title: String,
+        earlier: Double?,
+        later: Double?
+    ) -> ProgressPhotoChange? {
+        guard let earlier, let later else {
+            return nil
+        }
+
+        let difference = later - earlier
+        let direction: String
+        if abs(difference) < 0.05 {
+            direction = "unchanged"
+        } else if difference < 0 {
+            direction = "down"
+        } else {
+            direction = "up"
+        }
+
+        let earlierText = earlier.formatted(.number.precision(.fractionLength(1)))
+        let laterText = later.formatted(.number.precision(.fractionLength(1)))
+        let differenceText = abs(difference).formatted(.number.precision(.fractionLength(1)))
+        let detail = direction == "unchanged"
+            ? "No meaningful change: \(earlierText)% to \(laterText)%"
+            : "\(direction.capitalized) by \(differenceText) percentage points: \(earlierText)% to \(laterText)%"
+
+        return ProgressPhotoChange(id: id, title: title, detail: detail)
     }
 
     private func parsedEstimate(_ value: String) -> Double? {

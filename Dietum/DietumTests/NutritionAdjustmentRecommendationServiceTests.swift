@@ -425,6 +425,48 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
     }
 
     @MainActor
+    func testProgressPhotoComparisonReportsOverallAndRegionalChanges() {
+        let viewModel = ProgressPhotosViewModel()
+        let earlier = Self.day(0)
+        let later = Self.day(14)
+        viewModel.recentPhotos = [
+            ProgressPhotoMetadata(
+                capturedAt: earlier,
+                angle: .front,
+                photo: PhotoMetadata(storageIdentifier: "comparison-earlier"),
+                bodyFatPercentage: 24,
+                bodyFatBreakdown: BodyFatEstimateBreakdown(
+                    chestPercentage: 24,
+                    armsPercentage: 23,
+                    legsPercentage: 26,
+                    backPercentage: 25,
+                    visceralPercentage: 21.6
+                )
+            ),
+            ProgressPhotoMetadata(
+                capturedAt: later,
+                angle: .front,
+                photo: PhotoMetadata(storageIdentifier: "comparison-later"),
+                bodyFatPercentage: 22,
+                bodyFatBreakdown: BodyFatEstimateBreakdown(
+                    chestPercentage: 22,
+                    armsPercentage: 22,
+                    legsPercentage: 25,
+                    backPercentage: 23,
+                    visceralPercentage: 19.8
+                )
+            )
+        ]
+
+        viewModel.setComparisonAngle(.front)
+
+        XCTAssertEqual(viewModel.comparisonChanges.first?.title, "Overall")
+        XCTAssertEqual(viewModel.comparisonChanges.first?.detail, "Down by 2.0 percentage points: 24.0% to 22.0%")
+        XCTAssertTrue(viewModel.comparisonChanges.contains { $0.title == "Chest" && $0.detail.contains("Down by 2.0") })
+        XCTAssertTrue(viewModel.comparisonChanges.contains { $0.title == "Arms" && $0.detail.contains("Down by 1.0") })
+    }
+
+    @MainActor
     func testProgressPhotoStagesAndAnalyzesBeforeSave() async {
         let viewModel = ProgressPhotosViewModel()
         let image = UIGraphicsImageRenderer(size: CGSize(width: 32, height: 32)).image { context in
