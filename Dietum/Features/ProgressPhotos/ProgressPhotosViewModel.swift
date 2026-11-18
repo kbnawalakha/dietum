@@ -686,8 +686,7 @@ final class ProgressPhotosViewModel: ObservableObject {
             return "\(angleCount) of 4 angles appear in your local history. Select an angle with two saved entries to compare dates and pose consistently."
         }
 
-        let method = comparisonVisualAnalysis?.methodDescription ?? "Image signals require readable local image data in both saved photos."
-        return "Start with the image-based observations below to see what looks different between the selected photos. Saved percentage estimates are secondary context. \(method)"
+        return "Photo composition comparison is available for the selected dates."
     }
 
     var comparisonCandidates: [ProgressPhotoMetadata] {
