@@ -8,6 +8,7 @@ enum FoodDataCentralMealAnalysisError: LocalizedError, Equatable {
     case visionFailed
     case noFoodDetected
     case noNutritionData
+    case invalidAPIKey
     case requestFailed
 
     var errorDescription: String? {
@@ -22,6 +23,8 @@ enum FoodDataCentralMealAnalysisError: LocalizedError, Equatable {
             return "No food was identified. Add a description such as chicken, rice, or broccoli and try again."
         case .noNutritionData:
             return "USDA FoodData Central did not return nutrition data for the identified food."
+        case .invalidAPIKey:
+            return "The USDA FoodData Central API key was rejected. Check USDA_FOOD_DATA_CENTRAL_API_KEY in the app build settings."
         case .requestFailed:
             return "USDA FoodData Central could not be reached. Check your connection and try again."
         }
@@ -124,8 +127,15 @@ struct FoodDataCentralMealAnalysisService: MealFoodDetectionService {
 
         do {
             let (data, response) = try await session.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200..<300).contains(httpResponse.statusCode) else {
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw FoodDataCentralMealAnalysisError.requestFailed
+            }
+
+            if httpResponse.statusCode == 401 || httpResponse.statusCode == 403 {
+                throw FoodDataCentralMealAnalysisError.invalidAPIKey
+            }
+
+            guard (200..<300).contains(httpResponse.statusCode) else {
                 throw FoodDataCentralMealAnalysisError.requestFailed
             }
 
@@ -160,9 +170,9 @@ private struct VisionFoodClassifier: Sendable {
 
                 let observations = (request.results as? [VNClassificationObservation] ?? [])
                     .filter { $0.confidence >= 0.05 }
-                    .prefix(8)
                     .map { VisionFoodLabel(query: Self.normalizedQuery($0.identifier), confidence: Double($0.confidence)) }
                     .filter { !$0.query.isEmpty }
+                    .prefix(8)
 
                 guard !observations.isEmpty else {
                     continuation.resume(throwing: FoodDataCentralMealAnalysisError.visionFailed)

@@ -23,6 +23,7 @@ codex/repo-foundation
 - Replaced fixed meal servings with per-100 g food nutrition, editable gram portions, and saved item quantities.
 - Replaced the mock meal detector with Apple Vision classification plus USDA FoodData Central search; analysis now returns a typed configuration/data error instead of fabricated calories when the API key or nutrition match is unavailable.
 - Hardened meal analysis to continue with a user-provided description when Vision cannot classify a photo, and changed the meal-save regression to inject a deterministic analyzer rather than depend on a live USDA key.
+- Hardened photo-only Vision classification by filtering generic labels before taking the top candidates and added a distinct error for rejected USDA API keys.
 - Added a "What changed" comparison section for progress photos that compares overall and regional saved body-fat estimates between the selected earlier and later photos.
 
 - Added `BodyFatEstimateBreakdown` for chest, arms, legs, back, and visceral estimates.
@@ -78,6 +79,7 @@ codex/repo-foundation
 - Meal and body-photo uploads now trigger analysis automatically; detected foods, macros, body-fat ranges, and regional values remain editable before saving.
 - Real meal analysis requires `USDA_FOOD_DATA_CENTRAL_API_KEY` in Xcode Build Settings. Vision provides likely food labels and USDA provides per-100 g nutrition; exact grams, oils, and hidden ingredients still require user review.
 - Without the USDA key, live analysis intentionally fails with a configuration message; no mock calories are generated.
+- Photo-only analysis requires both a valid USDA key and network access; rejected keys now show a specific configuration error instead of the generic request failure.
 - Progress-photo comparison is limited to saved estimate metadata; missing estimates show a visual-only comparison message rather than guessed numeric changes.
 - Progress-photo picker selection now retains its pose through PhotosUI dismissal and awaits staging plus analysis before clearing the selection.
 - Progress-photo history now shows capture dates as the primary records; use the trash action on a date to remove its full photo set and analysis.

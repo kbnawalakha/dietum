@@ -62,6 +62,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Added between-photo progress comparison summaries showing overall and regional body-fat estimate changes in percentage points, with a visual-only fallback when comparable estimates are missing
 - Replaced mock meal detection with Apple Vision food classification and USDA FoodData Central nutrition lookups; missing configuration now fails clearly instead of inventing calories
 - Hardened meal tracking so description-based USDA lookup survives inconclusive photo classification, and repository save tests use an injected analyzer instead of requiring a live API key
+- Hardened photo-only meal analysis by filtering generic Vision labels before limiting candidates and distinguishing rejected USDA keys from network failures
 
 # In Progress
 
@@ -112,6 +113,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Real meal analysis now requires `USDA_FOOD_DATA_CENTRAL_API_KEY`; Vision identifies likely food labels, while USDA supplies per-100 g nutrition. A 2D photo cannot reliably infer exact portion weight, cooking oils, or hidden ingredients, so the editable estimate remains required
 - Body-photo comparisons now report changes from saved non-clinical estimates; they do not claim to measure visual or clinical body composition from pixels
 - If the USDA key is not configured, the meal screen will intentionally show a configuration error rather than create a fake estimate
+- Photo analysis still requires a valid USDA key and network access; HTTP 401/403 responses now identify invalid key configuration directly
 
 # Active Agents
 
