@@ -36,7 +36,7 @@ struct MealLoggingView: View {
                                 Label(viewModel.hasSelectedPhoto ? "Done & analyze" : "Analyze meal", systemImage: "sparkles")
                             }
                             .buttonStyle(.appToolbar)
-                            .disabled(viewModel.analysisState == .analyzing || !viewModel.canAnalyze)
+                            .disabled(viewModel.analysisState == .analyzing)
                         }
 
                         MealPhotoInput(
