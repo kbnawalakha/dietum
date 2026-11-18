@@ -99,15 +99,11 @@ private enum ProgressPhotoComparisonAnalyzer {
         let handler = VNImageRequestHandler(cgImage: image, options: [:])
         let poseRequest = VNDetectHumanBodyPoseRequest()
 
-        do {
-            try handler.perform([poseRequest])
-        } catch {
-            return nil
-        }
-
-        guard let observation = poseRequest.results?.first,
-              let points = try? observation.recognizedPoints(.all) else {
-            return nil
+        try? handler.perform([poseRequest])
+        var points: [VNHumanBodyPoseObservation.JointName: VNRecognizedPoint] = [:]
+        if let observation = poseRequest.results?.first,
+           let recognizedPoints = try? observation.recognizedPoints(.all) {
+            points = recognizedPoints
         }
 
         func point(_ joint: VNHumanBodyPoseObservation.JointName) -> CGPoint? {
@@ -117,31 +113,32 @@ private enum ProgressPhotoComparisonAnalyzer {
             return recognized.location
         }
 
-        guard let leftShoulder = point(.leftShoulder),
-              let rightShoulder = point(.rightShoulder),
-              let leftHip = point(.leftHip),
-              let rightHip = point(.rightHip) else {
-            return nil
-        }
-
-        let visiblePoints = points.values
+        let silhouette = silhouetteMetrics(for: image)
+        let posePoints = points.values
             .filter { $0.confidence >= 0.2 }
             .map(\.location)
-        guard let minX = visiblePoints.map(\.x).min(),
-              let maxX = visiblePoints.map(\.x).max(),
-              let minY = visiblePoints.map(\.y).min(),
-              let maxY = visiblePoints.map(\.y).max(),
-              maxY > minY else {
+        let poseBounds = normalizedBounds(for: posePoints)
+        let bodyBounds = silhouette?.bodyBounds ?? poseBounds
+        guard let bodyBounds, bodyBounds.height > 0 else {
             return nil
         }
 
-        let bodyHeight = maxY - minY
-        let bodyWidthRatio = (maxX - minX) / bodyHeight
-        let shoulderWidthRatio = distance(leftShoulder, rightShoulder) / bodyHeight
-        let hipWidthRatio = distance(leftHip, rightHip) / bodyHeight
-        let silhouette = silhouetteMetrics(for: image)
+        let bodyHeight = bodyBounds.height
+        let poseBodyWidthRatio = bodyBounds.width / bodyHeight
+        let bodyWidthRatio = silhouette?.bodyWidthRatio ?? poseBodyWidthRatio
+        let shoulderWidthRatio: Double
+        if let leftShoulder = point(.leftShoulder), let rightShoulder = point(.rightShoulder) {
+            shoulderWidthRatio = distance(leftShoulder, rightShoulder) / bodyHeight
+        } else {
+            shoulderWidthRatio = bodyWidthRatio
+        }
+        let hipWidthRatio: Double
+        if let leftHip = point(.leftHip), let rightHip = point(.rightHip) {
+            hipWidthRatio = distance(leftHip, rightHip) / bodyHeight
+        } else {
+            hipWidthRatio = silhouette?.hipWidthRatio ?? bodyWidthRatio
+        }
 
-        let bodyBounds = CGRect(x: minX, y: minY, width: maxX - minX, height: bodyHeight)
         return ProgressPhotoBodyMetrics(
             bodyWidthRatio: bodyWidthRatio,
             shoulderWidthRatio: shoulderWidthRatio,
@@ -155,7 +152,19 @@ private enum ProgressPhotoComparisonAnalyzer {
         )
     }
 
-    private static func silhouetteMetrics(for image: CGImage) -> (waistWidthRatio: Double, hipWidthRatio: Double)? {
+    private static func normalizedBounds(for points: [CGPoint]) -> CGRect? {
+        guard let minX = points.map(\.x).min(),
+              let maxX = points.map(\.x).max(),
+              let minY = points.map(\.y).min(),
+              let maxY = points.map(\.y).max(),
+              maxX > minX,
+              maxY > minY else {
+            return nil
+        }
+        return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+    }
+
+    private static func silhouetteMetrics(for image: CGImage) -> (bodyWidthRatio: Double, waistWidthRatio: Double, hipWidthRatio: Double, bodyBounds: CGRect)? {
         let request = VNGeneratePersonSegmentationRequest()
         request.qualityLevel = .accurate
         request.outputPixelFormat = kCVPixelFormatType_OneComponent8
@@ -223,7 +232,25 @@ private enum ProgressPhotoComparisonAnalyzer {
             return nil
         }
 
-        return (waistWidthRatio, hipWidthRatio)
+        let widestRow = rows[firstRow...lastRow].max { lhs, rhs in
+            (lhs.maxX - lhs.minX) < (rhs.maxX - rhs.minX)
+        }
+        guard let widestRow, widestRow.maxX >= widestRow.minX else {
+            return nil
+        }
+
+        let bodyBounds = CGRect(
+            x: Double(widestRow.minX) / Double(width),
+            y: 1 - Double(lastRow + 1) / Double(height),
+            width: Double(widestRow.maxX - widestRow.minX + 1) / Double(width),
+            height: bodyHeight / Double(height)
+        )
+        return (
+            bodyWidthRatio: Double(widestRow.maxX - widestRow.minX + 1) / bodyHeight,
+            waistWidthRatio: waistWidthRatio,
+            hipWidthRatio: hipWidthRatio,
+            bodyBounds: bodyBounds
+        )
     }
 
     private static func regionDefinitionScore(
