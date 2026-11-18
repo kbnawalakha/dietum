@@ -304,3 +304,11 @@ Final reel/readout verification: signed generic iPhone build passed with the vie
 Assigned request: remove fixed tempo. Changed `Counter/Counter/{MetronomeOverlay.swift,ManualStageProgram.swift}`, `Counter/Tests/Stages/StageChecks.swift`, `Counter/README.md`, `PROJECT_STATUS.md`, and this handoff. Removed the program-style picker, custom base-tempo slider/state, scaling, style enum/parameter, and consistent-pattern branch. Only randomized manual stages remain; stage-duration mode, wheel, timing visibility, audio controls and playback gating remain.
 
 Baseline stage checks passed. Updated stage/override/reel/reveal/gate tests and signed generic iPhone build passed. Source search confirms no fixed-tempo implementation symbols remain; scoped whitespace checks passed. No failed commands. Remaining: phone visual confirmation. Next step: Command-R and open manual settings. No GitHub push; unrelated Dietum changes excluded.
+
+### Counter adjustable beat-click sound (2026-11-17)
+
+Assigned request: control soft beat-click sound. Changed `Counter/Counter/MetronomeOverlay.swift`, `Counter/README.md`, `PROJECT_STATUS.md`, and this handoff. Added a 0–100% Click volume slider beside the existing Beat clicks on/off control, default 65%, with proportionally quieter non-accented beats. Current click gain updates immediately; disabling clicks stops the active click. Video and Bleepy levels remain independent. Volume is memory-only and does not affect playback gating/program time.
+
+Baseline stage checks passed and scoped whitespace checks passed. Signed iPhone build verification follows. No implementation-mirroring tests were added for this small audio-setting UI change. Remaining: actual phone volume/feel check. Next step: Command-R, manual settings → Beat clicks → Click volume. No GitHub push; unrelated Dietum edits excluded.
+
+Final click-volume verification: signed generic iPhone build and scoped whitespace checks passed. No failed commands. Phone listening remains the final usability check.

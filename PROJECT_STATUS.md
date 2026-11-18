@@ -252,3 +252,8 @@ Milestone 0 — Repository and Architecture Foundation
 - Removed the Fixed tempo option, base-tempo slider, related state/scaling, and consistent scheduler branch.
 - Manual rhythm now uses only randomized stages with Normal/Random duration modes; Bleepy, hidden countdowns, playback gating, and sound controls remain.
 - Stage/override/wheel/countdown tests and signed iPhone build passed.
+
+### Counter beat-click volume control (2026-11-17)
+
+- Added independent 0–100% Click volume under the existing Beat clicks toggle, defaulting to 65%; non-accented beats scale proportionally.
+- Slider changes apply immediately; toggle-off stops the current click. Zero volume does not pause the visual program. Video/Bleepy volume is unchanged.

@@ -8,7 +8,8 @@ final class MetronomeModel: ObservableObject {
     @Published private(set) var running = false
     @Published private(set) var beat = 0
     @Published private(set) var lastBeat = Date.distantPast
-    @Published var soundEnabled = true
+    @Published var soundEnabled = true { didSet { if !soundEnabled { click?.stop() } } }
+    @Published var beatVolume = 0.65 { didSet { click?.volume = clickGain } }
     @Published private(set) var soundError: String?
     @Published var stageMode: StageDurationMode = .normal
     @Published var bleepySound = true
@@ -141,6 +142,10 @@ final class MetronomeModel: ObservableObject {
         }
     }
 
+    private var clickGain: Float {
+        Float(min(1, max(0, beatVolume))) * (beat == 1 ? 1 : Float(0.5 / 0.65))
+    }
+
     private func playClick() {
         do {
             if click == nil {
@@ -151,7 +156,7 @@ final class MetronomeModel: ObservableObject {
                 click?.prepareToPlay()
             }
             click?.currentTime = 0
-            click?.volume = beat == 1 ? 0.65 : 0.5
+            click?.volume = clickGain
             click?.play()
             soundError = nil
         } catch {
@@ -266,7 +271,18 @@ struct MetronomeOverlay: View {
                             Text("\(index + 1). \(effect.title)").font(.callout)
                         }
                     }
-                    Toggle("Beat sound", isOn: $model.soundEnabled)
+                    Toggle("Beat clicks", isOn: $model.soundEnabled)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Click volume")
+                            Spacer()
+                            Text("\(Int((model.beatVolume * 100).rounded()))%")
+                                .monospacedDigit().foregroundStyle(.secondary)
+                        }
+                        Slider(value: $model.beatVolume, in: 0...1, step: 0.01)
+                            .accessibilityLabel("Beat click volume")
+                            .accessibilityValue("\(Int((model.beatVolume * 100).rounded())) percent")
+                    }.disabled(!model.soundEnabled)
                     if let error = model.soundError { Text(error).font(.caption) }
                     Button("Done") { expanded = false }
                 }.padding(24)
