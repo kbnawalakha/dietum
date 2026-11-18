@@ -72,7 +72,7 @@ struct CounterView: View {
     @StateObject private var guide = RhythmGuideModel()
     @Environment(\.scenePhase) private var scenePhase
     @FocusState private var editingLink: Bool
-    @State private var manualWebsiteMode = false
+    @State private var manualMode = false
 
     var body: some View {
         NavigationStack {
@@ -124,9 +124,9 @@ struct CounterView: View {
                             Group {
                             if model.webMode {
                                 WebsitePlayer(url: url, loading: $model.isLoading, error: $model.error,
-                                              trackingEnabled: guide.live && guide.enabled && !manualWebsiteMode && scenePhase == .active,
+                                              trackingEnabled: guide.live && guide.enabled && !manualMode && scenePhase == .active,
                                               onVideo: { guide.receiveEmbedded($0) },
-                                              onNavigation: { if !manualWebsiteMode { guide.startEmbedded() } })
+                                              onNavigation: { if !manualMode { guide.startEmbedded() } })
                                     .id(model.reloadID)
                                     .frame(height: 430)
                                     .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -137,7 +137,7 @@ struct CounterView: View {
                             }
                             }
                             .overlay(alignment: .topTrailing) {
-                                if guide.live && guide.enabled && !manualWebsiteMode {
+                                if guide.live && guide.enabled && !manualMode {
                                     RhythmGuideOverlay(guide: guide)
                                 } else {
                                     MetronomeOverlay(model: metronome)
@@ -146,12 +146,12 @@ struct CounterView: View {
                             if model.webMode {
                                 Text("Embedded video tracking starts when playback begins, if the website allows frame access.")
                                     .font(.caption).foregroundStyle(.secondary)
-                                Toggle("Use manual rhythm instead", isOn: $manualWebsiteMode)
                             }
-                            if model.webMode && !manualWebsiteMode {
+                            Toggle("Manual rhythm", isOn: $manualMode)
+                            if model.webMode && !manualMode {
                                 RhythmGuideControls(guide: guide) { guide.startEmbedded() }
                             }
-                            if !model.webMode, let player = model.player {
+                            if !model.webMode && !manualMode, let player = model.player {
                                 RhythmGuideControls(guide: guide) {
                                     metronome.stop()
                                     guide.start(player: player)
@@ -199,14 +199,15 @@ struct CounterView: View {
             if phase != .active { metronome.stop(); guide.suspend() }
         }
         .onChange(of: model.reloadID) { _, _ in
-            guide.reset(); metronome.stop(); manualWebsiteMode = false
+            guide.reset(); metronome.stop(); manualMode = false
             if model.webMode { guide.startEmbedded() }
             else if let player = model.player { guide.start(player: player) }
         }
-        .onChange(of: manualWebsiteMode) { _, manual in
+        .onChange(of: manualMode) { _, manual in
             metronome.stop()
             if manual { guide.suspend() }
             else if model.webMode { guide.startEmbedded() }
+            else if let player = model.player { guide.start(player: player) }
         }
         .onChange(of: guide.enabled) { _, enabled in if enabled { metronome.stop() } }
         .onDisappear { metronome.stop(); guide.reset() }

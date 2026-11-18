@@ -185,3 +185,11 @@ Milestone 0 — Repository and Architecture Foundation
 - Isolated-world reply-controlled bridge passes only bounded numeric frame samples and playback state. No media files, saved links, stream extraction, or protection bypass.
 - Blocked frame access is explicit; manual mode remains opt-in. Pause, seek, navigation, player switching, backgrounding, and teardown reset/suspend tracking as appropriate.
 - Signed iPhone build, bridge/script checks, and actual macOS WebKit top-level/iframe live-video integration passed. External sites and iPhone embedded playback still need device verification.
+
+### Counter manual stage program (2026-11-17)
+
+- Added Normal (2–4 minute) / Random (0–4 minute) stages, 10–30 second changing speed segments, and 15–30 second breaks.
+- Applied the user's corrected hard Slow cap of 20% per stage, plus decreasing eligible Slow chance to a 20% floor. Ultrafast stays within 50% of active program time using prefix budgets.
+- Added randomized five-minute-block Bleepy scheduling, equal-probability time −30/+30, stage completion, and queued 15–30 second Ultra effects; beep and visible notices included.
+- Manual toggle now works for native and embedded playback. Settings expose stages/fixed tempo, duration mode, pause/resume/end, and click/Bleepy sound controls.
+- Signed iPhone build and seeded scheduler tests passed, including 50 one-hour cap simulations. Physical-device timing/audio checks remain; no saved videos/links/program history and no push.

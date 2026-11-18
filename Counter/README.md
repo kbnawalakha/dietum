@@ -27,7 +27,7 @@ Before distributing, test live direct MP4, live HLS, website playback, fullscree
 
 ## Rhythm overlay
 
-A manual bar metronome is available as an explicit alternative to live tracking; website mode offers a Use manual rhythm instead toggle. Tap Start; open Tempo settings for speed presets, 30–240 BPM adjustment, or audible clicks. Changing tempo restarts the count at beat one. Click sound defaults off. The metronome stops when the player closes or the app leaves the foreground. It runs independently of video pause/seek and does not detect or synchronize to the video's rhythm.
+Manual rhythm is available for both native and embedded players using the Manual rhythm toggle. Its settings offer Stages or Fixed tempo. Tap Start; open Tempo settings for speed presets, 30–240 BPM adjustment, or audible clicks. Changing tempo restarts the count at beat one. Click sound defaults off. The metronome stops when the player closes or the app leaves the foreground. It runs independently of video pause/seek and does not detect or synchronize to the video's rhythm.
 
 The overlay belongs to Counter's inline player; iOS/website-provided fullscreen playback and Picture in Picture do not carry this overlay. Physical-device checks for audio mixing, pulse timing, and controls over real websites remain required.
 
@@ -84,3 +84,26 @@ swiftc -parse-as-library -module-cache-path /private/tmp/counter-swift-cache Cou
 ```
 
 The WebKit integration generates live canvas-stream videos in a top-level page and iframe entirely in memory. It verifies real isolated-world frame delivery without stored media. Script checks cover pixel sampling, pause, seek, CORS/DRM rejection, disable, and page teardown. Specific external websites and iPhone behavior remain manual checks.
+
+## Manual stages and Bleepy
+
+Enable **Manual rhythm**, open the meter's settings button, choose **Stages**, select **Normal** or **Random**, then Start. The fixed-tempo metronome remains available in the other settings tab. Stage controls include pause/resume, end program, countdowns, Bleepy sound, and optional beat clicks. The stage program is manual and independent of video playback; pause it separately when needed. Closing/reloading the video, switching back to tracking, or leaving the foreground ends the program. Nothing is persisted.
+
+- Normal stages start at 2–4 minutes. Random stages start at 0–4 minutes, in ten-second steps; a zero stage goes directly to its break. This avoids 1–9 second stages that cannot fit a minimum ten-second segment.
+- Every stage selects Slow, Normal, Fast, or Ultrafast segments lasting 10–30 seconds, always changing to another speed at a normal segment boundary. After each stage there is a random 15–30 second break.
+- Slow's eligible selection chance starts at 50%, decreases five percentage points per stage, and reaches a 20% floor at stage seven. Independently, Slow time is capped at **20% of each stage** as requested in the correction. It cannot be selected until enough non-Slow time has accrued to fund a full segment.
+- Ultrafast is capped at **50% of manual active time**, excluding breaks. This is stricter than including breaks and protects the cap for any elapsed portion of a video/session. Neither cap relies on knowing or saving the video length.
+- Segment pulse targets are 40/80/120/180 BPM; a small per-segment adjustment fits complete up/down cycles into the segment length. Breaks stop the bar.
+
+**Bleepy:** one event is scheduled at a random second 1–299 of each five-minute block of running program time, including breaks. Its four equally likely outcomes are stage −30 seconds, stage +30 seconds, stage complete, or queued Ultrafast for 15–30 seconds. A distinct short beep and visible action notice announce it. Pause freezes all program timers.
+
+Time changes affect the current stage; if already in a break they affect the next stage. Stage complete during a break skips the next stage. A forced Ultrafast segment waits for a different current speed, enough remaining stage time, and sufficient 50% time budget. It may carry to a later stage. Bleepy time reductions/completion intentionally override a normal segment's minimum length and can end it early. The prefix-based Slow and Ultrafast budgets keep the hard caps valid even after these interruptions. Bleepy edits can move a stage outside its initial Normal/Random duration range.
+
+Pure scheduler checks:
+
+```sh
+swiftc -parse-as-library -module-cache-path /private/tmp/counter-swift-cache Counter/RhythmTimeline.swift Counter/RhythmMeter.swift Counter/ManualStageProgram.swift Tests/Stages/StageChecks.swift -o /private/tmp/counter-stage-tests
+/private/tmp/counter-stage-tests
+```
+
+The suite covers 100 duration seeds, 50 one-hour simulations, per-stage Slow and global Ultrafast caps at every sampled prefix, changing speeds, breaks, one Bleepy per five-minute block, all four actions, forced-Ultra queueing, and stop. Device checks remain for UI countdowns, pause/resume, video/audio mixing, and audible Bleepy playback.

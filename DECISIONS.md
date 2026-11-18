@@ -86,3 +86,11 @@ Decision: allow best-effort streaming movement analysis for HTML video elements 
 Reason: the user requested embedded videos after native-only tracking. Browser CORS/DRM restrictions are honored; inaccessible players retain playback/manual fallback. This replaces the earlier blanket website-tracking-unavailable behavior without claiming universal site compatibility.
 
 Status: Accepted, Counter-specific.
+
+## Counter ADR-003 — Manual Stages and Hard Time Budgets
+
+Decision: keep manual stage scheduling in a pure, seeded Swift state machine, separate from live video analysis and UI/audio playback. Apply the user's latest correction as a hard Slow ≤20% cap per stage. Use prefix budgets for Slow and Ultrafast (≤50% of active program time) so early Bleepy completion cannot invalidate past time ratios. Slow's selection chance also decreases to a 20% floor when eligible.
+
+Normal/Random initial stage lengths use ten-second granularity to accommodate minimum ten-second speed segments, including an explicit zero stage in Random. Bleepy effects have equal probability, one random event per five-minute program block, and forced Ultra waits for the next eligible/funded segment. Time edits apply to the next stage during a break; completion during a break skips the next stage. All state and sound synthesis remain in memory.
+
+Status: Accepted, Counter-specific implementation choices for the requested manual program.
