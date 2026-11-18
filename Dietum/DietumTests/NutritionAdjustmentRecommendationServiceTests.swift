@@ -252,6 +252,13 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(MealIngredientListParser.parse("dal chawal with yogurt"), ["dal", "rice", "yogurt"])
     }
 
+    func testIngredientListParserNormalizesPaneerAndTofuSynonyms() {
+        XCTAssertEqual(
+            MealIngredientListParser.parse("panner with bean curd and soybean curd"),
+            ["paneer", "tofu"]
+        )
+    }
+
     func testIndianRecipeCatalogProvidesNutritionWithoutUSDAKey() async throws {
         let recipe = IndianRecipeNutrition(
             id: "TEST-001",
@@ -316,6 +323,31 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
 
         XCTAssertEqual(catalog.match(for: "PALAK PANEER")?.id, "TEST-002")
         XCTAssertNil(catalog.match(for: "sushi"))
+    }
+
+    func testPaneerAndTofuTermsResolveWithoutUSDAKey() async throws {
+        let catalog = BundledIndianRecipeCatalog(recipes: [
+            IndianRecipeNutrition(
+                id: "TEST-007",
+                name: "Paneer",
+                servingUnit: "100 g",
+                per100Nutrition: NutritionAmounts(calories: 265, proteinGrams: 18, fatGrams: 20)
+            ),
+            IndianRecipeNutrition(
+                id: "TEST-008",
+                name: "Tofu",
+                servingUnit: "100 g",
+                per100Nutrition: NutritionAmounts(calories: 76, proteinGrams: 8, fatGrams: 4)
+            )
+        ])
+        let service = FoodDataCentralMealAnalysisService(
+            configuration: FoodDataCentralConfiguration(info: ["USDAFoodDataCentralAPIKey": ""]),
+            indianRecipeCatalog: catalog
+        )
+
+        let result = try await service.analyzeMeal(description: "panner with bean curd", photo: nil)
+
+        XCTAssertEqual(result.detectedFoods.map(\.name), ["Paneer", "Tofu"])
     }
 
     func testIndianRecipeCatalogDoesNotMatchDalInsideDaliya() {

@@ -71,7 +71,12 @@ struct MealIngredientListParser: Sendable {
             "dhal": "dal",
             "chaval": "chawal",
             "bhaat": "chawal",
-            "bhat": "chawal"
+            "bhat": "chawal",
+            "panner": "paneer",
+            "panir": "paneer",
+            "bean curd": "tofu",
+            "soybean curd": "tofu",
+            "soya bean curd": "tofu"
         ]
         let phraseExpansions: [String: [String]] = [
             "daal chaval": ["dal", "rice"],
