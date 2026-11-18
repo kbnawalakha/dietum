@@ -549,7 +549,7 @@ final class ProgressPhotosViewModel: ObservableObject {
         }
 
         let method = comparisonVisualAnalysis?.methodDescription ?? "Image signals require readable local image data in both saved photos."
-        return "Compare the overall and regional composition estimates between the selected dates. \(method) Saved values remain editable if your measured data changes."
+        return "Start with the image-based observations below to see what looks different between the selected photos. Saved percentage estimates are secondary context. \(method)"
     }
 
     var comparisonCandidates: [ProgressPhotoMetadata] {
@@ -630,7 +630,7 @@ final class ProgressPhotosViewModel: ObservableObject {
             fatDetail = "Save an overall body-fat estimate for both photos to compare fat change."
         }
 
-        let visualFatDetail = comparisonVisualAnalysis.map { " \($0.fatDescription)" } ?? ""
+        let visualFatDetail = comparisonVisualAnalysis.map { $0.fatDescription } ?? ""
         let visualMuscleDetail = comparisonVisualAnalysis?.muscleDescription
             ?? "Muscle mass is not measurable from a 2D photo alone, and no image-based definition signal is available because both photos need readable local image data."
         let visualShapeDetail = comparisonVisualAnalysis?.shapeDescription
@@ -640,7 +640,9 @@ final class ProgressPhotosViewModel: ObservableObject {
             ProgressPhotoChange(
                 id: "fat-signal",
                 title: "Fat change",
-                detail: fatDetail + visualFatDetail
+                detail: visualFatDetail.isEmpty
+                    ? fatDetail
+                    : "\(visualFatDetail) Numeric estimate context: \(fatDetail)"
             ),
             ProgressPhotoChange(
                 id: "muscle-signal",

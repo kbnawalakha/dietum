@@ -225,7 +225,7 @@ struct ProgressPhotosView: View {
                             }
 
                             VStack(alignment: .leading, spacing: AppSpacing.small) {
-                                Text("Composition changes")
+                                Text("What looks different in the photos")
                                     .font(.subheadline.weight(.semibold))
                                     .foregroundStyle(AppPalette.textPrimary)
 
@@ -241,13 +241,13 @@ struct ProgressPhotosView: View {
                                     .accessibilityElement(children: .combine)
                                 }
 
-                                Text("Regional fat estimates are listed below when both photos contain saved values.")
+                                Text("Image observations are primary. They describe apparent fullness, definition, and shape changes; they do not claim measured muscle mass.")
                                     .font(.caption2)
                                     .foregroundStyle(AppPalette.textSecondary)
                             }
 
                             VStack(alignment: .leading, spacing: AppSpacing.small) {
-                                Text("Regional fat changes")
+                                Text("Saved numeric context")
                                     .font(.subheadline.weight(.semibold))
                                     .foregroundStyle(AppPalette.textPrimary)
 
@@ -263,7 +263,7 @@ struct ProgressPhotosView: View {
                                     .accessibilityElement(children: .combine)
                                 }
 
-                                Text("These changes compare saved non-clinical fat estimates with the side-by-side photos.")
+                                Text("These saved non-clinical estimates support the visual comparison but should not override what the photos appear to show.")
                                     .font(.caption2)
                                     .foregroundStyle(AppPalette.textSecondary)
                             }
