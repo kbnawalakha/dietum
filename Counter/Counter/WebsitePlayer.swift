@@ -6,6 +6,7 @@ struct WebsitePlayer: UIViewRepresentable {
     @Binding var loading: Bool
     @Binding var error: String?
     let trackingEnabled: Bool
+    let playbackMonitoringEnabled: Bool
     let onVideo: (EmbeddedVideoEvent) -> Void
     let onNavigation: () -> Void
     private static let world = WKContentWorld.world(name: "CounterVideoAnalysis")
@@ -47,8 +48,8 @@ struct WebsitePlayer: UIViewRepresentable {
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage,
                                    replyHandler: @escaping (Any?, String?) -> Void) {
-            let enabled = active && parent.trackingEnabled
-            replyHandler(["enabled": enabled], nil)
+            let enabled = active && (parent.trackingEnabled || parent.playbackMonitoringEnabled)
+            replyHandler(["enabled": enabled, "video": active && parent.trackingEnabled, "playback": active && parent.playbackMonitoringEnabled], nil)
             guard enabled, let event = EmbeddedVideoEvent(body: message.body) else { return }
             parent.onVideo(event)
         }

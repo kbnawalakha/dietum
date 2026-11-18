@@ -1,18 +1,19 @@
 import Foundation
 
 struct EmbeddedVideoEvent {
-    enum Kind: String { case idle, frame, paused, blocked, seeking }
+    enum Kind: String { case idle, frame, paused, blocked, seeking, playback }
     let kind: Kind
     let id: String
     let time: Double
     let area: Double
     let grid: [Double]?
+    let isPlaying: Bool?
 
     init?(body: Any) {
         guard let body = body as? [String: Any], let raw = body["kind"] as? String,
               let kind = Kind(rawValue: raw) else { return nil }
         if kind == .idle {
-            self.kind = kind; id = ""; time = 0; area = 0; grid = nil; return
+            self.kind = kind; id = ""; time = 0; area = 0; grid = nil; isPlaying = nil; return
         }
         guard let id = body["id"] as? String, !id.isEmpty, id.utf8.count <= 100,
               let time = body["time"] as? Double, time.isFinite, (0...1e12).contains(time),
@@ -22,6 +23,7 @@ struct EmbeddedVideoEvent {
                   grid.allSatisfy({ $0.isFinite && (0...1).contains($0) }) else { return nil }
             self.grid = grid
         } else { grid = nil }
+        isPlaying = body["playing"] as? Bool
         self.kind = kind; self.id = id; self.time = time; self.area = area
     }
 }
@@ -49,13 +51,14 @@ struct EmbeddedMotionRouter {
             reset()
             return EmbeddedMotionUpdate(kind: .idle, sample: nil, reset: true)
         }
+        let incomingPlaying = event.kind == .frame || (event.kind == .playback && event.isPlaying == true)
         let changed = activeID != event.id
         if changed, activeID != nil, now - lastSeen < 1 {
-            if activePlaying && (event.kind != .frame || event.area <= activeArea * 1.5) { return nil }
-            if !activePlaying && event.kind != .frame { return nil }
+            if activePlaying && (!incomingPlaying || event.area <= activeArea * 1.5) { return nil }
+            if !activePlaying && !incomingPlaying { return nil }
         }
         if changed { previous = nil; time = nil }
-        activeID = event.id; activeArea = event.area; activePlaying = event.kind == .frame; lastSeen = now
+        activeID = event.id; activeArea = event.area; activePlaying = incomingPlaying; lastSeen = now
         guard event.kind == .frame, let grid = event.grid else {
             if event.kind != .paused { previous = nil; time = nil }
             return EmbeddedMotionUpdate(kind: event.kind, sample: nil, reset: changed || event.kind == .seeking || event.kind == .blocked)
@@ -83,7 +86,7 @@ enum EmbeddedVideoScript {
       const prefix = Math.random().toString(36).slice(2);
       const ids = new WeakMap();
       let sequence = 0, allowed = false, stopped = false, canvas = null, timer = null;
-      let candidates = [], scannedAt = -Infinity;
+      let candidates = [], scannedAt = -Infinity, videoEnabled = true, playbackEnabled = false;
       addEventListener('pagehide', () => { stopped = true; clearTimeout(timer); timer = null; });
       addEventListener('pageshow', () => { if (stopped) { stopped = false; tick(); } });
       async function tick() {
@@ -109,8 +112,10 @@ enum EmbeddedVideoScript {
           if (!ids.has(video)) ids.set(video, prefix + '-' + (++sequence));
           const r = video.getBoundingClientRect();
           payload = {kind: 'paused', id: ids.get(video), time: video.currentTime,
-                     area: Math.min(1e8, r.width * r.height)};
-          if (video.seeking) payload.kind = 'seeking';
+                     area: Math.min(1e8, r.width * r.height), playing: !video.paused && !video.ended && !video.seeking && video.readyState >= 3};
+          if (playbackEnabled) { payload.kind = 'playback'; delay = 100; }
+          if (!videoEnabled) { /* state-only monitoring does not read media pixels or audio */ }
+          else if (video.seeking) payload.kind = 'seeking';
           else if (video.mediaKeys || video.webkitKeys) payload.kind = 'blocked';
           else if (!video.paused && !video.ended && video.readyState >= 2) {
             try {
@@ -126,7 +131,7 @@ enum EmbeddedVideoScript {
             }
           }
         }
-        try { const reply = await bridge.postMessage(payload); allowed = reply.enabled === true; }
+        try { const reply = await bridge.postMessage(payload); allowed = reply.enabled === true; videoEnabled = reply.video !== false; playbackEnabled = reply.playback === true; }
         catch (_) { allowed = false; }
         if (!stopped) timer = setTimeout(tick, allowed ? delay : 500);
       }

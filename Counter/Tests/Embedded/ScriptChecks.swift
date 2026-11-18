@@ -8,14 +8,14 @@ struct ScriptChecks {
         context.exceptionHandler = { _, error in fatalError(error?.toString() ?? "Script error") }
         context.evaluateScript(#"""
         let messages = [], callbacks = {}, nextTick = null, permitsTracking = true, tainted = false;
-        let pixelValue = 153;
+        let pixelValue = 153, wantVideo = true, wantPlayback = false;
         globalThis.addEventListener = (name, callback) => callbacks[name] = callback;
         globalThis.setTimeout = callback => { nextTick = callback; return 1; };
         globalThis.clearTimeout = () => { nextTick = null; };
         globalThis.performance = {now: () => 10000};
         globalThis.getComputedStyle = () => ({display:'block', visibility:'visible'});
         globalThis.webkit = {messageHandlers:{counterMotion:{postMessage: payload => {
-          messages.push(payload); return {enabled:permitsTracking};
+          messages.push(payload); return {enabled:permitsTracking, video:wantVideo, playback:wantPlayback};
         }}}};
         const video = {currentTime:0, paused:false, ended:false, seeking:false, readyState:4,
           clientWidth:320, clientHeight:180, isConnected:true, mediaKeys:null,
@@ -47,8 +47,17 @@ struct ScriptChecks {
         context.evaluateScript("video.mediaKeys=null; permitsTracking=false; step()")
         context.evaluateScript("step()")
         check("lastKind() === 'idle'")
+        context.evaluateScript("permitsTracking=true; wantVideo=false; wantPlayback=true; step()")
+        context.evaluateScript("video.muted=true; video.volume=0; step()")
+        check("lastKind() === 'playback' && messages[messages.length-1].playing === true && messages[messages.length-1].grid === undefined")
+        context.evaluateScript("video.paused=true; step()")
+        check("messages[messages.length-1].playing === false")
+        context.evaluateScript("video.paused=false; video.readyState=1; step()")
+        check("messages[messages.length-1].playing === false")
+        context.evaluateScript("video.readyState=4; step()")
+        check("messages[messages.length-1].playing === true")
         context.evaluateScript("callbacks.pagehide()")
         check("nextTick === null")
-        print("Embedded script checks passed: frame sampling, numeric grid, pause, seek, CORS/DRM blocking, disable, page cleanup")
+        print("Embedded script checks passed: frame sampling, numeric grid, pause, seek, CORS/DRM blocking, disable, playback-only pause/buffering/mute state, page cleanup")
     }
 }

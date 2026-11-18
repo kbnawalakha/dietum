@@ -3,12 +3,20 @@ import WebKit
 
 @MainActor
 final class EmbeddedTestSink: NSObject, WKScriptMessageHandlerWithReply {
+    var playbackOnly = false
+    var playingEvents = 0
+    var pausedEvents = 0
     var mainFrames = 0
     var childFrames = 0
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage,
                                replyHandler: @escaping (Any?, String?) -> Void) {
-        replyHandler(["enabled": true], nil)
-        guard let event = EmbeddedVideoEvent(body: message.body), event.kind == .frame else { return }
+        replyHandler(["enabled": true, "video": !playbackOnly, "playback": playbackOnly], nil)
+        guard let event = EmbeddedVideoEvent(body: message.body) else { return }
+        if event.kind == .playback {
+            if event.isPlaying == true { playingEvents += 1 } else { pausedEvents += 1 }
+            return
+        }
+        guard event.kind == .frame else { return }
         if message.frameInfo.isMainFrame { mainFrames += 1 } else { childFrames += 1 }
     }
 }
@@ -47,11 +55,19 @@ struct WebKitChecks {
         while Date() < end && (sink.mainFrames < 3 || sink.childFrames < 3) {
             RunLoop.current.run(until: Date().addingTimeInterval(0.05))
         }
+        sink.playbackOnly = true
+        var deadline = Date().addingTimeInterval(3)
+        while Date() < deadline && sink.playingEvents < 2 { RunLoop.current.run(until: Date().addingTimeInterval(0.05)) }
+        precondition(sink.playingEvents >= 2, "Muted but playing video must open the manual gate")
+        webView.evaluateJavaScript("document.querySelector('video').pause();document.querySelector('iframe').contentDocument.querySelector('video').pause();")
+        deadline = Date().addingTimeInterval(3)
+        while Date() < deadline && sink.pausedEvents < 2 { RunLoop.current.run(until: Date().addingTimeInterval(0.05)) }
+        precondition(sink.pausedEvents >= 2, "Pausing video must close the manual gate")
         configuration.userContentController.removeScriptMessageHandler(forName: "counterMotion", contentWorld: world)
         webView.stopLoading(); webView.loadHTMLString("", baseURL: nil)
         window.contentView = nil
         precondition(sink.mainFrames >= 3, "Live HTML video frames must reach the isolated-world bridge")
         precondition(sink.childFrames >= 3, "Iframe video frames must reach the isolated-world bridge")
-        print("WebKit integration passed: live canvas-stream video frames received from top-level and iframe players without media files")
+        print("WebKit integration passed: live canvas-stream video frames received from top-level and iframe players without media files; playback-only state handles muted play and pause")
     }
 }

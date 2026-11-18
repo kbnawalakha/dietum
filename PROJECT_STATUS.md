@@ -193,3 +193,11 @@ Milestone 0 — Repository and Architecture Foundation
 - Added randomized five-minute-block Bleepy scheduling, equal-probability time −30/+30, stage completion, and queued 15–30 second Ultra effects; beep and visible notices included.
 - Manual toggle now works for native and embedded playback. Settings expose stages/fixed tempo, duration mode, pause/resume/end, and click/Bleepy sound controls.
 - Signed iPhone build and seeded scheduler tests passed, including 50 one-hour cap simulations. Physical-device timing/audio checks remain; no saved videos/links/program history and no push.
+
+### Counter bounded manual programs and playback gating (2026-11-17)
+
+- Manual programs now finish after 15–20 running minutes with 5–6 varying nonempty stages and 15–30 second breaks. Fixed tempo also uses consistent stages.
+- Every stage starts below Ultra and finishes with protected Ultra, growing from 10–15 seconds toward 30 seconds. Slow≤20% per stage and Ultra≤50% active time remain enforced, including Bleepy adjustments.
+- Applied clarification: manual rhythm pauses when **no video is playing**; silent/muted playback and disabling clicks do not pause it. Native state and embedded playback-only metadata feed a stale-safe gate.
+- Reused the existing click toggle, now soft and on by default. Replaced Change in with current beat-segment duration.
+- 200-seed program/gate tests and real WebKit muted-play/pause checks pass. Signed iPhone build passes; actual phone UI/audio checks remain.

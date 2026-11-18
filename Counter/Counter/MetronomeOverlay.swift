@@ -8,55 +8,68 @@ final class MetronomeModel: ObservableObject {
     @Published private(set) var running = false
     @Published private(set) var beat = 0
     @Published private(set) var lastBeat = Date.distantPast
-    @Published var soundEnabled = false
+    @Published var soundEnabled = true
     @Published private(set) var soundError: String?
     @Published var useStages = true
     @Published var stageMode: StageDurationMode = .normal
     @Published var bleepySound = true
     @Published private(set) var program = ManualStageProgram()
     @Published private(set) var stagePaused = false
+    @Published var fixedTempo = 80.0
+    @Published private(set) var playbackGate = ManualPlaybackGate()
+    private weak var videoPlayer: AVPlayer?
+    private var sourceIsEmbedded = false
+    private var embeddedPlaybackRouter = EmbeddedMotionRouter()
+    private var lastAppliedSegment = -1
     private var stageTicker: Task<Void, Never>?
     private var bleep: AVAudioPlayer?
     private var ticker: Task<Void, Never>?
     private var click: AVAudioPlayer?
 
-    func setTempo(_ value: Int) {
-        bpm = min(240, max(30, value))
-        if running { start() }
+    func configureVideoPlayback(player: AVPlayer?) {
+        stop(); videoPlayer = player; sourceIsEmbedded = player == nil; playbackGate.reset()
+    }
+
+    func receiveEmbeddedPlayback(_ event: EmbeddedVideoEvent) {
+        guard sourceIsEmbedded, program.active, let update = embeddedPlaybackRouter.receive(event, now: ProcessInfo.processInfo.systemUptime) else { return }
+        if update.reset { playbackGate.reset() }
+        playbackGate.update(playing: event.kind != .idle && event.isPlaying == true, now: ProcessInfo.processInfo.systemUptime)
+        if !playbackGate.playing { stopBeat(); bleep?.stop() }
+    }
+
+    private func refreshPlaybackGate() {
+        let now = ProcessInfo.processInfo.systemUptime
+        if let player = videoPlayer {
+            playbackGate.update(playing: player.timeControlStatus == .playing, now: now)
+        } else { playbackGate.expire(at: now) }
+    }
+
+    var playbackMessage: String? {
+        program.active && !playbackGate.playing ? "Waiting for video playback" : nil
+    }
+
+    private var targetTempo: Double {
+        program.level.targetBPM * (useStages ? 1 : fixedTempo / 80)
     }
 
     var effectiveBPM: Double {
         guard program.active, program.phase == .stage, program.segmentDuration > 0 else { return Double(bpm) }
         let duration = Double(program.segmentDuration)
-        return max(1, (duration * program.level.targetBPM / 60).rounded()) * 60 / duration
+        return max(1, (duration * targetTempo / 60).rounded()) * 60 / duration
     }
 
-    var level: RhythmLevel {
-        if !running { return .stop }
-        if bpm < 60 { return .slow }
-        if bpm < 100 { return .normal }
-        if bpm < 150 { return .fast }
-        return .ultrafast
-    }
-
-    func select(_ level: RhythmLevel) {
-        stop(); useStages = false
-        if level == .stop { stop(); return }
-        setTempo(Int(level.targetBPM))
-        if !running { start() }
-    }
+    var level: RhythmLevel { program.active ? program.level : .stop }
 
     func toggle() {
-        if useStages {
-            if !program.active { startStages() }
-            else if stagePaused { stagePaused = false; applyStageTempo() }
-            else { stagePaused = true; stopBeat() }
-        } else { running ? stop() : start() }
+        if !program.active { startStages() }
+        else if stagePaused { stagePaused = false; refreshPlaybackGate(); applyStageTempo() }
+        else { stagePaused = true; stopBeat(); bleep?.stop() }
     }
 
     func startStages() {
-        stop(); useStages = true
-        program.start(mode: stageMode, seed: UInt64.random(in: 0...UInt64.max))
+        stop()
+        program.start(mode: stageMode, seed: UInt64.random(in: 0...UInt64.max), style: useStages ? .varied : .consistent)
+        refreshPlaybackGate()
         applyStageTempo()
         stageTicker = Task { [weak self] in
             var last = ProcessInfo.processInfo.systemUptime
@@ -65,19 +78,24 @@ final class MetronomeModel: ObservableObject {
                 let now = ProcessInfo.processInfo.systemUptime
                 let delta = now - last; last = now
                 guard let self, self.program.active else { return }
-                if self.stagePaused { continue }
+                self.refreshPlaybackGate()
+                if self.stagePaused || !self.playbackGate.playing { self.stopBeat(); self.bleep?.stop(); continue }
                 let count = self.program.bleepCount
                 self.program.advance(by: delta)
                 self.applyStageTempo()
                 if self.bleepySound && self.program.bleepCount > count { self.playBleepy() }
+                if !self.program.active { return }
             }
         }
     }
 
     private func applyStageTempo() {
-        guard program.phase == .stage else { stopBeat(); return }
-        let tempo = Int(program.level.targetBPM)
-        if bpm != tempo || !running { bpm = tempo; start() }
+        guard !stagePaused, playbackGate.playing, program.phase == .stage else { stopBeat(); return }
+        let tempo = Int(targetTempo.rounded())
+        let key = program.stage * 1000 + program.segment
+        if bpm != tempo || !running || lastAppliedSegment != key {
+            bpm = tempo; lastAppliedSegment = key; start()
+        }
     }
 
     private func playBleepy() {
@@ -92,7 +110,8 @@ final class MetronomeModel: ObservableObject {
 
     func stop() {
         stageTicker?.cancel(); stageTicker = nil
-        program.stop(); stagePaused = false
+        program.stop(); stagePaused = false; lastAppliedSegment = -1
+        playbackGate.reset(); embeddedPlaybackRouter.reset()
         bleep?.stop(); stopBeat()
     }
 
@@ -134,7 +153,7 @@ final class MetronomeModel: ObservableObject {
                 click?.prepareToPlay()
             }
             click?.currentTime = 0
-            click?.volume = beat == 1 ? 0.8 : 0.45
+            click?.volume = beat == 1 ? 0.22 : 0.14
             click?.play()
             soundError = nil
         } catch {
@@ -173,8 +192,8 @@ struct MetronomeOverlay: View {
         return "\(value / 60):" + String(format: "%02d", value % 60)
     }
     private var title: String {
-        if model.program.active { return model.program.phase == .rest ? "Break" : "Stage \(model.program.stage)" }
-        return model.useStages ? "Manual stages" : model.level.rawValue
+        if model.program.active { return model.program.phase == .rest ? "Break" : "Stage \(model.program.stage)/\(model.program.stageCount)" }
+        return model.program.phase == .finished ? "Complete" : "Manual stages"
     }
     private var control: String {
         model.program.active ? (model.stagePaused ? "Resume" : "Pause") : (model.running ? "Stop" : "Start")
@@ -198,12 +217,13 @@ struct MetronomeOverlay: View {
                 Text(model.stagePaused ? "Paused" : "\(model.program.level.rawValue) · \(clock(model.program.remaining))")
                     .font(.caption.monospacedDigit())
                 if model.program.phase == .stage {
-                    Text("Change in \(clock(model.program.segmentRemaining))").font(.caption2.monospacedDigit())
+                    Text("Beat duration: \(model.program.segmentDuration)s").font(.caption2.monospacedDigit())
                 }
                 if model.program.elapsed - model.program.lastBleepAt < 8 {
                     Text(model.program.lastBleep).font(.caption2).lineLimit(2).frame(maxWidth: 170)
                 }
-            } else { Text("\(model.running ? model.bpm : 0) BPM · Manual").font(.caption.monospacedDigit()) }
+            } else { Text("15–20 min · 5–6 stages").font(.caption) }
+            if let message = model.playbackMessage { Text(message).font(.caption2).frame(maxWidth: 170).lineLimit(3) }
         }
         .tint(.mint).padding(10)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16)).padding(8)
@@ -215,37 +235,32 @@ struct MetronomeOverlay: View {
                         Text("Stages").tag(true); Text("Fixed tempo").tag(false)
                     }.pickerStyle(.segmented)
                     .onChange(of: model.useStages) { _, _ in model.stop() }
-                    if model.useStages {
-                        Picker("Stage duration", selection: $model.stageMode) {
-                            ForEach(StageDurationMode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
-                        }.pickerStyle(.segmented).disabled(model.program.active)
-                        Text("Normal: 2–4 min · Random: 0–4 min\n10–30s speed segments · 15–30s breaks\nSlow ≤20% per stage · Ultrafast ≤50% active time")
-                            .font(.callout).foregroundStyle(.secondary)
-                        if model.program.active {
-                            Text("Stage \(model.program.stage) · \(clock(model.program.remaining)) remaining")
-                            Text("Slow \(Int(model.program.stageSlowTime))s / \(Int(model.program.stageActiveTime))s · Ultrafast \(Int(model.program.ultraFraction * 100))%")
-                                .font(.caption).foregroundStyle(.secondary)
-                        }
-                        HStack {
-                            Button(control) { model.toggle() }.buttonStyle(.borderedProminent)
-                            if model.program.active { Button("End program") { model.stop() } }
-                        }
-                        Toggle("Bleepy sound", isOn: $model.bleepySound)
-                        Text("One random Bleepy per five-minute block: −30s, +30s, stage complete, or 15–30s Ultrafast. Ultrafast waits for an eligible segment and available time under the cap.")
-                            .font(.caption).foregroundStyle(.secondary)
-                        if !model.program.lastBleep.isEmpty { Text(model.program.lastBleep).font(.callout).foregroundStyle(.mint) }
-                    } else {
-                        Text("\(model.bpm) BPM").font(.headline)
-                        HStack(spacing: 12) {
-                            ForEach(RhythmLevel.allCases, id: \.self) { level in
-                                Button(level.rawValue) { model.select(level) }.font(.caption)
-                            }
-                        }
-                        Slider(value: Binding(get: { Double(model.bpm) }, set: { model.setTempo(Int($0)) }), in: 30...240, step: 1)
-                            .accessibilityLabel("Tempo in beats per minute")
-                        Button(control) { model.toggle() }
+                    if !model.useStages {
+                        Text("Consistent stage tempo: \(Int(model.fixedTempo)) BPM").font(.headline)
+                        Slider(value: $model.fixedTempo, in: 40...100, step: 1).disabled(model.program.active)
+                            .accessibilityLabel("Consistent stage base tempo")
                     }
-                    Toggle("Beat clicks", isOn: $model.soundEnabled)
+                    Picker("Stage duration", selection: $model.stageMode) {
+                        ForEach(StageDurationMode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                    }.pickerStyle(.segmented).disabled(model.program.active)
+                    Text("15–20 min total · 5–6 varying stages\n15–30s breaks · Slow ≤20% per stage\nEvery stage starts below Ultra and finishes Ultra.")
+                        .font(.callout).foregroundStyle(.secondary)
+                    if model.program.active {
+                        Text("Stage \(model.program.stage)/\(model.program.stageCount) · Program \(clock(model.program.sessionRemaining)) left")
+                        Text(model.program.phase == .stage ? "Current beat duration: \(model.program.segmentDuration)s" : "Break duration: \(model.program.breakDuration)s")
+                        Text("Slow \(Int(model.program.stageSlowTime))s / \(Int(model.program.stageActiveTime))s · Ultrafast \(Int(model.program.ultraFraction * 100))%")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                    if let message = model.playbackMessage { Text(message).font(.callout).foregroundStyle(.orange) }
+                    HStack {
+                        Button(control) { model.toggle() }.buttonStyle(.borderedProminent)
+                        if model.program.active { Button("End program") { model.stop() } }
+                    }
+                    Toggle("Bleepy sound", isOn: $model.bleepySound)
+                    Text("Closing Ultra grows from 10–15s toward 30s. Bleepy edits preserve the program bounds and closing segment. No playing video, a pause or buffering stops the beat and freezes timers. Muted/silent videos still count as playing.")
+                        .font(.caption).foregroundStyle(.secondary)
+                    if !model.program.lastBleep.isEmpty { Text(model.program.lastBleep).font(.callout).foregroundStyle(.mint) }
+                    Toggle("Soft beat clicks", isOn: $model.soundEnabled)
                     if let error = model.soundError { Text(error).font(.caption) }
                     Button("Done") { expanded = false }
                 }.padding(24)

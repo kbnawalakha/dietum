@@ -125,7 +125,8 @@ struct CounterView: View {
                             if model.webMode {
                                 WebsitePlayer(url: url, loading: $model.isLoading, error: $model.error,
                                               trackingEnabled: guide.live && guide.enabled && !manualMode && scenePhase == .active,
-                                              onVideo: { guide.receiveEmbedded($0) },
+                                              playbackMonitoringEnabled: manualMode && metronome.program.active && scenePhase == .active,
+                                              onVideo: { if manualMode { metronome.receiveEmbeddedPlayback($0) } else { guide.receiveEmbedded($0) } },
                                               onNavigation: { if !manualMode { guide.startEmbedded() } })
                                     .id(model.reloadID)
                                     .frame(height: 430)
@@ -205,7 +206,7 @@ struct CounterView: View {
         }
         .onChange(of: manualMode) { _, manual in
             metronome.stop()
-            if manual { guide.suspend() }
+            if manual { guide.suspend(); metronome.configureVideoPlayback(player: model.webMode ? nil : model.player) }
             else if model.webMode { guide.startEmbedded() }
             else if let player = model.player { guide.start(player: player) }
         }

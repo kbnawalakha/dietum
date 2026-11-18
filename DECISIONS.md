@@ -94,3 +94,11 @@ Decision: keep manual stage scheduling in a pure, seeded Swift state machine, se
 Normal/Random initial stage lengths use ten-second granularity to accommodate minimum ten-second speed segments, including an explicit zero stage in Random. Bleepy effects have equal probability, one random event per five-minute program block, and forced Ultra waits for the next eligible/funded segment. Time edits apply to the next stage during a break; completion during a break skips the next stage. All state and sound synthesis remain in memory.
 
 Status: Accepted, Counter-specific implementation choices for the requested manual program.
+
+## Counter ADR-004 — Bounded Manual Programs and Playback Gating
+
+Decision: manual rhythm now consists of 5–6 nonempty stages over 900–1200 seconds of running time, including inter-stage breaks. Both varied and fixed/consistent modes use this structure. Every stage starts below Ultra and has a protected terminal Ultra segment that grows from 10–15 seconds toward 30 seconds. Reserve terminal-Ultra time in the existing 50% cap; preserve the per-stage Slow≤20% cap. Bleepy edits redistribute remaining stage budgets or clamp to session/segment limits instead of violating the terminal segment or running indefinitely.
+
+The user clarified “no sound” to mean **no video is playing**. Therefore gate timers/clicks/bar on playback state, not audio loudness, mute, or the existing beat-click toggle. Native playback uses timeControlStatus; embedded playback uses bounded HTML media state without audio capture or pixel reads. Reuse the existing click switch with soft, default-on clicks. The UI shows complete current segment duration rather than time to change.
+
+Status: Accepted, supersedes ADR-003's unlimited/zero-stage and independent-video-clock behavior. Pauses do not count toward running duration; backgrounding/closing ends the program.

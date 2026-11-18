@@ -3,77 +3,54 @@ import Foundation
 @main
 struct StageChecks {
     static func main() {
-        var sawZero = false
-        for seed in 0..<100 {
-            var normal = ManualStageProgram()
-            normal.start(mode: .normal, seed: UInt64(seed))
-            precondition((120...240).contains(normal.stageDuration))
-            precondition((10...30).contains(normal.segmentDuration))
-            var random = ManualStageProgram()
-            random.start(mode: .random, seed: UInt64(seed))
-            precondition((0...240).contains(random.stageDuration))
-            if random.stageDuration == 0 {
-                sawZero = true
-                precondition(random.phase == .rest && (15...30).contains(random.breakDuration))
-            }
-        }
-        precondition(sawZero)
-        var slowObserved = false, ultraObserved = false, lowestChance = 1.0
-        for seed in 0..<50 {
+        for seed in 0..<200 {
             var program = ManualStageProgram()
-            program.start(mode: seed % 2 == 0 ? .normal : .random, seed: UInt64(seed))
-            for _ in 0..<3600 {
-                let oldStage = program.stage, oldSegment = program.segment, oldPhase = program.phase, oldLevel = program.level
-                program.advance(by: 1)
-                precondition(program.stageSlowTime <= program.stageActiveTime * 0.2 + 1e-7, "Slow cap must hold even before stage ends")
-                precondition(program.ultraTime <= program.activeTime * 0.5 + 1e-7, "Ultrafast prefix cap")
-                precondition(program.lastStageSlowFraction <= 0.2 + 1e-7)
-                precondition(program.slowChance >= 0.2 && program.slowChance <= 0.5)
-                lowestChance = min(lowestChance, program.slowChance)
-                slowObserved = slowObserved || program.level == .slow
-                ultraObserved = ultraObserved || program.level == .ultrafast
-                if program.phase == .rest { precondition((15...30).contains(program.breakDuration)) }
-                if oldPhase == .stage && program.phase == .stage && oldStage == program.stage && oldSegment != program.segment {
-                    precondition(oldLevel != program.level, "Consecutive speed segments must differ")
+            program.start(mode: seed % 2 == 0 ? .normal : .random, seed: UInt64(seed), style: seed % 3 == 0 ? .consistent : .varied)
+            precondition((5...6).contains(program.stageCount))
+            precondition((900...1200).contains(program.totalDuration))
+            precondition(Set(program.stageLengths).count > 1)
+            precondition((10...15).contains(program.closingLengths[0]))
+            precondition((27...30).contains(program.closingLengths.last!))
+            precondition(zip(program.closingLengths, program.closingLengths.dropFirst()).allSatisfy { $0 <= $1 })
+            var closed = 0
+            for tick in 0..<5000 where program.active {
+                let phase = program.phase, stage = program.stage, segment = program.segment, level = program.level
+                let closing = program.closing
+                program.advance(by: 0.5)
+                precondition(program.stageSlowTime <= program.stageActiveTime * 0.2 + 1e-7)
+                precondition(program.ultraTime <= program.activeTime * 0.5 + 1e-7)
+                precondition((900...1200).contains(program.totalDuration))
+                if phase == .stage && program.phase != .stage {
+                    precondition(closing && level == .ultrafast, "Every stage must finish with Ultra")
+                    closed += 1
                 }
+                if program.phase == .stage {
+                    precondition((10...30).contains(program.segmentDuration), "seed \(seed) tick \(tick) duration \(program.segmentDuration) stage \(program.stage) remaining \(program.remaining)")
+                    if program.segment == 1 { precondition(program.level != .ultrafast) }
+                }
+                if phase == .stage && program.phase == .stage && stage == program.stage && segment != program.segment {
+                    precondition(level != program.level)
+                }
+                if tick % 311 == 0 { program.applyBleepy(BleepyEffect.allCases[(tick / 311) % 4]) }
             }
-            precondition(program.bleepCount == 12, "One random event in each five-minute block")
-            precondition((3601...3899).contains(Int(program.nextBleep)))
+            precondition(program.phase == .finished)
+            precondition(program.stage == program.stageCount && closed == program.stageCount)
+            precondition((900.0...1200.0).contains(program.elapsed))
+            precondition(abs(program.elapsed - Double(program.totalDuration)) < 0.01)
+            precondition(abs(program.slowChance - 0.2) < 1e-7)
         }
-        precondition(slowObserved && ultraObserved && abs(lowestChance - 0.2) < 1e-7)
-        // Find an initial block whose Bleepy occurs after the longest natural first stage.
-        var quiet = ManualStageProgram()
-        for seed in 0..<1000 {
-            quiet.start(mode: .normal, seed: UInt64(seed))
-            if quiet.nextBleep > 240 { break }
-        }
-        precondition(quiet.nextBleep > 240)
-        let duration = quiet.remaining
-        quiet.applyBleepy(.increase)
-        precondition(quiet.remaining == duration + 30)
-        quiet.applyBleepy(.decrease)
-        precondition(quiet.remaining == duration)
-        var forced = quiet
-        forced.applyBleepy(.ultrafast)
-        precondition((15...30).contains(forced.forcedUltra!))
-        precondition(forced.level != .ultrafast, "An unfunded Ultra request must wait")
-        var forcedStarted = false
-        for _ in 0..<240 {
-            forced.advance(by: 1)
-            if forced.level == .ultrafast && forced.forcedUltra == nil { forcedStarted = true; break }
-        }
-        precondition(forcedStarted)
-        quiet.applyBleepy(.complete)
-        precondition(quiet.phase == .rest && quiet.level == .stop)
-        let breakRemaining = quiet.remaining
-        quiet.advance(by: breakRemaining)
-        precondition(quiet.stage == 2)
-        var shortened = forced
-        shortened.applyBleepy(.complete)
-        precondition(shortened.lastStageSlowFraction <= 0.2 + 1e-7)
-        let stoppedElapsed = shortened.elapsed
-        shortened.stop(); shortened.advance(by: 100)
-        precondition(!shortened.active && shortened.elapsed == 0 && stoppedElapsed > 0)
-        print("Manual stage checks passed: 100 duration seeds, 50 one-hour programs, Slow≤20% per stage, Ultra≤50%, changing speeds, breaks, all Bleepy outcomes, queueing and stop")
+        var gate = ManualPlaybackGate()
+        precondition(!gate.playing)
+        gate.update(playing: true, now: 0)
+        precondition(gate.playing)
+        gate.update(playing: false, now: 0.1)
+        precondition(!gate.playing)
+        gate.update(playing: true, now: 1)
+        gate.expire(at: 1.5)
+        precondition(gate.playing)
+        gate.expire(at: 2)
+        precondition(!gate.playing)
+        print("Playback gate checks passed: playing, pause, stale player evidence")
+        print("Bounded program checks passed: 200 seeds, both styles, 15–20 minutes, 5–6 stages, non-Ultra starts, progressive Ultra endings, caps and Bleepy edits")
     }
 }

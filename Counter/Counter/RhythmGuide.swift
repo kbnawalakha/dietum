@@ -48,6 +48,7 @@ final class RhythmGuideModel: ObservableObject {
         case .blocked:
             playing = false
             message = "This embedded player blocks video-frame access. Playback can continue; use manual rhythm or a direct video link."
+        case .playback: return
         case .idle:
             playing = false
             message = "Play an embedded video to start tracking. Some website players restrict frame access."
