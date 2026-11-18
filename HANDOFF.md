@@ -312,3 +312,7 @@ Assigned request: control soft beat-click sound. Changed `Counter/Counter/Metron
 Baseline stage checks passed and scoped whitespace checks passed. Signed iPhone build verification follows. No implementation-mirroring tests were added for this small audio-setting UI change. Remaining: actual phone volume/feel check. Next step: Command-R, manual settings → Beat clicks → Click volume. No GitHub push; unrelated Dietum edits excluded.
 
 Final click-volume verification: signed generic iPhone build and scoped whitespace checks passed. No failed commands. Phone listening remains the final usability check.
+
+## Counter moved to its own repository — 2026-11-18
+
+Counter now lives at `/Users/kushalnawalakha/Documents/counter`, with independent local Git history (initial snapshot9f1c92d), documentation, tests and bundled sound. Earlier Counter history remains in Dietum. Continue Counter work there; do not recreate the old Counter directory here. Final-path unsigned iPhone build, scheduler/bridge/link checks and bundled-audio comparison passed. No GitHub remote/push. Phone/provider/animation/audio validation remains pending. This move preserves Dietum app code and all unrelated pending workspace changes.

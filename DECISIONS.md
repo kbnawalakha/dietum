@@ -116,3 +116,7 @@ Status: Accepted per explicit user correction.
 Decision: replace fixed five-minute blocks with independent 60–300 second start-to-start trigger intervals. A trigger begins a three-second fortune-wheel reveal; its randomly chosen outcome remains pending and does not affect the program until the wheel settles. Stage/beat/break timing continues during the spin. Stop or completion cancels pending outcomes, and playback/manual pause freezes spin progress. Preserve equal odds and unrestricted outcome effects after reveal.
 
 Status: Accepted per the user's latest Bleepy scheduling/presentation request.
+
+## Counter repository separation — 2026-11-18
+
+User requested Counter outside Dietum. Move the complete app/tests/resources into sibling Documents/counter, initialize independent local Git without a remote, and retain earlier Counter commit history here. Counter-specific decisions/history accompany the standalone snapshot. Dietum app source and unrelated pending changes are excluded from the move.

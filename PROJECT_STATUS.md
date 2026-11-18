@@ -257,3 +257,7 @@ Milestone 0 — Repository and Architecture Foundation
 
 - Added independent 0–100% Click volume under the existing Beat clicks toggle, defaulting to 65%; non-accented beats scale proportionally.
 - Slider changes apply immediately; toggle-off stops the current click. Zero volume does not pause the visual program. Video/Bleepy volume is unchanged.
+
+## Counter repository separated — 2026-11-18
+
+Counter was moved out to `/Users/kushalnawalakha/Documents/counter`. It is independently versioned and builds from that location; tests passed. The Dietum target never referenced Counter and remains independent. See COUNTER.md. No remote was created and nothing was pushed. Device verification for Counter remains pending.
