@@ -48,6 +48,8 @@ struct MealIngredientListParser: Sendable {
         let normalized = text
             .replacingOccurrences(of: " with ", with: ",")
             .replacingOccurrences(of: " and ", with: ",")
+            .replacingOccurrences(of: " और ", with: ",")
+            .replacingOccurrences(of: " के साथ ", with: ",")
 
         var seen = Set<String>()
         let terms = normalized
@@ -71,15 +73,52 @@ struct MealIngredientListParser: Sendable {
             "dhal": "dal",
             "lentil": "dal",
             "lentils": "dal",
+            "दाल": "dal",
+            "दालें": "dal",
             "chawal": "rice",
             "chaval": "rice",
             "bhaat": "rice",
             "bhat": "rice",
+            "चावल": "rice",
+            "भात": "rice",
             "panner": "paneer",
             "panir": "paneer",
+            "पनीर": "paneer",
+            "tofu": "tofu",
+            "टोफू": "tofu",
             "bean curd": "tofu",
             "soybean curd": "tofu",
-            "soya bean curd": "tofu"
+            "soya bean curd": "tofu",
+            "aloo": "potato",
+            "आलू": "potato",
+            "gobi": "cauliflower",
+            "गोभी": "cauliflower",
+            "पालक": "spinach",
+            "palak": "spinach",
+            "चना": "chickpeas",
+            "चने": "chickpeas",
+            "chana": "chickpeas",
+            "राजमा": "rajma",
+            "rajma": "rajma",
+            "मटर": "peas",
+            "matar": "peas",
+            "दही": "yogurt",
+            "dahi": "yogurt",
+            "घी": "ghee",
+            "ghee": "ghee",
+            "रोटी": "flatbread",
+            "roti": "flatbread",
+            "पराठा": "flatbread",
+            "paratha": "flatbread",
+            "सब्जी": "vegetables",
+            "sabzi": "vegetables",
+            "दूध": "milk",
+            "doodh": "milk",
+            "अंडा": "egg",
+            "अंडे": "egg",
+            "anda": "egg",
+            "मछली": "fish",
+            "machli": "fish"
         ]
         let phraseExpansions: [String: [String]] = [
             "daal chaval": ["dal", "rice"],
@@ -89,7 +128,13 @@ struct MealIngredientListParser: Sendable {
             "rajma chawal": ["rajma", "rice"],
             "rajma chaval": ["rajma", "rice"],
             "chole chawal": ["chickpeas", "rice"],
-            "chole chaval": ["chickpeas", "rice"]
+            "chole chaval": ["chickpeas", "rice"],
+            "आलू गोभी": ["potato", "cauliflower"],
+            "aloo gobi": ["potato", "cauliflower"],
+            "पालक पनीर": ["spinach", "paneer"],
+            "palak paneer": ["spinach", "paneer"],
+            "मटर पनीर": ["peas", "paneer"],
+            "matar paneer": ["peas", "paneer"]
         ]
 
         if let expansion = phraseExpansions[term] {
