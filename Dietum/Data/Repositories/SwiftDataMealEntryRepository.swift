@@ -39,6 +39,7 @@ final class SwiftDataMealEntryRepository: MealEntryRepository {
             storedEntry.nutritionCarbohydrateGrams = entry.nutrition.carbohydrateGrams
             storedEntry.nutritionFatGrams = entry.nutrition.fatGrams
             storedEntry.nutritionFiberGrams = entry.nutrition.fiberGrams
+            storedEntry.nutritionMicronutrientsData = MealEntryPersistenceMapper.encode(entry.nutrition.micronutrients)
         } else {
             modelContext.insert(StoredMealEntry(entry))
         }

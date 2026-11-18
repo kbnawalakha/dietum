@@ -168,6 +168,28 @@ final class MealLoggingViewModel: ObservableObject {
             totals.carbohydrateGrams += food.nutrition.carbohydrateGrams
             totals.fatGrams += food.nutrition.fatGrams
             totals.fiberGrams += food.nutrition.fiberGrams
+            totals.micronutrients.sugarGrams += food.nutrition.micronutrients.sugarGrams
+            totals.micronutrients.saturatedFatGrams += food.nutrition.micronutrients.saturatedFatGrams
+            totals.micronutrients.cholesterolMilligrams += food.nutrition.micronutrients.cholesterolMilligrams
+            totals.micronutrients.sodiumMilligrams += food.nutrition.micronutrients.sodiumMilligrams
+            totals.micronutrients.potassiumMilligrams += food.nutrition.micronutrients.potassiumMilligrams
+            totals.micronutrients.calciumMilligrams += food.nutrition.micronutrients.calciumMilligrams
+            totals.micronutrients.ironMilligrams += food.nutrition.micronutrients.ironMilligrams
+            totals.micronutrients.magnesiumMilligrams += food.nutrition.micronutrients.magnesiumMilligrams
+            totals.micronutrients.phosphorusMilligrams += food.nutrition.micronutrients.phosphorusMilligrams
+            totals.micronutrients.zincMilligrams += food.nutrition.micronutrients.zincMilligrams
+            totals.micronutrients.vitaminAMicrograms += food.nutrition.micronutrients.vitaminAMicrograms
+            totals.micronutrients.vitaminCMilligrams += food.nutrition.micronutrients.vitaminCMilligrams
+            totals.micronutrients.vitaminDMicrograms += food.nutrition.micronutrients.vitaminDMicrograms
+            totals.micronutrients.vitaminEMilligrams += food.nutrition.micronutrients.vitaminEMilligrams
+            totals.micronutrients.vitaminKMicrograms += food.nutrition.micronutrients.vitaminKMicrograms
+            totals.micronutrients.thiaminMilligrams += food.nutrition.micronutrients.thiaminMilligrams
+            totals.micronutrients.riboflavinMilligrams += food.nutrition.micronutrients.riboflavinMilligrams
+            totals.micronutrients.niacinMilligrams += food.nutrition.micronutrients.niacinMilligrams
+            totals.micronutrients.vitaminB6Milligrams += food.nutrition.micronutrients.vitaminB6Milligrams
+            totals.micronutrients.folateMicrograms += food.nutrition.micronutrients.folateMicrograms
+            totals.micronutrients.vitaminB12Micrograms += food.nutrition.micronutrients.vitaminB12Micrograms
+            totals.micronutrients.cholineMilligrams += food.nutrition.micronutrients.cholineMilligrams
         }
     }
 
@@ -315,7 +337,8 @@ final class MealLoggingViewModel: ObservableObject {
                 proteinGrams: max(0, protein),
                 carbohydrateGrams: max(0, carbohydrates),
                 fatGrams: max(0, fat),
-                fiberGrams: fiber
+                fiberGrams: fiber,
+                micronutrients: draft.detectedFoods[index].nutrition.micronutrients
             )
             draft.detectedFoods[index].nutrition = updatedNutrition
             draft.detectedFoods[index].nutritionPer100Grams = updatedNutrition.scaled(

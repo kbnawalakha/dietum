@@ -16,7 +16,8 @@ enum MealEntryPersistenceMapper {
                 proteinGrams: stored.nutritionProteinGrams,
                 carbohydrateGrams: stored.nutritionCarbohydrateGrams,
                 fatGrams: stored.nutritionFatGrams,
-                fiberGrams: stored.nutritionFiberGrams
+                fiberGrams: stored.nutritionFiberGrams,
+                micronutrients: decode(NutritionMicronutrients.self, from: stored.nutritionMicronutrientsData) ?? NutritionMicronutrients()
             )
         )
     }
@@ -45,6 +46,7 @@ final class StoredMealEntry {
     var nutritionCarbohydrateGrams: Double
     var nutritionFatGrams: Double
     var nutritionFiberGrams: Double
+    var nutritionMicronutrientsData: Data?
 
     init(_ entry: MealEntry) {
         self.id = entry.id
@@ -59,6 +61,7 @@ final class StoredMealEntry {
         self.nutritionCarbohydrateGrams = entry.nutrition.carbohydrateGrams
         self.nutritionFatGrams = entry.nutrition.fatGrams
         self.nutritionFiberGrams = entry.nutrition.fiberGrams
+        self.nutritionMicronutrientsData = MealEntryPersistenceMapper.encode(entry.nutrition.micronutrients)
     }
 
     var mealEntry: MealEntry {

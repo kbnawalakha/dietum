@@ -43,6 +43,26 @@ struct FoodDataCentralConfiguration: Sendable, Equatable {
     }
 }
 
+struct MealIngredientListParser: Sendable {
+    static func parse(_ text: String) -> [String] {
+        let normalized = text
+            .replacingOccurrences(of: " with ", with: ",")
+            .replacingOccurrences(of: " and ", with: ",")
+
+        var seen = Set<String>()
+        return normalized
+            .split(whereSeparator: { $0 == "," || $0 == ";" || $0 == "\n" || $0 == "•" })
+            .map { token in
+                token
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                    .trimmingCharacters(in: CharacterSet(charactersIn: "-"))
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                    .lowercased()
+            }
+            .filter { !$0.isEmpty && seen.insert($0).inserted }
+    }
+}
+
 struct FoodDataCentralMealAnalysisService: MealFoodDetectionService {
     private let configuration: FoodDataCentralConfiguration
     private let session: URLSession
@@ -118,7 +138,7 @@ struct FoodDataCentralMealAnalysisService: MealFoodDetectionService {
             URLQueryItem(name: "api_key", value: configuration.apiKey),
             URLQueryItem(name: "query", value: query),
             URLQueryItem(name: "pageSize", value: "5"),
-            URLQueryItem(name: "dataType", value: "Foundation,SR Legacy")
+            URLQueryItem(name: "dataType", value: "Foundation,SR Legacy,Branded")
         ]
 
         var request = URLRequest(url: components.url!)
@@ -243,20 +263,38 @@ private struct FoodDataCentralMatch {
             proteinGrams: values[1003] ?? values[203] ?? 0,
             carbohydrateGrams: values[1005] ?? values[205] ?? 0,
             fatGrams: values[1004] ?? values[204] ?? 0,
-            fiberGrams: values[1079] ?? values[291] ?? 0
+            fiberGrams: values[1079] ?? values[291] ?? 0,
+            micronutrients: NutritionMicronutrients(
+                sugarGrams: values[2000] ?? 0,
+                saturatedFatGrams: values[1258] ?? 0,
+                cholesterolMilligrams: values[1253] ?? 0,
+                sodiumMilligrams: values[1093] ?? 0,
+                potassiumMilligrams: values[1092] ?? 0,
+                calciumMilligrams: values[1087] ?? 0,
+                ironMilligrams: values[1089] ?? 0,
+                magnesiumMilligrams: values[1090] ?? 0,
+                phosphorusMilligrams: values[1091] ?? 0,
+                zincMilligrams: values[1095] ?? 0,
+                vitaminAMicrograms: values[1106] ?? 0,
+                vitaminCMilligrams: values[1162] ?? 0,
+                vitaminDMicrograms: values[1114] ?? 0,
+                vitaminEMilligrams: values[1109] ?? 0,
+                vitaminKMicrograms: values[1185] ?? 0,
+                thiaminMilligrams: values[1165] ?? 0,
+                riboflavinMilligrams: values[1166] ?? 0,
+                niacinMilligrams: values[1167] ?? 0,
+                vitaminB6Milligrams: values[1175] ?? 0,
+                folateMicrograms: values[1177] ?? 0,
+                vitaminB12Micrograms: values[1178] ?? 0,
+                cholineMilligrams: values[1180] ?? 0
+            )
         )
     }
 }
 
 private extension FoodDataCentralMealAnalysisService {
     static func queryTerms(from description: String) -> [String] {
-        description
-            .lowercased()
-            .replacingOccurrences(of: " with ", with: ",")
-            .replacingOccurrences(of: " and ", with: ",")
-            .split(separator: ",")
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
+        MealIngredientListParser.parse(description)
     }
 
     static func uniqueQueries(_ queries: [String]) -> [String] {

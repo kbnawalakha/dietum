@@ -21,7 +21,7 @@ struct MealLoggingView: View {
                 AppSurfaceCard {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
-                            title: "Photo analysis",
+                    title: "Photo or ingredients",
                             message: viewModel.headline
                         )
 
@@ -56,12 +56,12 @@ struct MealLoggingView: View {
                                 .foregroundStyle(AppPalette.textSecondary)
                         }
 
-                        Text(viewModel.hasSelectedPhoto ? "Photo analysis is ready to review. Add a description for a more specific lookup, or edit the detected foods below." : "No photo selected. A general food description is enough to search USDA nutrition data.")
+                        Text(viewModel.hasSelectedPhoto ? "Photo analysis is ready to review. Add an ingredient list for a more specific lookup, or edit the detected foods below." : "Choose a photo or enter an ingredient list. USDA will look up each food and calculate the combined nutrition.")
                             .font(.subheadline)
                             .foregroundStyle(AppPalette.textSecondary)
 
                         TextField(
-                            "What is in this meal? (for example: chicken, rice, broccoli)",
+                            "Ingredients or foods (comma, line, or semicolon separated)",
                             text: Binding(
                                 get: { viewModel.draft.foodDescription },
                                 set: { viewModel.updateFoodDescription($0) }
@@ -70,7 +70,7 @@ struct MealLoggingView: View {
                         )
                         .textFieldStyle(.appTextField)
                         .lineLimit(2...4)
-                        .accessibilityLabel("General meal description")
+                        .accessibilityLabel("Meal ingredients or foods")
 
                         if viewModel.analysisState == .analyzing {
                             HStack(spacing: AppSpacing.item) {
@@ -258,6 +258,37 @@ private struct NutritionBreakdownView: View {
                 nutritionMetric("Fat", "\(nutrition.fatGrams.formatted(.number.precision(.fractionLength(0)))) g")
             }
             nutritionMetric("Fiber", "\(nutrition.fiberGrams.formatted(.number.precision(.fractionLength(0)))) g")
+
+            DisclosureGroup("Micronutrients") {
+                let micros = nutrition.micronutrients
+                VStack(alignment: .leading, spacing: AppSpacing.small) {
+                    nutrientRow("Sugar", micros.sugarGrams, "g")
+                    nutrientRow("Saturated fat", micros.saturatedFatGrams, "g")
+                    nutrientRow("Cholesterol", micros.cholesterolMilligrams, "mg")
+                    nutrientRow("Sodium", micros.sodiumMilligrams, "mg")
+                    nutrientRow("Potassium", micros.potassiumMilligrams, "mg")
+                    nutrientRow("Calcium", micros.calciumMilligrams, "mg")
+                    nutrientRow("Iron", micros.ironMilligrams, "mg")
+                    nutrientRow("Magnesium", micros.magnesiumMilligrams, "mg")
+                    nutrientRow("Phosphorus", micros.phosphorusMilligrams, "mg")
+                    nutrientRow("Zinc", micros.zincMilligrams, "mg")
+                    nutrientRow("Vitamin A", micros.vitaminAMicrograms, "mcg")
+                    nutrientRow("Vitamin C", micros.vitaminCMilligrams, "mg")
+                    nutrientRow("Vitamin D", micros.vitaminDMicrograms, "mcg")
+                    nutrientRow("Vitamin E", micros.vitaminEMilligrams, "mg")
+                    nutrientRow("Vitamin K", micros.vitaminKMicrograms, "mcg")
+                    nutrientRow("Thiamin", micros.thiaminMilligrams, "mg")
+                    nutrientRow("Riboflavin", micros.riboflavinMilligrams, "mg")
+                    nutrientRow("Niacin", micros.niacinMilligrams, "mg")
+                    nutrientRow("Vitamin B6", micros.vitaminB6Milligrams, "mg")
+                    nutrientRow("Folate", micros.folateMicrograms, "mcg")
+                    nutrientRow("Vitamin B12", micros.vitaminB12Micrograms, "mcg")
+                    nutrientRow("Choline", micros.cholineMilligrams, "mg")
+                }
+                .padding(.top, AppSpacing.small)
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(AppPalette.textPrimary)
         }
         .padding(.top, AppSpacing.small)
     }
@@ -272,6 +303,17 @@ private struct NutritionBreakdownView: View {
                 .foregroundStyle(AppPalette.textPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func nutrientRow(_ title: String, _ value: Double, _ unit: String) -> some View {
+        HStack {
+            Text(title)
+                .foregroundStyle(AppPalette.textSecondary)
+            Spacer(minLength: AppSpacing.small)
+            Text("\(value.formatted(.number.precision(.fractionLength(1)))) \(unit)")
+                .foregroundStyle(AppPalette.textPrimary)
+        }
+        .font(.caption)
     }
 }
 

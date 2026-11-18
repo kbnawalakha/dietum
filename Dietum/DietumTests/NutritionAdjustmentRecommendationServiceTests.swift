@@ -241,6 +241,40 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(breakdown.fiberCalories ?? 0, 50, accuracy: 0.001)
     }
 
+    func testIngredientListParserAcceptsLinesSemicolonsAndDeduplicatesFoods() {
+        let ingredients = MealIngredientListParser.parse("Chicken\n rice; broccoli and chicken • olive oil")
+
+        XCTAssertEqual(ingredients, ["chicken", "rice", "broccoli", "olive oil"])
+    }
+
+    func testNutritionMicronutrientsScaleWithEditablePortion() {
+        let per100Grams = NutritionAmounts(
+            calories: 120,
+            proteinGrams: 10,
+            micronutrients: NutritionMicronutrients(
+                sodiumMilligrams: 240,
+                calciumMilligrams: 80,
+                vitaminCMilligrams: 12
+            )
+        )
+
+        let portion = per100Grams.scaled(toGrams: 250)
+
+        XCTAssertEqual(portion.calories, 300)
+        XCTAssertEqual(portion.micronutrients.sodiumMilligrams, 600, accuracy: 0.001)
+        XCTAssertEqual(portion.micronutrients.calciumMilligrams, 200, accuracy: 0.001)
+        XCTAssertEqual(portion.micronutrients.vitaminCMilligrams, 30, accuracy: 0.001)
+    }
+
+    func testNutritionAmountsDecodesLegacyMealDataWithoutMicronutrients() throws {
+        let legacyData = Data("{\"calories\":100,\"proteinGrams\":5,\"carbohydrateGrams\":10,\"fatGrams\":2,\"fiberGrams\":1}".utf8)
+        let nutrition = try JSONDecoder().decode(NutritionAmounts.self, from: legacyData)
+
+        XCTAssertEqual(nutrition.calories, 100)
+        XCTAssertEqual(nutrition.proteinGrams, 5, accuracy: 0.001)
+        XCTAssertEqual(nutrition.micronutrients.sodiumMilligrams, 0, accuracy: 0.001)
+    }
+
     func testFoodDataCentralAnalysisRequiresConfiguredAPIKey() async {
         let service = FoodDataCentralMealAnalysisService(
             configuration: FoodDataCentralConfiguration(info: ["USDAFoodDataCentralAPIKey": ""])
@@ -328,7 +362,8 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
                             proteinGrams: 12,
                             carbohydrateGrams: 20,
                             fatGrams: 4,
-                            fiberGrams: 1
+                            fiberGrams: 1,
+                            micronutrients: NutritionMicronutrients(sodiumMilligrams: 180, vitaminCMilligrams: 9)
                         )
                     )
                 ],
@@ -359,6 +394,8 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(viewModel.analysisState, .saved)
         XCTAssertEqual(entries.count, 1)
         XCTAssertNotNil(entries.first?.photoMetadata?.imageData)
+        XCTAssertEqual(entries.first?.nutrition.micronutrients.sodiumMilligrams ?? 0, 540, accuracy: 0.001)
+        XCTAssertEqual(entries.first?.nutrition.micronutrients.vitaminCMilligrams ?? 0, 27, accuracy: 0.001)
         XCTAssertEqual(viewModel.todaySavedMeals.count, 1)
     }
 
