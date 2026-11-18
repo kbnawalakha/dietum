@@ -532,12 +532,10 @@
 				100000000000000000000008 /* Sources */,
 				100000000000000000000009 /* Frameworks */,
 				10000000000000000000000A /* Resources */,
-				82E9B6A130AD392B006E5ED8 /* Embed ExtensionKit Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				82E9B69B30AD392B006E5ED8 /* PBXTargetDependency */,
 			);
 			name = Dietum;
 			productName = Dietum;

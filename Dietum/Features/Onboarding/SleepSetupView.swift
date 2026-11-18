@@ -1,9 +1,4 @@
 import SwiftUI
-import DeviceActivity
-
-private extension DeviceActivityReport.Context {
-    static let totalActivity = Self("Total Activity")
-}
 
 struct SleepSetupView: View {
     @StateObject private var viewModel: SleepSetupViewModel
@@ -71,48 +66,6 @@ struct SleepSetupView: View {
                         Text(viewModel.healthImportStatusText)
                             .font(.subheadline)
                             .foregroundStyle(AppPalette.textSecondary)
-                    }
-                }
-
-                AppSurfaceCard {
-                    VStack(alignment: .leading, spacing: AppSpacing.item) {
-                        AppSectionHeader(
-                            title: "Phone-use time",
-                            message: "Request Apple Screen Time access for this device."
-                        )
-
-                        Button {
-                            Task {
-                                await viewModel.requestScreenTimeAccess()
-                            }
-                        } label: {
-                            Label("Allow Screen Time access", systemImage: "hourglass")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .buttonStyle(.appToolbar)
-                        .disabled(viewModel.screenTimeAuthorizationState == .requesting)
-
-                        Text(viewModel.screenTimeAuthorizationStatusText)
-                            .font(.subheadline)
-                            .foregroundStyle(AppPalette.textSecondary)
-
-                        Text("Authorization is the first step. Apple requires a separate Device Activity report extension and approved Family Controls capability before Dietum can show actual usage totals.")
-                            .font(.caption)
-                            .foregroundStyle(AppPalette.textSecondary)
-
-                        if viewModel.screenTimeAuthorizationState == .authorized {
-                            DeviceActivityReport(
-                                .totalActivity,
-                                filter: DeviceActivityFilter(
-                                    segment: .daily(during: DateInterval(
-                                        start: Calendar.current.startOfDay(for: .now),
-                                        end: .now
-                                    ))
-                                )
-                            )
-                            .frame(minHeight: 72)
-                            .accessibilityLabel("Today's Screen Time usage report")
-                        }
                     }
                 }
 
