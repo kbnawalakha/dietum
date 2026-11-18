@@ -33,7 +33,7 @@ struct MealLoggingView: View {
                                     await viewModel.analyzeMeal()
                                 }
                             } label: {
-                                Label("Analyze meal", systemImage: "sparkles")
+                                Label(viewModel.hasSelectedPhoto ? "Done & analyze" : "Analyze meal", systemImage: "sparkles")
                             }
                             .buttonStyle(.appToolbar)
                             .disabled(viewModel.analysisState == .analyzing || !viewModel.canAnalyze)
@@ -43,9 +43,6 @@ struct MealLoggingView: View {
                             selectedImage: viewModel.selectedPhoto,
                             onPhotoSelected: { image in
                                 viewModel.setSelectedPhoto(image)
-                                Task {
-                                    await viewModel.analyzeMeal()
-                                }
                             },
                             onPhotoSelectionFailed: { viewModel.photoSelectionFailed() }
                         )
@@ -56,7 +53,7 @@ struct MealLoggingView: View {
                                 .foregroundStyle(AppPalette.textSecondary)
                         }
 
-                        Text(viewModel.hasSelectedPhoto ? "Photo analysis is ready to review. Add an ingredient list for a more specific lookup, or edit the detected foods below." : "Choose a photo or enter an ingredient list. USDA will look up each food and calculate the combined nutrition.")
+                        Text(viewModel.hasSelectedPhoto ? "Photo selected. Describe what is in it, then tap Done & analyze. You can edit the estimate before saving." : "Choose a photo or enter an ingredient list. USDA will look up each food and calculate the combined nutrition.")
                             .font(.subheadline)
                             .foregroundStyle(AppPalette.textSecondary)
 
@@ -149,6 +146,7 @@ struct MealLoggingView: View {
                                         onUpdateConfidence: { viewModel.updateFoodConfidence(id: food.id, confidence: $0) },
                                         onUpdateWeight: { viewModel.updateFoodWeight(id: food.id, grams: $0) },
                                         onUpdateServings: { viewModel.updateFoodServings(id: food.id, servings: $0) },
+                                        onUpdateCalories: { viewModel.updateFoodCalories(id: food.id, calories: $0) },
                                         onUpdateMacros: { viewModel.updateFoodMacros(id: food.id, protein: $0.protein, carbohydrates: $0.carbohydrates, fat: $0.fat) },
                                         onRemove: {
                                             viewModel.removeFood(id: food.id)
@@ -449,6 +447,7 @@ private struct MealDetectedFoodRow: View {
     let onUpdateConfidence: (Double?) -> Void
     let onUpdateWeight: (Double) -> Void
     let onUpdateServings: (Double) -> Void
+    let onUpdateCalories: (Int) -> Void
     let onUpdateMacros: (MealMacroValues) -> Void
     let onRemove: () -> Void
 
@@ -540,6 +539,7 @@ private struct MealDetectedFoodRow: View {
                 }
 
                 HStack(spacing: AppSpacing.small) {
+                    integerField(title: "Calories", value: food.nutrition.calories, onChange: onUpdateCalories)
                     macroField(title: "Protein g", value: food.nutrition.proteinGrams) { newValue in
                         onUpdateMacros(MealMacroValues(
                             protein: newValue,
@@ -587,6 +587,19 @@ private struct MealDetectedFoodRow: View {
         )
         .textFieldStyle(.appTextField)
         .keyboardType(.decimalPad)
+    }
+
+    private func integerField(title: String, value: Int, onChange: @escaping (Int) -> Void) -> some View {
+        TextField(
+            title,
+            value: Binding(
+                get: { value },
+                set: onChange
+            ),
+            format: .number
+        )
+        .textFieldStyle(.appTextField)
+        .keyboardType(.numberPad)
     }
 }
 

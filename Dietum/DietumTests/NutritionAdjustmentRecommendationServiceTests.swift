@@ -466,6 +466,37 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(viewModel.nutritionTotals.proteinGrams, 30, accuracy: 0.001)
         XCTAssertEqual(viewModel.nutritionTotals.carbohydrateGrams, 40, accuracy: 0.001)
         XCTAssertEqual(viewModel.nutritionTotals.fatGrams, 10, accuracy: 0.001)
+
+        viewModel.updateFoodCalories(id: foodID, calories: 420)
+        XCTAssertEqual(viewModel.nutritionTotals.calories, 420)
+    }
+
+    @MainActor
+    func testPhotoSelectionWaitsForDescriptionBeforeAnalysis() async {
+        let service = TestMealFoodDetectionService(
+            result: MealFoodDetectionResult(
+                detectedFoods: [
+                    DetectedMealFood(
+                        name: "Paneer",
+                        estimatedWeightGrams: 100,
+                        nutritionPer100Grams: NutritionAmounts(calories: 265)
+                    )
+                ],
+                notes: "Test estimate"
+            )
+        )
+        let viewModel = MealLoggingViewModel(detectionService: service)
+        viewModel.setSelectedPhoto(UIImage())
+
+        XCTAssertFalse(viewModel.canAnalyze)
+        await viewModel.analyzeMeal()
+        XCTAssertTrue(viewModel.detectedFoods.isEmpty)
+        XCTAssertEqual(viewModel.analysisState, .failed("Describe the food before analyzing."))
+
+        viewModel.updateFoodDescription("paneer")
+        XCTAssertTrue(viewModel.canAnalyze)
+        await viewModel.analyzeMeal()
+        XCTAssertEqual(viewModel.analysisState, .ready)
     }
 
     @MainActor

@@ -77,7 +77,7 @@ final class MealLoggingViewModel: ObservableObject {
     }
 
     var canAnalyze: Bool {
-        !draft.foodDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || hasSelectedPhoto
+        !draft.foodDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     func setSelectedPhoto(_ image: UIImage) {
@@ -216,8 +216,10 @@ final class MealLoggingViewModel: ObservableObject {
         }
 
         guard canAnalyze else {
-            analysisState = .failed("Describe the food or choose a photo before analyzing.")
-            analysisNotes = "Add a general description such as chicken, rice, and vegetables."
+            analysisState = .failed("Describe the food before analyzing.")
+            analysisNotes = hasSelectedPhoto
+                ? "Describe what is in the photo, such as paneer, rice, and dal, then tap Done & analyze."
+                : "Add a general description such as chicken, rice, and vegetables."
             return
         }
 
@@ -338,6 +340,29 @@ final class MealLoggingViewModel: ObservableObject {
                 carbohydrateGrams: max(0, carbohydrates),
                 fatGrams: max(0, fat),
                 fiberGrams: fiber,
+                micronutrients: draft.detectedFoods[index].nutrition.micronutrients
+            )
+            draft.detectedFoods[index].nutrition = updatedNutrition
+            draft.detectedFoods[index].nutritionPer100Grams = updatedNutrition.scaled(
+                toGrams: 10_000 / max(draft.detectedFoods[index].estimatedWeightGrams, 1)
+            )
+        }
+        reviewedItemIDs.remove(id)
+        analysisState = .needsReview
+    }
+
+    func updateFoodCalories(id: DetectedMealFood.ID, calories: Int) {
+        updateDraft { draft in
+            guard let index = draft.detectedFoods.firstIndex(where: { $0.id == id }) else {
+                return
+            }
+
+            let updatedNutrition = NutritionAmounts(
+                calories: max(0, calories),
+                proteinGrams: draft.detectedFoods[index].nutrition.proteinGrams,
+                carbohydrateGrams: draft.detectedFoods[index].nutrition.carbohydrateGrams,
+                fatGrams: draft.detectedFoods[index].nutrition.fatGrams,
+                fiberGrams: draft.detectedFoods[index].nutrition.fiberGrams,
                 micronutrients: draft.detectedFoods[index].nutrition.micronutrients
             )
             draft.detectedFoods[index].nutrition = updatedNutrition
