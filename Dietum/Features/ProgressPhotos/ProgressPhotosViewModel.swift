@@ -209,9 +209,9 @@ private enum ProgressPhotoComparisonAnalyzer {
 
     private static func fullnessDescription(bodyWidthChange: Double, hipWidthChange: Double) -> String {
         let change = (bodyWidthChange + hipWidthChange) / 2
-        if change < -0.04 { return "The aligned torso and hip silhouette appears less full, consistent with a visible reduction in soft-tissue fullness." }
-        if change > 0.04 { return "The aligned torso and hip silhouette appears fuller, consistent with a visible increase in soft-tissue fullness." }
-        return "The aligned torso and hip silhouette shows no clear change in visible fullness."
+        if change < -0.04 { return "The later photo looks less full through the torso and hips than the earlier photo." }
+        if change > 0.04 { return "The later photo looks fuller through the torso and hips than the earlier photo." }
+        return "The torso and hip fullness looks the same in both photos."
     }
 
     private static func definitionDescription(
@@ -228,33 +228,46 @@ private enum ProgressPhotoComparisonAnalyzer {
             regionalDefinitionText("legs", change: legDefinitionChange)
         ].compactMap { $0 }
         let regionalSummary = regionalSignals.isEmpty
-            ? " No clear regional definition signal was detected."
-            : " \(regionalSignals.joined(separator: " "))"
+            ? "The chest, arms, and legs look the same in both photos."
+            : regionalSignals.joined(separator: " ")
 
         if definitionChange > 0.12 {
-            return "More surface definition is visible in the aligned body region, with the shoulder proportion also moving \(shoulderDirection).\(regionalSummary) These are visibility signals, not muscle-mass measurements."
+            return "The later photo shows more visible muscle definition overall, and the shoulders look \(shoulderDirection). \(regionalSummary)"
         }
         if definitionChange < -0.12 {
-            return "Less surface definition is visible in the aligned body region.\(regionalSummary) These are visibility signals, not muscle-mass measurements."
+            return "The later photo shows less visible muscle definition overall. \(regionalSummary)"
         }
-        return "No clear change in visible muscle definition was detected.\(regionalSummary) Muscle mass itself is not measurable from a 2D photo."
+        return "The overall muscle definition looks the same in both photos. \(regionalSummary)"
     }
 
     private static func regionalDefinitionText(_ region: String, change: Double) -> String? {
         if change > 0.12 {
-            return "(region.capitalized) definition appears more visible."
+            return "The later photo shows more visible \(region) definition than the earlier photo."
         }
         if change < -0.12 {
-            return "(region.capitalized) definition appears less visible."
+            return "The later photo shows less visible \(region) definition than the earlier photo."
         }
         return nil
     }
 
     private static func shapeDescription(bodyWidthChange: Double, hipWidthChange: Double, shoulderChange: Double) -> String {
-        let trunk = bodyWidthChange < -0.04 ? "narrower" : bodyWidthChange > 0.04 ? "broader" : "similar in width"
-        let hips = hipWidthChange < -0.04 ? "narrower" : hipWidthChange > 0.04 ? "broader" : "similar in width"
-        let shoulders = shoulderChange < -0.04 ? "narrower" : shoulderChange > 0.04 ? "broader" : "similar in width"
-        return "The normalized shape appears \(trunk) through the torso, with hips \(hips) and shoulders \(shoulders). Compare waist, shoulders, limbs, and posture alongside this signal."
+        let trunk = shapeChangeText("torso", change: bodyWidthChange)
+        let hips = shapeChangeText("hips", change: hipWidthChange)
+        let shoulders = shapeChangeText("shoulders", change: shoulderChange)
+        if [bodyWidthChange, hipWidthChange, shoulderChange].allSatisfy({ abs($0) <= 0.04 }) {
+            return "The torso, hips, and shoulders look the same in both photos."
+        }
+        return "\(trunk) \(hips) \(shoulders)"
+    }
+
+    private static func shapeChangeText(_ region: String, change: Double) -> String {
+        if change < -0.04 {
+            return "The later photo looks narrower through the \(region) than the earlier photo."
+        }
+        if change > 0.04 {
+            return "The later photo looks broader through the \(region) than the earlier photo."
+        }
+        return "The \(region) look the same in both photos."
     }
 }
 
@@ -642,7 +655,7 @@ final class ProgressPhotosViewModel: ObservableObject {
                 title: "Fat change",
                 detail: visualFatDetail.isEmpty
                     ? fatDetail
-                    : "\(visualFatDetail) Numeric estimate context: \(fatDetail)"
+                    : visualFatDetail
             ),
             ProgressPhotoChange(
                 id: "muscle-signal",
