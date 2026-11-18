@@ -271,7 +271,7 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(result.detectedFoods.count, 1)
         XCTAssertEqual(result.detectedFoods.first?.name, "Chicken Tikka")
         XCTAssertEqual(result.detectedFoods.first?.nutrition.calories, 185)
-        XCTAssertEqual(result.detectedFoods.first?.nutrition.micronutrients.sodiumMilligrams, 410, accuracy: 0.001)
+        XCTAssertEqual(result.detectedFoods.first?.nutrition.micronutrients.sodiumMilligrams ?? 0, 410, accuracy: 0.001)
         XCTAssertTrue(result.notes?.contains("Indian Nutrient Databank") == true)
     }
 
