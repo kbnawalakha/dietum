@@ -312,6 +312,33 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(result.detectedFoods.map(\.name), ["Mixed dal", "Boiled rice (Uble chawal)"])
     }
 
+    func testCommonRiceAndLentilPhrasesResolveWithoutUSDAKey() async throws {
+        let catalog = BundledIndianRecipeCatalog(recipes: [
+            IndianRecipeNutrition(
+                id: "TEST-009",
+                name: "Mixed dal",
+                servingUnit: "bowl",
+                per100Nutrition: NutritionAmounts(calories: 115)
+            ),
+            IndianRecipeNutrition(
+                id: "TEST-010",
+                name: "Boiled rice (Uble chawal)",
+                servingUnit: "cup",
+                per100Nutrition: NutritionAmounts(calories: 130)
+            )
+        ])
+        let service = FoodDataCentralMealAnalysisService(
+            configuration: FoodDataCentralConfiguration(info: ["USDAFoodDataCentralAPIKey": ""]),
+            indianRecipeCatalog: catalog
+        )
+
+        let riceAndLentils = try await service.analyzeMeal(description: "rice and lentils", photo: nil)
+        let daalAndChaval = try await service.analyzeMeal(description: "daal and chaval", photo: nil)
+
+        XCTAssertEqual(riceAndLentils.detectedFoods.map(\.name), ["Boiled rice (Uble chawal)", "Mixed dal"])
+        XCTAssertEqual(daalAndChaval.detectedFoods.map(\.name), ["Mixed dal", "Boiled rice (Uble chawal)"])
+    }
+
     func testIndianRecipeCatalogMatchesNormalizedMultiWordQueries() {
         let recipe = IndianRecipeNutrition(
             id: "TEST-002",
