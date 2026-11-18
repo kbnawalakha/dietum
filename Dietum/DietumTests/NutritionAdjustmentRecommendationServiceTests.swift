@@ -316,8 +316,28 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
     func testMealSavePersistsSelectedPhotoWithoutManualReviewToggle() async throws {
         let container = try DietumPersistenceStack.makeContainer(inMemory: true)
         let repository = SwiftDataMealEntryRepository(modelContext: container.mainContext)
+        let service = TestMealFoodDetectionService(
+            result: MealFoodDetectionResult(
+                detectedFoods: [
+                    DetectedMealFood(
+                        name: "Chicken and rice",
+                        confidence: 0.8,
+                        estimatedWeightGrams: 300,
+                        nutritionPer100Grams: NutritionAmounts(
+                            calories: 160,
+                            proteinGrams: 12,
+                            carbohydrateGrams: 20,
+                            fatGrams: 4,
+                            fiberGrams: 1
+                        )
+                    )
+                ],
+                notes: "Test estimate"
+            )
+        )
         let viewModel = MealLoggingViewModel(
             draft: MealLoggingDraft(foodDescription: "chicken rice"),
+            detectionService: service,
             mealEntryRepository: repository
         )
         let image = UIGraphicsImageRenderer(size: CGSize(width: 24, height: 24)).image { context in

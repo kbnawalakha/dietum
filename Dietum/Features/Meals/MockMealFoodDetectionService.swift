@@ -59,8 +59,17 @@ struct FoodDataCentralMealAnalysisService: MealFoodDetectionService {
 
         let describedQueries = Self.queryTerms(from: description)
         let photoQueries: [VisionFoodLabel]
+        var photoWarning: String?
         if let imageData = photo?.imageData {
-            photoQueries = try await VisionFoodClassifier().classify(imageData: imageData)
+            do {
+                photoQueries = try await VisionFoodClassifier().classify(imageData: imageData)
+            } catch {
+                guard !describedQueries.isEmpty else {
+                    throw error
+                }
+                photoQueries = []
+                photoWarning = "Photo classification was unavailable, so USDA lookup used your description."
+            }
         } else {
             photoQueries = []
         }
@@ -93,9 +102,10 @@ struct FoodDataCentralMealAnalysisService: MealFoodDetectionService {
         }
 
         let source = photoQueries.isEmpty ? "your description" : "Apple Vision and your description"
+        let warning = photoWarning.map { " \($0)" } ?? ""
         return MealFoodDetectionResult(
             detectedFoods: detectedFoods,
-            notes: "Nutrition comes from USDA FoodData Central using \(source). Values are per 100 g; adjust each portion before saving. Photo classification estimates food identity, not weight or hidden oils."
+            notes: "Nutrition comes from USDA FoodData Central using \(source). Values are per 100 g; adjust each portion before saving. Photo classification estimates food identity, not weight or hidden oils.\(warning)"
         )
     }
 
