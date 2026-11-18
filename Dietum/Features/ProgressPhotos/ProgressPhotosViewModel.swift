@@ -30,6 +30,178 @@ struct ProgressPhotoChange: Identifiable, Hashable, Sendable {
     let detail: String
 }
 
+struct ProgressPhotoVisualComparison: Hashable, Sendable {
+    let fatDescription: String
+    let muscleDescription: String
+    let shapeDescription: String
+    let methodDescription: String
+}
+
+private struct ProgressPhotoBodyMetrics {
+    let bodyWidthRatio: Double
+    let shoulderWidthRatio: Double
+    let hipWidthRatio: Double
+    let definitionScore: Double
+}
+
+private enum ProgressPhotoComparisonAnalyzer {
+    static func compare(earlier: PhotoMetadata, later: PhotoMetadata) -> ProgressPhotoVisualComparison? {
+        guard let earlierData = earlier.imageData,
+              let laterData = later.imageData,
+              let earlierImage = UIImage(data: earlierData)?.cgImage,
+              let laterImage = UIImage(data: laterData)?.cgImage,
+              let earlierMetrics = metrics(for: earlierImage),
+              let laterMetrics = metrics(for: laterImage) else {
+            return nil
+        }
+
+        let bodyWidthChange = signedChange(from: earlierMetrics.bodyWidthRatio, to: laterMetrics.bodyWidthRatio)
+        let hipWidthChange = signedChange(from: earlierMetrics.hipWidthRatio, to: laterMetrics.hipWidthRatio)
+        let shoulderChange = signedChange(from: earlierMetrics.shoulderWidthRatio, to: laterMetrics.shoulderWidthRatio)
+        let definitionChange = signedChange(from: earlierMetrics.definitionScore, to: laterMetrics.definitionScore)
+
+        return ProgressPhotoVisualComparison(
+            fatDescription: fullnessDescription(bodyWidthChange: bodyWidthChange, hipWidthChange: hipWidthChange),
+            muscleDescription: definitionDescription(definitionChange: definitionChange, shoulderChange: shoulderChange),
+            shapeDescription: shapeDescription(
+                bodyWidthChange: bodyWidthChange,
+                hipWidthChange: hipWidthChange,
+                shoulderChange: shoulderChange
+            ),
+            methodDescription: "Compared aligned body keypoints, normalized silhouette ratios, and visible surface-definition signals from both photos."
+        )
+    }
+
+    private static func metrics(for image: CGImage) -> ProgressPhotoBodyMetrics? {
+        let handler = VNImageRequestHandler(cgImage: image, options: [:])
+        let poseRequest = VNDetectHumanBodyPoseRequest()
+
+        do {
+            try handler.perform([poseRequest])
+        } catch {
+            return nil
+        }
+
+        guard let observation = poseRequest.results?.first,
+              let points = try? observation.recognizedPoints(.all) else {
+            return nil
+        }
+
+        func point(_ joint: VNHumanBodyPoseObservation.JointName) -> CGPoint? {
+            guard let recognized = points[joint], recognized.confidence >= 0.2 else {
+                return nil
+            }
+            return recognized.location
+        }
+
+        guard let leftShoulder = point(.leftShoulder),
+              let rightShoulder = point(.rightShoulder),
+              let leftHip = point(.leftHip),
+              let rightHip = point(.rightHip) else {
+            return nil
+        }
+
+        let visiblePoints = points.values
+            .filter { $0.confidence >= 0.2 }
+            .map(\.location)
+        guard let minX = visiblePoints.map(\.x).min(),
+              let maxX = visiblePoints.map(\.x).max(),
+              let minY = visiblePoints.map(\.y).min(),
+              let maxY = visiblePoints.map(\.y).max(),
+              maxY > minY else {
+            return nil
+        }
+
+        let bodyHeight = maxY - minY
+        let bodyWidthRatio = (maxX - minX) / bodyHeight
+        let shoulderWidthRatio = distance(leftShoulder, rightShoulder) / bodyHeight
+        let hipWidthRatio = distance(leftHip, rightHip) / bodyHeight
+
+        return ProgressPhotoBodyMetrics(
+            bodyWidthRatio: bodyWidthRatio,
+            shoulderWidthRatio: shoulderWidthRatio,
+            hipWidthRatio: hipWidthRatio,
+            definitionScore: surfaceDefinitionScore(image, bodyBounds: CGRect(x: minX, y: minY, width: maxX - minX, height: bodyHeight))
+        )
+    }
+
+    private static func surfaceDefinitionScore(_ image: CGImage, bodyBounds: CGRect) -> Double {
+        let width = 64
+        let height = 64
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        guard let context = CGContext(
+            data: &pixels,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: width * 4,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else {
+            return 0
+        }
+
+        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        let xStart = max(0, Int(bodyBounds.minX * Double(width)))
+        let xEnd = min(width - 1, Int(bodyBounds.maxX * Double(width)))
+        let yStart = max(0, Int(bodyBounds.minY * Double(height)))
+        let yEnd = min(height - 1, Int(bodyBounds.maxY * Double(height)))
+        guard xEnd > xStart, yEnd > yStart else {
+            return 0
+        }
+
+        func luminance(_ x: Int, _ y: Int) -> Double {
+            let offset = ((y * width) + x) * 4
+            return (0.2126 * Double(pixels[offset]) + 0.7152 * Double(pixels[offset + 1]) + 0.0722 * Double(pixels[offset + 2])) / 255
+        }
+
+        var total = 0.0
+        var samples = 0
+        for y in yStart..<yEnd {
+            for x in xStart..<xEnd {
+                total += abs(luminance(x, y) - luminance(x + 1, y))
+                total += abs(luminance(x, y) - luminance(x, y + 1))
+                samples += 2
+            }
+        }
+        return samples == 0 ? 0 : total / Double(samples)
+    }
+
+    private static func distance(_ first: CGPoint, _ second: CGPoint) -> Double {
+        hypot(first.x - second.x, first.y - second.y)
+    }
+
+    private static func signedChange(from earlier: Double, to later: Double) -> Double {
+        guard earlier > 0 else { return 0 }
+        return (later - earlier) / earlier
+    }
+
+    private static func fullnessDescription(bodyWidthChange: Double, hipWidthChange: Double) -> String {
+        let change = (bodyWidthChange + hipWidthChange) / 2
+        if change < -0.04 { return "The aligned torso and hip silhouette appears less full, consistent with a visible reduction in soft-tissue fullness." }
+        if change > 0.04 { return "The aligned torso and hip silhouette appears fuller, consistent with a visible increase in soft-tissue fullness." }
+        return "The aligned torso and hip silhouette shows no clear change in visible fullness."
+    }
+
+    private static func definitionDescription(definitionChange: Double, shoulderChange: Double) -> String {
+        let shoulderDirection = shoulderChange >= 0 ? "wider" : "narrower"
+        if definitionChange > 0.12 {
+            return "More surface definition is visible in the aligned body region, with the shoulder proportion also moving \(shoulderDirection). This is a visibility signal, not a muscle-mass measurement."
+        }
+        if definitionChange < -0.12 {
+            return "Less surface definition is visible in the aligned body region. This is a visibility signal, not a muscle-mass measurement."
+        }
+        return "No clear change in visible muscle definition was detected. Muscle mass itself is not measurable from a 2D photo."
+    }
+
+    private static func shapeDescription(bodyWidthChange: Double, hipWidthChange: Double, shoulderChange: Double) -> String {
+        let trunk = bodyWidthChange < -0.04 ? "narrower" : bodyWidthChange > 0.04 ? "broader" : "similar in width"
+        let hips = hipWidthChange < -0.04 ? "narrower" : hipWidthChange > 0.04 ? "broader" : "similar in width"
+        let shoulders = shoulderChange < -0.04 ? "narrower" : shoulderChange > 0.04 ? "broader" : "similar in width"
+        return "The normalized shape appears \(trunk) through the torso, with hips \(hips) and shoulders \(shoulders). Compare waist, shoulders, limbs, and posture alongside this signal."
+    }
+}
+
 @MainActor
 final class ProgressPhotosViewModel: ObservableObject {
     enum BodyAnalysisState: Equatable {
@@ -66,6 +238,7 @@ final class ProgressPhotosViewModel: ObservableObject {
     @Published var comparisonAngle: ProgressPhotoAngle = .front
     @Published var comparisonBaselineID: UUID?
     @Published var comparisonLatestID: UUID?
+    @Published private(set) var comparisonVisualAnalysis: ProgressPhotoVisualComparison?
     @Published var saveState: SaveState = .idle
     @Published var loadState: LoadState = .idle
     @Published private(set) var photoSelectionError: String?
@@ -319,7 +492,8 @@ final class ProgressPhotosViewModel: ObservableObject {
             return "\(angleCount) of 4 angles appear in your local history. Select an angle with two saved entries to compare dates and pose consistently."
         }
 
-        return "Compare the overall and regional composition estimates between the selected dates. The saved values remain editable if your measured data changes."
+        let method = comparisonVisualAnalysis?.methodDescription ?? "Image signals require readable local image data in both saved photos."
+        return "Compare the overall and regional composition estimates between the selected dates. \(method) Saved values remain editable if your measured data changes."
     }
 
     var comparisonCandidates: [ProgressPhotoMetadata] {
@@ -400,21 +574,27 @@ final class ProgressPhotosViewModel: ObservableObject {
             fatDetail = "Save an overall body-fat estimate for both photos to compare fat change."
         }
 
+        let visualFatDetail = comparisonVisualAnalysis.map { " \($0.fatDescription)" } ?? ""
+        let visualMuscleDetail = comparisonVisualAnalysis?.muscleDescription
+            ?? "Muscle mass is not measurable from a 2D photo alone, and no image-based definition signal is available because both photos need readable local image data."
+        let visualShapeDetail = comparisonVisualAnalysis?.shapeDescription
+            ?? "Use the side-by-side images to compare waist, shoulders, limbs, and posture; no image-based shape signal is available yet."
+
         return [
             ProgressPhotoChange(
                 id: "fat-signal",
                 title: "Fat change",
-                detail: fatDetail
+                detail: fatDetail + visualFatDetail
             ),
             ProgressPhotoChange(
                 id: "muscle-signal",
                 title: "Muscle composition",
-                detail: "Muscle mass is not measurable from a 2D photo alone. Pair this comparison with weight, measurements, or strength data."
+                detail: visualMuscleDetail
             ),
             ProgressPhotoChange(
                 id: "shape-signal",
                 title: "Shape change",
-                detail: "Use the side-by-side images to compare waist, shoulders, limbs, and posture; no unsupported numeric shape score is assigned."
+                detail: visualShapeDetail
             )
         ]
     }
@@ -553,6 +733,7 @@ final class ProgressPhotosViewModel: ObservableObject {
         if comparisonLatestID == id {
             comparisonLatestID = comparisonCandidates.last(where: { $0.id != id })?.id
         }
+        updateComparisonVisualAnalysis()
     }
 
     func setComparisonLatest(_ id: UUID) {
@@ -560,6 +741,7 @@ final class ProgressPhotosViewModel: ObservableObject {
         if comparisonBaselineID == id {
             comparisonBaselineID = comparisonCandidates.first(where: { $0.id != id })?.id
         }
+        updateComparisonVisualAnalysis()
     }
 
     private func updateComparisonSelection() {
@@ -567,6 +749,7 @@ final class ProgressPhotosViewModel: ObservableObject {
         guard !candidates.isEmpty else {
             comparisonBaselineID = nil
             comparisonLatestID = nil
+            comparisonVisualAnalysis = nil
             return
         }
 
@@ -576,6 +759,19 @@ final class ProgressPhotosViewModel: ObservableObject {
         if comparisonLatestID == nil || !candidates.contains(where: { $0.id == comparisonLatestID }) || comparisonLatestID == comparisonBaselineID {
             comparisonLatestID = candidates.last(where: { $0.id != comparisonBaselineID })?.id
         }
+        updateComparisonVisualAnalysis()
+    }
+
+    private func updateComparisonVisualAnalysis() {
+        guard let comparisonBaseline, let comparisonLatest else {
+            comparisonVisualAnalysis = nil
+            return
+        }
+
+        comparisonVisualAnalysis = ProgressPhotoComparisonAnalyzer.compare(
+            earlier: comparisonBaseline.photo,
+            later: comparisonLatest.photo
+        )
     }
 
     private func angleOrder(_ angle: ProgressPhotoAngle) -> Int {
