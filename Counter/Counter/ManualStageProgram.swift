@@ -1,7 +1,6 @@
 import Foundation
 
 enum StageDurationMode: String, CaseIterable { case normal = "Normal", random = "Random" }
-enum ManualProgramStyle { case varied, consistent }
 enum BleepyEffect: Int, CaseIterable {
     case decrease, increase, complete, ultrafast
     case superSlow, increase10, increase20, decrease10, decrease20, decrease40, randomIncrease
@@ -56,7 +55,6 @@ struct ManualStageProgram {
     private(set) var closingLengths: [Int] = []
     private(set) var closing = false
     private var rests: [Int] = []
-    private var style: ManualProgramStyle = .varied
     private var stageStart = 0.0
     private(set) var phase: Phase = .idle
     private(set) var elapsed = 0.0
@@ -102,9 +100,9 @@ struct ManualStageProgram {
     var slowChance: Double { max(0.2, 0.5 - 0.3 * Double(max(0, stage - 1)) / Double(max(1, stageCount - 1))) }
     var ultraFraction: Double { activeTime > 0 ? ultraTime / activeTime : 0 }
 
-    mutating func start(mode: StageDurationMode, seed: UInt64, style: ManualProgramStyle = .varied, bleepyEnabled: Bool = true) {
+    mutating func start(mode: StageDurationMode, seed: UInt64, bleepyEnabled: Bool = true) {
         self = ManualStageProgram()
-        self.mode = mode; self.style = style; rng = StageRandom(state: seed)
+        self.mode = mode; rng = StageRandom(state: seed)
         visibilityRNG = StageRandom(state: seed ^ 0xd1b54a32d192ed03)
         stageCount = draw(5...6); totalDuration = draw(900...1200)
         rests = (0..<(stageCount - 1)).map { _ in draw(15...30) }
@@ -260,21 +258,18 @@ struct ManualStageProgram {
         let valid = (min(10, remaining)...min(30, remaining)).filter {
             remaining == $0 || remaining - $0 >= 10
         }
-        let duration = style == .consistent ? valid.min(by: { abs($0 - 20) < abs($1 - 20) })! : valid[draw(0...(valid.count - 1))]
+        let duration = valid[draw(0...(valid.count - 1))]
         let previous = level
         // Ordinary choices use available budgets; Bleepy is explicitly exempt.
         let slowBudget = max(0, (stageActiveTime - 5 * stageSlowTime) / 4)
         let ultraBudget = max(0, activeTime - 2 * ultraTime)
         do {
             var others: [RhythmLevel] = [.normal, .fast]
-            if style == .varied, segment > 0, previous != .ultrafast,
+            if segment > 0, previous != .ultrafast,
                remaining - duration >= 10, Double(duration + tail) <= ultraBudget + 1e-8 { others.append(.ultrafast) }
             others.removeAll { $0 == previous }
             let slowEligible = previous != .slow && Double(duration) <= slowBudget + 1e-8
-            if style == .consistent {
-                if slowEligible && segment % 5 == 4 { level = .slow }
-                else { level = previous == .normal ? .fast : .normal }
-            } else if slowEligible && Double.random(in: 0..<1, using: &rng) < slowChance { level = .slow }
+            if slowEligible && Double.random(in: 0..<1, using: &rng) < slowChance { level = .slow }
             else { level = others[draw(0...(others.count - 1))] }
             segmentDuration = duration
         }

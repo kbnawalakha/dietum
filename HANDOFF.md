@@ -298,3 +298,9 @@ Baseline stage tests passed. Updated reel tests pass start position, traversal l
 Remaining: phone volume and perceived scroll smoothness/fit checks. Next step: Command-R, play a video in manual mode, inspect numeric countdown/current stage, then wait for the next Bleepy reel. No saved media/links and no GitHub push; unrelated Dietum edits excluded.
 
 Final reel/readout verification: signed generic iPhone build passed with the viewport gradient fix. All stage/reveal/reel/override checks and existing link/live/embed regressions passed; scoped whitespace checks passed. The final rendered reel preview was visually inspected. No remote push.
+
+### Counter fixed-tempo removal (2026-11-17)
+
+Assigned request: remove fixed tempo. Changed `Counter/Counter/{MetronomeOverlay.swift,ManualStageProgram.swift}`, `Counter/Tests/Stages/StageChecks.swift`, `Counter/README.md`, `PROJECT_STATUS.md`, and this handoff. Removed the program-style picker, custom base-tempo slider/state, scaling, style enum/parameter, and consistent-pattern branch. Only randomized manual stages remain; stage-duration mode, wheel, timing visibility, audio controls and playback gating remain.
+
+Baseline stage checks passed. Updated stage/override/reel/reveal/gate tests and signed generic iPhone build passed. Source search confirms no fixed-tempo implementation symbols remain; scoped whitespace checks passed. No failed commands. Remaining: phone visual confirmation. Next step: Command-R and open manual settings. No GitHub push; unrelated Dietum changes excluded.

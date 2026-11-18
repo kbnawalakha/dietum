@@ -5,7 +5,7 @@ struct StageChecks {
     static func main() {
         for seed in 0..<200 {
             var program = ManualStageProgram()
-            program.start(mode: seed % 2 == 0 ? .normal : .random, seed: UInt64(seed), style: seed % 3 == 0 ? .consistent : .varied, bleepyEnabled: false)
+            program.start(mode: seed % 2 == 0 ? .normal : .random, seed: UInt64(seed), bleepyEnabled: false)
             precondition((5...6).contains(program.stageCount))
             precondition((900...1200).contains(program.totalDuration))
             precondition(Set(program.stageLengths).count > 1)
@@ -180,6 +180,6 @@ struct StageChecks {
         gate.expire(at: 2)
         precondition(!gate.playing)
         print("Playback gate checks passed: playing, pause, stale player evidence")
-        print("Bounded program checks passed: 200 seeds, both styles, 15–20 minutes, 5–6 stages, non-Ultra starts, progressive Ultra endings, normal caps without Bleepy overrides")
+        print("Bounded program checks passed: 200 seeds, randomized stages, 15–20 minutes, 5–6 stages, non-Ultra starts, progressive Ultra endings, normal caps without Bleepy overrides")
     }
 }

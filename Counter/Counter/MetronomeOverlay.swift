@@ -10,12 +10,10 @@ final class MetronomeModel: ObservableObject {
     @Published private(set) var lastBeat = Date.distantPast
     @Published var soundEnabled = true
     @Published private(set) var soundError: String?
-    @Published var useStages = true
     @Published var stageMode: StageDurationMode = .normal
     @Published var bleepySound = true
     @Published private(set) var program = ManualStageProgram()
     @Published private(set) var stagePaused = false
-    @Published var fixedTempo = 80.0
     @Published private(set) var playbackGate = ManualPlaybackGate()
     private weak var videoPlayer: AVPlayer?
     private var sourceIsEmbedded = false
@@ -49,7 +47,7 @@ final class MetronomeModel: ObservableObject {
     }
 
     private var targetTempo: Double {
-        program.level.targetBPM * (useStages ? 1 : fixedTempo / 80)
+        program.level.targetBPM
     }
 
     var effectiveBPM: Double {
@@ -68,7 +66,7 @@ final class MetronomeModel: ObservableObject {
 
     func startStages() {
         stop()
-        program.start(mode: stageMode, seed: UInt64.random(in: 0...UInt64.max), style: useStages ? .varied : .consistent)
+        program.start(mode: stageMode, seed: UInt64.random(in: 0...UInt64.max))
         refreshPlaybackGate()
         applyStageTempo()
         stageTicker = Task { [weak self] in
@@ -242,15 +240,6 @@ struct MetronomeOverlay: View {
                         BleepyWheelView(effect: effect, progress: model.program.wheelProgress,
                             spinning: model.program.spinning, message: model.program.lastBleep)
                             .frame(maxWidth: .infinity)
-                    }
-                    Picker("Program", selection: $model.useStages) {
-                        Text("Stages").tag(true); Text("Fixed tempo").tag(false)
-                    }.pickerStyle(.segmented)
-                    .onChange(of: model.useStages) { _, _ in model.stop() }
-                    if !model.useStages {
-                        Text("Consistent stage tempo: \(Int(model.fixedTempo)) BPM").font(.headline)
-                        Slider(value: $model.fixedTempo, in: 40...100, step: 1).disabled(model.program.active)
-                            .accessibilityLabel("Consistent stage base tempo")
                     }
                     Picker("Stage duration", selection: $model.stageMode) {
                         ForEach(StageDurationMode.allCases, id: \.self) { Text($0.rawValue).tag($0) }

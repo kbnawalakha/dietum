@@ -27,7 +27,7 @@ Before distributing, test live direct MP4, live HLS, website playback, fullscree
 
 ## Rhythm overlay
 
-Manual rhythm is available for both native and embedded players using the Manual rhythm toggle. Its settings offer Stages or Fixed tempo. Tap Start; open Tempo settings for speed presets, 30–240 BPM adjustment, or audible clicks. Changing tempo restarts the count at beat one. Soft beat clicks default on and use the existing toggle. The metronome stops when the player closes or the app leaves the foreground. Its timing follows the manual program rather than detected movement, and it pauses when the video is not playing.
+Manual rhythm is available for both native and embedded players using the Manual rhythm toggle. Its settings offer Normal or Random stage durations and sound controls. Tap Start to run the randomized stage program. Changing tempo restarts the count at beat one. Soft beat clicks default on and use the existing toggle. The metronome stops when the player closes or the app leaves the foreground. Its timing follows the manual program rather than detected movement, and it pauses when the video is not playing.
 
 The overlay belongs to Counter's inline player; iOS/website-provided fullscreen playback and Picture in Picture do not carry this overlay. Physical-device checks for audio mixing, pulse timing, and controls over real websites remain required.
 
@@ -87,7 +87,7 @@ The WebKit integration generates live canvas-stream videos in a top-level page a
 
 ## Manual stages and Bleepy
 
-Enable **Manual rhythm**, open the meter settings, choose **Stages** or **Fixed tempo**, then Start. Both choices start with a normal **15–20 minute running-time plan**, including inter-stage breaks, with **5–6 varying-length stages**. Bleepy can override this plan and its limits. The fixed choice uses a steadier Normal/Fast pattern, mostly 20-second segments, and a configurable base tempo. It no longer runs an unlimited flat metronome.
+Enable **Manual rhythm**, open the meter settings, choose a stage-duration mode, then Start. The randomized program starts with a normal **15–20 minute running-time plan**, including inter-stage breaks, with **5–6 varying-length stages**. Bleepy can override this plan and its limits. There is no fixed-tempo option or base-tempo slider.
 
 Ordinary stages start below Ultrafast and end with a closing Ultrafast segment; Bleepy may override either rule. Closing length grows monotonically from 10–15 seconds in the first stage toward 28–30 seconds in the last. Normal speed segments last 10–30 seconds and change to another speed. Breaks between stages last 15–30 seconds. There is no extra break after completion. The only running countdown shown is the current stage time, displayed as digits alone (for example `2:14`), without a Time remaining prefix. Stage labels show only the current number (`Stage 2`), never the total. Each stage independently has a 50% chance to hide it for a random 30–60 seconds of running stage time, then reveal it. The same visibility applies to the meter and settings; pauses freeze the reveal clock. A stage that ends early can finish before its countdown is revealed. Visibility randomness is separate from scheduling/outcome randomness. Beat durations/change countdowns, break countdowns, and whole-program remaining time are hidden in both the meter and settings.
 
@@ -103,7 +103,7 @@ The existing **Beat sound** toggle is reused and enabled by default. Click volum
 
 - −30 seconds, +30 seconds, or stage completion when revealed.
 - Ultrafast for a random 15–30 seconds.
-- **Super Slow for 30 seconds**, at half the ordinary Slow target (20 BPM nominal, scaled with the fixed-tempo setting).
+- **Super Slow for 30 seconds**, at half the ordinary Slow target (20 BPM nominal).
 - +10 seconds or +20 seconds.
 - −10 seconds, −20 seconds, or −40 seconds.
 - A random increase of **10–40 seconds**, inclusive.

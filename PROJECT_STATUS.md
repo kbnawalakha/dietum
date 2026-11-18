@@ -246,3 +246,9 @@ Milestone 0 — Repository and Architecture Foundation
 - Beat clicks increased from 0.22/0.14 to 0.65/0.50; the existing sound toggle remains.
 - Replaced the numbered circular Bleepy dial with a vertical prize-wheel reel showing all outcome names. It passes every option twice, decelerates over five seconds, and lands on the actual selected result.
 - Updated scheduler/reel tests and signed iPhone build passed before the final gradient-layout fix. Rendered preview inspected and corrected for label contrast; final verification follows.
+
+### Counter remove fixed tempo (2026-11-17)
+
+- Removed the Fixed tempo option, base-tempo slider, related state/scaling, and consistent scheduler branch.
+- Manual rhythm now uses only randomized stages with Normal/Random duration modes; Bleepy, hidden countdowns, playback gating, and sound controls remain.
+- Stage/override/wheel/countdown tests and signed iPhone build passed.
