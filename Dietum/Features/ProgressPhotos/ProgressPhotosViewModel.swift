@@ -42,6 +42,9 @@ private struct ProgressPhotoBodyMetrics {
     let shoulderWidthRatio: Double
     let hipWidthRatio: Double
     let definitionScore: Double
+    let chestDefinitionScore: Double
+    let armDefinitionScore: Double
+    let legDefinitionScore: Double
 }
 
 private enum ProgressPhotoComparisonAnalyzer {
@@ -59,16 +62,25 @@ private enum ProgressPhotoComparisonAnalyzer {
         let hipWidthChange = signedChange(from: earlierMetrics.hipWidthRatio, to: laterMetrics.hipWidthRatio)
         let shoulderChange = signedChange(from: earlierMetrics.shoulderWidthRatio, to: laterMetrics.shoulderWidthRatio)
         let definitionChange = signedChange(from: earlierMetrics.definitionScore, to: laterMetrics.definitionScore)
+        let chestDefinitionChange = signedChange(from: earlierMetrics.chestDefinitionScore, to: laterMetrics.chestDefinitionScore)
+        let armDefinitionChange = signedChange(from: earlierMetrics.armDefinitionScore, to: laterMetrics.armDefinitionScore)
+        let legDefinitionChange = signedChange(from: earlierMetrics.legDefinitionScore, to: laterMetrics.legDefinitionScore)
 
         return ProgressPhotoVisualComparison(
             fatDescription: fullnessDescription(bodyWidthChange: bodyWidthChange, hipWidthChange: hipWidthChange),
-            muscleDescription: definitionDescription(definitionChange: definitionChange, shoulderChange: shoulderChange),
+            muscleDescription: definitionDescription(
+                definitionChange: definitionChange,
+                shoulderChange: shoulderChange,
+                chestDefinitionChange: chestDefinitionChange,
+                armDefinitionChange: armDefinitionChange,
+                legDefinitionChange: legDefinitionChange
+            ),
             shapeDescription: shapeDescription(
                 bodyWidthChange: bodyWidthChange,
                 hipWidthChange: hipWidthChange,
                 shoulderChange: shoulderChange
             ),
-            methodDescription: "Compared aligned body keypoints, normalized silhouette ratios, and visible surface-definition signals from both photos."
+            methodDescription: "Compared Vision body keypoints, normalized silhouette ratios, and chest, arm, leg, and whole-body surface-definition signals. This is a 2D visual comparison, not a 3D mesh or clinical body-composition measurement."
         )
     }
 
@@ -117,12 +129,31 @@ private enum ProgressPhotoComparisonAnalyzer {
         let shoulderWidthRatio = distance(leftShoulder, rightShoulder) / bodyHeight
         let hipWidthRatio = distance(leftHip, rightHip) / bodyHeight
 
+        let bodyBounds = CGRect(x: minX, y: minY, width: maxX - minX, height: bodyHeight)
         return ProgressPhotoBodyMetrics(
             bodyWidthRatio: bodyWidthRatio,
             shoulderWidthRatio: shoulderWidthRatio,
             hipWidthRatio: hipWidthRatio,
-            definitionScore: surfaceDefinitionScore(image, bodyBounds: CGRect(x: minX, y: minY, width: maxX - minX, height: bodyHeight))
+            definitionScore: surfaceDefinitionScore(image, bodyBounds: bodyBounds),
+            chestDefinitionScore: regionDefinitionScore(image, bodyBounds: bodyBounds, x: 0.25...0.75, y: 0.35...0.65),
+            armDefinitionScore: regionDefinitionScore(image, bodyBounds: bodyBounds, x: 0.05...0.95, y: 0.25...0.65),
+            legDefinitionScore: regionDefinitionScore(image, bodyBounds: bodyBounds, x: 0.20...0.80, y: 0.00...0.40)
         )
+    }
+
+    private static func regionDefinitionScore(
+        _ image: CGImage,
+        bodyBounds: CGRect,
+        x: ClosedRange<Double>,
+        y: ClosedRange<Double>
+    ) -> Double {
+        let region = CGRect(
+            x: bodyBounds.minX + bodyBounds.width * x.lowerBound,
+            y: bodyBounds.minY + bodyBounds.height * y.lowerBound,
+            width: bodyBounds.width * (x.upperBound - x.lowerBound),
+            height: bodyBounds.height * (y.upperBound - y.lowerBound)
+        )
+        return surfaceDefinitionScore(image, bodyBounds: region)
     }
 
     private static func surfaceDefinitionScore(_ image: CGImage, bodyBounds: CGRect) -> Double {
@@ -183,15 +214,40 @@ private enum ProgressPhotoComparisonAnalyzer {
         return "The aligned torso and hip silhouette shows no clear change in visible fullness."
     }
 
-    private static func definitionDescription(definitionChange: Double, shoulderChange: Double) -> String {
+    private static func definitionDescription(
+        definitionChange: Double,
+        shoulderChange: Double,
+        chestDefinitionChange: Double,
+        armDefinitionChange: Double,
+        legDefinitionChange: Double
+    ) -> String {
         let shoulderDirection = shoulderChange >= 0 ? "wider" : "narrower"
+        let regionalSignals = [
+            regionalDefinitionText("chest", change: chestDefinitionChange),
+            regionalDefinitionText("arms", change: armDefinitionChange),
+            regionalDefinitionText("legs", change: legDefinitionChange)
+        ].compactMap { $0 }
+        let regionalSummary = regionalSignals.isEmpty
+            ? " No clear regional definition signal was detected."
+            : " \(regionalSignals.joined(separator: " "))"
+
         if definitionChange > 0.12 {
-            return "More surface definition is visible in the aligned body region, with the shoulder proportion also moving \(shoulderDirection). This is a visibility signal, not a muscle-mass measurement."
+            return "More surface definition is visible in the aligned body region, with the shoulder proportion also moving \(shoulderDirection).\(regionalSummary) These are visibility signals, not muscle-mass measurements."
         }
         if definitionChange < -0.12 {
-            return "Less surface definition is visible in the aligned body region. This is a visibility signal, not a muscle-mass measurement."
+            return "Less surface definition is visible in the aligned body region.\(regionalSummary) These are visibility signals, not muscle-mass measurements."
         }
-        return "No clear change in visible muscle definition was detected. Muscle mass itself is not measurable from a 2D photo."
+        return "No clear change in visible muscle definition was detected.\(regionalSummary) Muscle mass itself is not measurable from a 2D photo."
+    }
+
+    private static func regionalDefinitionText(_ region: String, change: Double) -> String? {
+        if change > 0.12 {
+            return "(region.capitalized) definition appears more visible."
+        }
+        if change < -0.12 {
+            return "(region.capitalized) definition appears less visible."
+        }
+        return nil
     }
 
     private static func shapeDescription(bodyWidthChange: Double, hipWidthChange: Double, shoulderChange: Double) -> String {
