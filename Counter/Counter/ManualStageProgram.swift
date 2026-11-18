@@ -80,6 +80,8 @@ struct ManualStageProgram {
     private var restStart = 0.0
     private var mode: StageDurationMode = .normal
     private var rng = StageRandom(state: 1)
+    private var visibilityRNG = StageRandom(state: 1)
+    private(set) var stageCountdownDelay = 0.0
     private var stageEnd = 0.0
     private var beatEnd = 0.0
     private var restEnd = 0.0
@@ -92,6 +94,7 @@ struct ManualStageProgram {
     var wheelProgress: Double { spinning ? min(1, max(0, (elapsed - wheelStarted) / Self.wheelDuration)) : 1 }
     var wheelVisible: Bool { spinning || (selectedBleepy != nil && elapsed - lastBleepAt < 5) }
 
+    var stageCountdownVisible: Bool { phase == .stage && elapsed - stageStart >= stageCountdownDelay }
     var active: Bool { phase == .stage || phase == .rest }
     var sessionRemaining: Double { max(0, Double(totalDuration) - elapsed) }
     var remaining: Double { max(0, (phase == .rest ? restEnd : stageEnd) - elapsed) }
@@ -102,6 +105,7 @@ struct ManualStageProgram {
     mutating func start(mode: StageDurationMode, seed: UInt64, style: ManualProgramStyle = .varied, bleepyEnabled: Bool = true) {
         self = ManualStageProgram()
         self.mode = mode; self.style = style; rng = StageRandom(state: seed)
+        visibilityRNG = StageRandom(state: seed ^ 0xd1b54a32d192ed03)
         stageCount = draw(5...6); totalDuration = draw(900...1200)
         rests = (0..<(stageCount - 1)).map { _ in draw(15...30) }
         var previous = 10
@@ -233,6 +237,7 @@ struct ManualStageProgram {
     private mutating func beginStage() {
         stage += 1; segment = 0; stageActiveTime = 0; stageSlowTime = 0; level = .stop; closing = false; overrideSegment = false
         stageStart = elapsed; stageDuration = stageLengths[stage - 1]
+        stageCountdownDelay = Bool.random(using: &visibilityRNG) ? Double(Int.random(in: 30...60, using: &visibilityRNG)) : 0
         phase = .stage; stageEnd = elapsed + Double(stageDuration)
         chooseBeat()
     }

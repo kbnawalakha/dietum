@@ -142,6 +142,31 @@ struct StageChecks {
         cancelled.stop(); cancelled.advance(by: 10)
         precondition(!cancelled.spinning && !cancelled.wheelVisible && cancelled.resolvedBleepCount == 0)
         print("Bleepy wheel checks passed: 60–300s gaps, mid-beat/break triggers, delayed reveal/application, all pointer targets, cancellation")
+        var hiddenCount = 0, visibleCount = 0, delays = Set<Int>()
+        for seed in 0..<200 {
+            var program = ManualStageProgram()
+            program.start(mode: .normal, seed: UInt64(seed), bleepyEnabled: false)
+            if program.stageCountdownDelay == 0 {
+                visibleCount += 1; precondition(program.stageCountdownVisible)
+            } else {
+                hiddenCount += 1
+                let delay = program.stageCountdownDelay
+                delays.insert(Int(delay)); precondition((30.0...60.0).contains(delay))
+                precondition(!program.stageCountdownVisible)
+                program.advance(by: delay - 0.5)
+                precondition(!program.stageCountdownVisible)
+                // No clock advancement during pause means no premature reveal.
+                precondition(!program.stageCountdownVisible)
+                program.advance(by: 0.5)
+                precondition(program.stageCountdownVisible)
+            }
+            let oldStage = program.stage
+            while program.stage == oldStage { program.advance(by: 0.5) }
+            precondition(program.stageCountdownVisible == (program.stageCountdownDelay == 0))
+            program.stop(); precondition(!program.stageCountdownVisible)
+        }
+        precondition(hiddenCount > 60 && visibleCount > 60 && delays.count > 20)
+        print("Countdown reveal checks passed: mixed visible/hidden stages, 30–60s delays, exact reveal, pause/reset, no pacing RNG changes")
         var gate = ManualPlaybackGate()
         precondition(!gate.playing)
         gate.update(playing: true, now: 0)

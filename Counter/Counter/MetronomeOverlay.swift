@@ -221,7 +221,7 @@ struct MetronomeOverlay: View {
             if model.program.active {
                 Text(model.stagePaused ? "Paused" : model.program.level.rawValue)
                     .font(.caption.monospacedDigit())
-                if model.program.phase == .stage {
+                if model.program.stageCountdownVisible {
                     Text("Time remaining: \(clock(model.program.remaining))")
                         .font(.caption.monospacedDigit()).accessibilityLabel("Stage time remaining \(clock(model.program.remaining))")
                 }
@@ -259,7 +259,7 @@ struct MetronomeOverlay: View {
                         .font(.callout).foregroundStyle(.secondary)
                     if model.program.active {
                         Text("Stage \(model.program.stage)/\(model.program.stageCount)")
-                        if model.program.phase == .stage {
+                        if model.program.stageCountdownVisible {
                             Text("Time remaining: \(clock(model.program.remaining))").monospacedDigit()
                         }
                     }
