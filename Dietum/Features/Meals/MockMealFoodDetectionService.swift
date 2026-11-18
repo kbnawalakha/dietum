@@ -183,13 +183,16 @@ struct NutritionLabelReader: Sendable {
 struct FoodDataCentralMealAnalysisService: MealFoodDetectionService {
     private let configuration: FoodDataCentralConfiguration
     private let session: URLSession
+    private let indianRecipeCatalog: any IndianRecipeCatalog
 
     init(
         configuration: FoodDataCentralConfiguration = FoodDataCentralConfiguration(),
-        session: URLSession = .shared
+        session: URLSession = .shared,
+        indianRecipeCatalog: any IndianRecipeCatalog = BundledIndianRecipeCatalog()
     ) {
         self.configuration = configuration
         self.session = session
+        self.indianRecipeCatalog = indianRecipeCatalog
     }
 
     func analyzeMeal(description: String, photo: PhotoMetadata?) async throws -> MealFoodDetectionResult {
@@ -199,7 +202,11 @@ struct FoodDataCentralMealAnalysisService: MealFoodDetectionService {
             labelReading = try? await NutritionLabelReader().read(imageData: imageData)
         }
 
-        guard configuration.isConfigured || labelReading != nil else {
+        let indianMatches = Dictionary(uniqueKeysWithValues: describedQueries.compactMap { query in
+            indianRecipeCatalog.match(for: query).map { (query, $0) }
+        })
+
+        guard configuration.isConfigured || labelReading != nil || !indianMatches.isEmpty else {
             throw FoodDataCentralMealAnalysisError.missingAPIKey
         }
 
@@ -235,7 +242,23 @@ struct FoodDataCentralMealAnalysisService: MealFoodDetectionService {
             )]
         } ?? []
 
-        for query in queries.prefix(6) where configuration.isConfigured {
+        for query in queries.prefix(6) {
+            if let indianMatch = indianMatches[query] {
+                detectedFoods.append(
+                    DetectedMealFood(
+                        name: indianMatch.name,
+                        confidence: describedQueries.contains(query) ? 0.95 : 0.7,
+                        estimatedWeightGrams: 100,
+                        nutritionPer100Grams: indianMatch.per100Nutrition
+                    )
+                )
+                continue
+            }
+
+            guard configuration.isConfigured else {
+                continue
+            }
+
             guard let food = try await lookup(query: query) else {
                 continue
             }
@@ -255,11 +278,20 @@ struct FoodDataCentralMealAnalysisService: MealFoodDetectionService {
             throw FoodDataCentralMealAnalysisError.noNutritionData
         }
 
-        let source = labelReading != nil ? "the nutrition label" : (photoQueries.isEmpty ? "your ingredient list" : "Apple Vision and your ingredient list")
+        let source: String
+        if labelReading != nil {
+            source = "the nutrition label"
+        } else if !indianMatches.isEmpty && photoQueries.isEmpty && !configuration.isConfigured {
+            source = "the open-access Indian Nutrient Databank"
+        } else if !indianMatches.isEmpty && photoQueries.isEmpty {
+            source = "the Indian Nutrient Databank and USDA FoodData Central"
+        } else {
+            source = photoQueries.isEmpty ? "your ingredient list" : "Apple Vision and your ingredient list"
+        }
         let warning = photoWarning.map { " \($0)" } ?? ""
         return MealFoodDetectionResult(
             detectedFoods: detectedFoods,
-            notes: labelReading != nil ? "The nutrition label was read as one serving. Adjust servings below before saving; values are converted to the shared per-100 g model.\(warning)" : "Nutrition comes from USDA FoodData Central using \(source). Values are per 100 g; adjust each portion before saving. Photo classification estimates food identity, not weight or hidden oils.\(warning)"
+            notes: labelReading != nil ? "The nutrition label was read as one serving. Adjust servings below before saving; values are converted to the shared per-100 g model.\(warning)" : "Nutrition comes from \(source). Values are per 100 g; adjust each portion before saving. Photo classification estimates food identity, not weight or hidden oils.\(warning)"
         )
     }
 

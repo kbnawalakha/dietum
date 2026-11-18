@@ -71,6 +71,8 @@
 		1000000000000000000000E4 /* NutritionTrendInsightsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000E5 /* NutritionTrendInsightsViewModel.swift */; };
 		1000000000000000000000E6 /* NutritionTrendInsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000E7 /* NutritionTrendInsightsView.swift */; };
 		1000000000000000000000F0 /* AccountFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000F1 /* AccountFeature.swift */; };
+		1000000000000000000000F6 /* indb_recipes.json in Resources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000F5 /* indb_recipes.json */; };
+		1000000000000000000000F4 /* IndianRecipeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000F3 /* IndianRecipeCatalog.swift */; };
 		82E9B69C30AD392B006E5ED8 /* Dietum-phone.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 82E9B69030AD392B006E5ED8 /* Dietum-phone.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -173,6 +175,8 @@
 		1000000000000000000000E5 /* NutritionTrendInsightsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionTrendInsightsViewModel.swift; sourceTree = "<group>"; };
 		1000000000000000000000E7 /* NutritionTrendInsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionTrendInsightsView.swift; sourceTree = "<group>"; };
 		1000000000000000000000F1 /* AccountFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountFeature.swift; sourceTree = "<group>"; };
+		1000000000000000000000F5 /* indb_recipes.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = indb_recipes.json; sourceTree = "<group>"; };
+		1000000000000000000000F3 /* IndianRecipeCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndianRecipeCatalog.swift; sourceTree = "<group>"; };
 		82E9B69030AD392B006E5ED8 /* Dietum-phone.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = "Dietum-phone.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -238,6 +242,7 @@
 			isa = PBXGroup;
 			children = (
 				100000000000000000000025 /* Info.plist */,
+				1000000000000000000000F7 /* Resources */,
 				100000000000000000000026 /* App */,
 				100000000000000000000027 /* Features */,
 				100000000000000000000034 /* Data */,
@@ -421,6 +426,7 @@
 				100000000000000000000058 /* MealLoggingView.swift */,
 				100000000000000000000059 /* MealLoggingViewModel.swift */,
 				10000000000000000000005A /* MockMealFoodDetectionService.swift */,
+				1000000000000000000000F3 /* IndianRecipeCatalog.swift */,
 				1000000000000000000000C2 /* MealReminderView.swift */,
 				1000000000000000000000C3 /* MealReminderViewModel.swift */,
 				1000000000000000000000D9 /* MealExportService.swift */,
@@ -428,6 +434,14 @@
 				1000000000000000000000DD /* MealExportView.swift */,
 			);
 			path = Meals;
+			sourceTree = "<group>";
+		};
+		1000000000000000000000F7 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				1000000000000000000000F5 /* indb_recipes.json */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		100000000000000000000068 /* CheckIn */ = {
@@ -613,6 +627,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1000000000000000000000F6 /* indb_recipes.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -672,6 +687,7 @@
 				100000000000000000000061 /* MealLoggingView.swift in Sources */,
 				100000000000000000000062 /* MealLoggingViewModel.swift in Sources */,
 				100000000000000000000063 /* MockMealFoodDetectionService.swift in Sources */,
+				1000000000000000000000F4 /* IndianRecipeCatalog.swift in Sources */,
 				1000000000000000000000C0 /* MealReminderView.swift in Sources */,
 				1000000000000000000000C1 /* MealReminderViewModel.swift in Sources */,
 				1000000000000000000000D0 /* HabitAdherenceModels.swift in Sources */,

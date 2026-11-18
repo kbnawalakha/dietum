@@ -247,6 +247,47 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(ingredients, ["chicken", "rice", "broccoli", "olive oil"])
     }
 
+    func testIndianRecipeCatalogProvidesNutritionWithoutUSDAKey() async throws {
+        let recipe = IndianRecipeNutrition(
+            id: "TEST-001",
+            name: "Chicken Tikka",
+            servingUnit: "bowl",
+            per100Nutrition: NutritionAmounts(
+                calories: 185,
+                proteinGrams: 24,
+                carbohydrateGrams: 5,
+                fatGrams: 7,
+                fiberGrams: 1,
+                micronutrients: NutritionMicronutrients(sodiumMilligrams: 410, ironMilligrams: 1.2)
+            )
+        )
+        let service = FoodDataCentralMealAnalysisService(
+            configuration: FoodDataCentralConfiguration(info: ["USDAFoodDataCentralAPIKey": ""]),
+            indianRecipeCatalog: BundledIndianRecipeCatalog(recipes: [recipe])
+        )
+
+        let result = try await service.analyzeMeal(description: "chicken tikka", photo: nil)
+
+        XCTAssertEqual(result.detectedFoods.count, 1)
+        XCTAssertEqual(result.detectedFoods.first?.name, "Chicken Tikka")
+        XCTAssertEqual(result.detectedFoods.first?.nutrition.calories, 185)
+        XCTAssertEqual(result.detectedFoods.first?.nutrition.micronutrients.sodiumMilligrams, 410, accuracy: 0.001)
+        XCTAssertTrue(result.notes?.contains("Indian Nutrient Databank") == true)
+    }
+
+    func testIndianRecipeCatalogMatchesNormalizedMultiWordQueries() {
+        let recipe = IndianRecipeNutrition(
+            id: "TEST-002",
+            name: "Palak Paneer (Spinach and Cottage Cheese)",
+            servingUnit: "cup",
+            per100Nutrition: NutritionAmounts(calories: 140)
+        )
+        let catalog = BundledIndianRecipeCatalog(recipes: [recipe])
+
+        XCTAssertEqual(catalog.match(for: "PALAK PANEER")?.id, "TEST-002")
+        XCTAssertNil(catalog.match(for: "sushi"))
+    }
+
     func testNutritionMicronutrientsScaleWithEditablePortion() {
         let per100Grams = NutritionAmounts(
             calories: 120,
