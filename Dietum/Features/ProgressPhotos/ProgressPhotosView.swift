@@ -225,7 +225,29 @@ struct ProgressPhotosView: View {
                             }
 
                             VStack(alignment: .leading, spacing: AppSpacing.small) {
-                                Text("What changed")
+                                Text("Composition changes")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(AppPalette.textPrimary)
+
+                                ForEach(viewModel.comparisonCompositionSignals) { signal in
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(signal.title)
+                                            .font(.caption.weight(.semibold))
+                                            .foregroundStyle(AppPalette.textPrimary)
+                                        Text(signal.detail)
+                                            .font(.caption)
+                                            .foregroundStyle(AppPalette.textSecondary)
+                                    }
+                                    .accessibilityElement(children: .combine)
+                                }
+
+                                Text("Regional fat estimates are listed below when both photos contain saved values.")
+                                    .font(.caption2)
+                                    .foregroundStyle(AppPalette.textSecondary)
+                            }
+
+                            VStack(alignment: .leading, spacing: AppSpacing.small) {
+                                Text("Regional fat changes")
                                     .font(.subheadline.weight(.semibold))
                                     .foregroundStyle(AppPalette.textPrimary)
 
@@ -241,7 +263,7 @@ struct ProgressPhotosView: View {
                                     .accessibilityElement(children: .combine)
                                 }
 
-                                Text("These changes compare saved non-clinical composition estimates with the side-by-side photos.")
+                                Text("These changes compare saved non-clinical fat estimates with the side-by-side photos.")
                                     .font(.caption2)
                                     .foregroundStyle(AppPalette.textSecondary)
                             }
@@ -412,7 +434,7 @@ struct ProgressPhotosView: View {
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(AppPalette.textSecondary)
 
-            Text(value.isEmpty ? "—" : "(value)%")
+            Text(value.isEmpty ? "—" : "\(value)%")
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(AppPalette.textPrimary)
         }

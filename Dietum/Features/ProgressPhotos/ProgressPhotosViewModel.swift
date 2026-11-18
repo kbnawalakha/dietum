@@ -388,6 +388,37 @@ final class ProgressPhotosViewModel: ObservableObject {
         return changes
     }
 
+    var comparisonCompositionSignals: [ProgressPhotoChange] {
+        guard comparisonBaseline != nil, comparisonLatest != nil else {
+            return []
+        }
+
+        let fatDetail: String
+        if let overall = comparisonChanges.first(where: { $0.id == "overall" }) {
+            fatDetail = overall.detail
+        } else {
+            fatDetail = "Save an overall body-fat estimate for both photos to compare fat change."
+        }
+
+        return [
+            ProgressPhotoChange(
+                id: "fat-signal",
+                title: "Fat change",
+                detail: fatDetail
+            ),
+            ProgressPhotoChange(
+                id: "muscle-signal",
+                title: "Muscle composition",
+                detail: "Muscle mass is not measurable from a 2D photo alone. Pair this comparison with weight, measurements, or strength data."
+            ),
+            ProgressPhotoChange(
+                id: "shape-signal",
+                title: "Shape change",
+                detail: "Use the side-by-side images to compare waist, shoulders, limbs, and posture; no unsupported numeric shape score is assigned."
+            )
+        ]
+    }
+
     var saveButtonTitle: String {
         switch saveState {
         case .saving:

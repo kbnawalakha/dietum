@@ -464,6 +464,9 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(viewModel.comparisonChanges.first?.detail, "Down by 2.0 percentage points: 24.0% to 22.0%")
         XCTAssertTrue(viewModel.comparisonChanges.contains { $0.title == "Chest" && $0.detail.contains("Down by 2.0") })
         XCTAssertTrue(viewModel.comparisonChanges.contains { $0.title == "Arms" && $0.detail.contains("Down by 1.0") })
+        XCTAssertEqual(viewModel.comparisonCompositionSignals.map(\.title), ["Fat change", "Muscle composition", "Shape change"])
+        XCTAssertTrue(viewModel.comparisonCompositionSignals[1].detail.contains("not measurable"))
+        XCTAssertTrue(viewModel.comparisonCompositionSignals[2].detail.contains("waist"))
         XCTAssertFalse(viewModel.comparisonDetail.localizedCaseInsensitiveContains("lighting"))
         XCTAssertTrue(viewModel.comparisonDetail.localizedCaseInsensitiveContains("composition"))
     }

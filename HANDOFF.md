@@ -26,6 +26,7 @@ codex/repo-foundation
 - Hardened photo-only Vision classification by filtering generic labels before taking the top candidates and added a distinct error for rejected USDA API keys.
 - Added a "What changed" comparison section for progress photos that compares overall and regional saved body-fat estimates between the selected earlier and later photos.
 - Refocused body-photo analysis and comparison text on composition changes, regional estimates, and saved percentage-point deltas without discussing lighting or framing.
+- Added separate Fat change, Muscle composition, and Shape change comparison signals; fixed regional estimate cards that were displaying a literal `(value)%` placeholder.
 
 - Added `BodyFatEstimateBreakdown` for chest, arms, legs, back, and visceral estimates.
 - Persisted the optional breakdown through the SwiftData progress-photo model.
@@ -82,6 +83,7 @@ codex/repo-foundation
 - Without the USDA key, live analysis intentionally fails with a configuration message; no mock calories are generated.
 - Photo-only analysis requires both a valid USDA key and network access; rejected keys now show a specific configuration error instead of the generic request failure.
 - Progress-photo comparison is limited to saved estimate metadata; missing estimates show a visual-only comparison message rather than guessed numeric changes.
+- Muscle composition is not measured from 2D photos; users are directed to weight, measurements, or strength data for that signal, while shape remains a side-by-side visual comparison.
 - Progress-photo picker selection now retains its pose through PhotosUI dismissal and awaits staging plus analysis before clearing the selection.
 - Progress-photo history now shows capture dates as the primary records; use the trash action on a date to remove its full photo set and analysis.
 - Removed meal-reminder navigation and dashboard entry points per product direction; legacy reminder model/export types remain only for local compatibility.
