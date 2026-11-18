@@ -25,6 +25,7 @@ codex/repo-foundation
 - Hardened meal analysis to continue with a user-provided description when Vision cannot classify a photo, and changed the meal-save regression to inject a deterministic analyzer rather than depend on a live USDA key.
 - Hardened photo-only Vision classification by filtering generic labels before taking the top candidates and added a distinct error for rejected USDA API keys.
 - Added a "What changed" comparison section for progress photos that compares overall and regional saved body-fat estimates between the selected earlier and later photos.
+- Refocused body-photo analysis and comparison text on composition changes, regional estimates, and saved percentage-point deltas without discussing lighting or framing.
 
 - Added `BodyFatEstimateBreakdown` for chest, arms, legs, back, and visceral estimates.
 - Persisted the optional breakdown through the SwiftData progress-photo model.

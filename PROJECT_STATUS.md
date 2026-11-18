@@ -60,6 +60,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Added confirmation-required left-swipe deletion for saved progress-photo days and meal-photo history days
 - Replaced fixed meal-analysis servings with per-100 g nutrition values, realistic default portions, editable gram weights, and persisted gram quantities on saved meal items
 - Added between-photo progress comparison summaries showing overall and regional body-fat estimate changes in percentage points, with a visual-only fallback when comparable estimates are missing
+- Refocused body-photo analysis copy on body-composition estimates and between-photo regional changes; removed lighting, obstruction, and framing guidance
 - Replaced mock meal detection with Apple Vision food classification and USDA FoodData Central nutrition lookups; missing configuration now fails clearly instead of inventing calories
 - Hardened meal tracking so description-based USDA lookup survives inconclusive photo classification, and repository save tests use an injected analyzer instead of requiring a live API key
 - Hardened photo-only meal analysis by filtering generic Vision labels before limiting candidates and distinguishing rejected USDA keys from network failures

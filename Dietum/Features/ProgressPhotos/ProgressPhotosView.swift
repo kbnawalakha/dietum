@@ -241,7 +241,7 @@ struct ProgressPhotosView: View {
                                     .accessibilityElement(children: .combine)
                                 }
 
-                                Text("Numeric changes compare saved non-clinical estimates; use the photos for visual context.")
+                                Text("These changes compare saved non-clinical composition estimates with the side-by-side photos.")
                                     .font(.caption2)
                                     .foregroundStyle(AppPalette.textSecondary)
                             }

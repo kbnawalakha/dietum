@@ -216,7 +216,7 @@ final class ProgressPhotosViewModel: ObservableObject {
     var bodyAnalysisText: String {
         switch bodyAnalysisState {
         case .idle:
-            return stagedPhotos.isEmpty ? "Upload at least one body photo to analyze it locally." : "Analyze the staged photos to check the body framing."
+            return stagedPhotos.isEmpty ? "Upload at least one body photo to analyze its composition." : "Analyze the staged photos to calculate regional composition estimates."
         case .analyzing:
             return "Checking the staged photos for a detectable human body..."
         case .analyzed(let message), .failed(let message):
@@ -254,7 +254,7 @@ final class ProgressPhotosViewModel: ObservableObject {
         if detectedCount == 0 {
             applySuggestedBodyFatBreakdown()
             let photoWord = validImageCount == 1 ? "photo was" : "photos were"
-            bodyAnalysisState = .analyzed("The \(photoWord) loaded, but pose detection was inconclusive. Review the automatic visual estimates below; use a brighter, less obstructed full-body photo for stronger framing feedback.")
+            bodyAnalysisState = .analyzed("The \(photoWord) loaded, but pose detection was inconclusive. Review the automatic regional composition estimates below; they remain editable before saving.")
         } else {
             applySuggestedBodyFatBreakdown()
             let photoWord = detectedCount == 1 ? "photo" : "photos"
@@ -319,7 +319,7 @@ final class ProgressPhotosViewModel: ObservableObject {
             return "\(angleCount) of 4 angles appear in your local history. Select an angle with two saved entries to compare dates and pose consistently."
         }
 
-        return "Both images remain on this device. Use the same angle and similar lighting for a more useful visual check."
+        return "Compare the overall and regional composition estimates between the selected dates. The saved values remain editable if your measured data changes."
     }
 
     var comparisonCandidates: [ProgressPhotoMetadata] {
