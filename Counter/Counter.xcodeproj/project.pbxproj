@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		000000000000000000000047 = {isa = PBXBuildFile; fileRef = 000000000000000000000046; };
 		00000000000000000000001E /* CounterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000014 /* CounterApp.swift */; };
 		00000000000000000000001F /* LinkResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000015 /* LinkResolver.swift */; };
 		000000000000000000000020 /* WebsitePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000016 /* WebsitePlayer.swift */; };
@@ -18,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		000000000000000000000046 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddedVideoBridge.swift; sourceTree = "<group>"; };
 		000000000000000000000007 /* Counter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = Counter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000014 /* CounterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterApp.swift; sourceTree = "<group>"; };
 		000000000000000000000015 /* LinkResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkResolver.swift; sourceTree = "<group>"; };
@@ -57,6 +59,7 @@
 				000000000000000000000029 /* VideoRhythmAnalyzer.swift */,
 				00000000000000000000002A /* RhythmGuide.swift */,
 				00000000000000000000003C /* RhythmMeter.swift */,
+				000000000000000000000046 /* EmbeddedVideoBridge.swift */,
 			);
 			path = Counter;
 			sourceTree = "<group>";
@@ -118,6 +121,7 @@
 				000000000000000000000033 /* VideoRhythmAnalyzer.swift in Sources */,
 				000000000000000000000034 /* RhythmGuide.swift in Sources */,
 				00000000000000000000003D /* RhythmMeter.swift in Sources */,
+				000000000000000000000047 /* EmbeddedVideoBridge.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

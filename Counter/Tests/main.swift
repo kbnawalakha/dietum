@@ -112,3 +112,40 @@ assert(cycle.position < faster.position)
 cycle.advance(to: 20.2)
 assert(cycle.position == 0) // completes and waits; no invented second cycle
 print("Video-derived 72/90 BPM and phase, audio independence, missing-motion stop, and complete-cycle checks passed")
+
+func webEvent(_ kind: String = "frame", id: String = "player", time: Double = 0, area: Double = 10000,
+              value: Double = 0.1) -> EmbeddedVideoEvent {
+    EmbeddedVideoEvent(body: ["kind": kind, "id": id, "time": time, "area": area,
+                               "grid": Array(repeating: value, count: 256)])!
+}
+assert(EmbeddedVideoEvent(body: ["kind": "frame", "id": "x", "time": 0.0, "area": 1.0, "grid": [0.5]]) == nil)
+assert(EmbeddedVideoEvent(body: ["kind": "frame", "id": "x", "time": Double.nan, "area": 1.0]) == nil)
+assert(EmbeddedVideoEvent(body: ["kind": "unknown"]) == nil)
+assert(EmbeddedVideoEvent(body: ["kind": "frame", "id": "x", "time": 0.0, "area": 1.0,
+                               "grid": Array(repeating: 2.0, count: 256)]) == nil)
+var router = EmbeddedMotionRouter()
+assert(router.receive(webEvent(), now: 0)?.sample?.movement == 0)
+assert(router.receive(webEvent(time: 0.1, value: 0.2), now: 0.1)!.sample!.movement > 0.09)
+assert(router.receive(webEvent(time: 0.1), now: 0.11) == nil) // duplicate browser frame
+assert(router.receive(webEvent(id: "small-ad", time: 0.2, area: 100), now: 0.2) == nil)
+assert(router.receive(EmbeddedVideoEvent(body: ["kind": "idle"])!, now: 0.3) == nil)
+assert(router.receive(webEvent("paused", time: 0.1), now: 0.4)?.kind == .paused)
+assert(router.receive(webEvent(id: "new-playing", time: 0.5, area: 100), now: 0.5)?.reset == true)
+assert(router.receive(webEvent("paused", time: 0.1), now: 0.6) == nil)
+assert(router.receive(webEvent(id: "new-playing", time: 10, area: 100), now: 0.7)?.reset == true)
+assert(router.receive(webEvent("blocked", id: "new-playing", time: 10, area: 100), now: 0.8)?.reset == true)
+assert(router.receive(EmbeddedVideoEvent(body: ["kind": "idle"])!, now: 4)?.kind == .idle)
+// Embedded numeric frames drive the same observed cadence without native playback or saved media.
+router.reset()
+var embeddedMeter = LiveRhythmMeter()
+for index in 0..<240 {
+    let time = Double(index) / 12
+    let value = (index / 5) % 2 == 0 ? 0.1 : 0.3
+    let update = router.receive(webEvent(time: time, value: value), now: time)!
+    if update.reset { embeddedMeter.reset() }
+    if let sample = update.sample { embeddedMeter.advance(to: time); embeddedMeter.ingest(sample) }
+}
+assert(embeddedMeter.ready)
+assert(embeddedMeter.samples.count <= 64)
+assert(embeddedMeter.measuredBPM != nil && abs(embeddedMeter.measuredBPM! - 144) < 0.001)
+print("Embedded bridge checks passed: validation, duplicate/iframe filtering, pause, player switch, seek, blocked access, bounded motion-derived cadence")

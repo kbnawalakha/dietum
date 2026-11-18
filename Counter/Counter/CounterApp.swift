@@ -123,7 +123,10 @@ struct CounterView: View {
                             if model.isLoading { ProgressView("Loading…").tint(.mint) }
                             Group {
                             if model.webMode {
-                                WebsitePlayer(url: url, loading: $model.isLoading, error: $model.error)
+                                WebsitePlayer(url: url, loading: $model.isLoading, error: $model.error,
+                                              trackingEnabled: guide.live && guide.enabled && !manualWebsiteMode && scenePhase == .active,
+                                              onVideo: { guide.receiveEmbedded($0) },
+                                              onNavigation: { if !manualWebsiteMode { guide.startEmbedded() } })
                                     .id(model.reloadID)
                                     .frame(height: 430)
                                     .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -134,21 +137,19 @@ struct CounterView: View {
                             }
                             }
                             .overlay(alignment: .topTrailing) {
-                                if model.webMode && !manualWebsiteMode {
-                                    Text("Website player\nVideo tracking unavailable")
-                                        .font(.caption).multilineTextAlignment(.center)
-                                        .padding(10).background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
-                                        .padding(8).allowsHitTesting(false)
-                                } else if guide.live && guide.enabled {
+                                if guide.live && guide.enabled && !manualWebsiteMode {
                                     RhythmGuideOverlay(guide: guide)
                                 } else {
                                     MetronomeOverlay(model: metronome)
                                 }
                             }
                             if model.webMode {
-                                Text("Website players don’t expose their video frames here. Open a direct stream with the native player for video tracking.")
+                                Text("Embedded video tracking starts when playback begins, if the website allows frame access.")
                                     .font(.caption).foregroundStyle(.secondary)
                                 Toggle("Use manual rhythm instead", isOn: $manualWebsiteMode)
+                            }
+                            if model.webMode && !manualWebsiteMode {
+                                RhythmGuideControls(guide: guide) { guide.startEmbedded() }
                             }
                             if !model.webMode, let player = model.player {
                                 RhythmGuideControls(guide: guide) {
@@ -199,9 +200,14 @@ struct CounterView: View {
         }
         .onChange(of: model.reloadID) { _, _ in
             guide.reset(); metronome.stop(); manualWebsiteMode = false
-            if !model.webMode, let player = model.player { guide.start(player: player) }
+            if model.webMode { guide.startEmbedded() }
+            else if let player = model.player { guide.start(player: player) }
         }
-        .onChange(of: manualWebsiteMode) { _, enabled in if !enabled { metronome.stop() } }
+        .onChange(of: manualWebsiteMode) { _, manual in
+            metronome.stop()
+            if manual { guide.suspend() }
+            else if model.webMode { guide.startEmbedded() }
+        }
         .onChange(of: guide.enabled) { _, enabled in if enabled { metronome.stop() } }
         .onDisappear { metronome.stop(); guide.reset() }
     }

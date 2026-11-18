@@ -11,10 +11,12 @@ final class RhythmGuideModel: ObservableObject {
     @Published var enabled = true {
         didSet {
             guard live else { return }
-            meter.reset(); analyzer.detach(); lastFrameTime = nil
+            meter.reset(); embeddedRouter.reset(); analyzer.detach(); lastFrameTime = nil
             if enabled, let item = player?.currentItem { analyzer.attach(to: item) }
         }
     }
+    private var embedded = false
+    private var embeddedRouter = EmbeddedMotionRouter()
     private let analyzer: any VideoRhythmAnalyzing
     private var player: AVPlayer?
     private var observer: Any?
@@ -24,6 +26,33 @@ final class RhythmGuideModel: ObservableObject {
     private var waitingSince: Double?
 
     init(analyzer: (any VideoRhythmAnalyzing)? = nil) { self.analyzer = analyzer ?? VideoRhythmAnalyzer() }
+
+    func startEmbedded() {
+        reset()
+        embedded = true; live = true
+    }
+
+    func receiveEmbedded(_ event: EmbeddedVideoEvent) {
+        guard embedded, live, enabled,
+              let update = embeddedRouter.receive(event, now: ProcessInfo.processInfo.systemUptime) else { return }
+        if update.reset { meter.reset() }
+        switch update.kind {
+        case .frame:
+            guard let sample = update.sample else { return }
+            playing = true; message = nil
+            meter.advance(to: sample.time); meter.ingest(sample)
+        case .paused:
+            playing = false
+        case .seeking:
+            playing = false
+        case .blocked:
+            playing = false
+            message = "This embedded player blocks video-frame access. Playback can continue; use manual rhythm or a direct video link."
+        case .idle:
+            playing = false
+            message = "Play an embedded video to start tracking. Some website players restrict frame access."
+        }
+    }
 
     func start(player: AVPlayer) {
         reset()
@@ -72,7 +101,7 @@ final class RhythmGuideModel: ObservableObject {
         playbackStatus?.invalidate(); playbackStatus = nil
         if let jumpObserver { NotificationCenter.default.removeObserver(jumpObserver) }
         jumpObserver = nil
-        analyzer.detach(); player = nil
+        analyzer.detach(); player = nil; embedded = false; embeddedRouter.reset()
         meter.reset(); message = nil; playing = false
         lastFrameTime = nil; waitingSince = nil; enabled = true
     }

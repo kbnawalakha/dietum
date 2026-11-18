@@ -78,3 +78,11 @@ Decision: Counter must not download or store a video for analysis. Observe decod
 Reason: The user explicitly requires realtime analysis and streaming only. Unseen future footage cannot be classified under that constraint. Standard AVPlayer buffering is system-managed; Counter creates no media files, offline copies, saved links, or analysis history. A deletion-only migration cleanup removes media from the prior implementation.
 
 Status: Accepted, specific to the separate Counter app; Dietum architecture is unchanged.
+
+## Counter ADR-002 — Embedded Video Frame Adapter
+
+Decision: allow best-effort streaming movement analysis for HTML video elements in WebKit pages/iframes using an isolated-world user script packaged inside Swift. The small DOM/canvas adapter is required because native Swift cannot directly read an embedded HTML video's frames. All validation, player selection, movement interpretation, level holds, and UI remain Swift/SwiftUI. The adapter sends bounded numeric samples through a reply-controlled bridge and makes no downloads or persistent writes.
+
+Reason: the user requested embedded videos after native-only tracking. Browser CORS/DRM restrictions are honored; inaccessible players retain playback/manual fallback. This replaces the earlier blanket website-tracking-unavailable behavior without claiming universal site compatibility.
+
+Status: Accepted, Counter-specific.
