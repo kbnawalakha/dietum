@@ -167,3 +167,15 @@ Verification: `xcodebuild build -project Counter/Counter.xcodeproj -scheme Count
 Remaining: select the connected iPhone in Xcode and press Command-R to install/launch; device runtime behavior remains unverified. No app logic changed. No GitHub push; unrelated Dietum and Xcode user-state files excluded.
 
 Final signing verification: the normalized project passed a second signed iPhone build, and `codesign --verify --deep --strict` passed with certificate-store access. Only Counter project/setup documentation and coordination docs are committed.
+
+### Counter meter following video instead of presets (2026-11-17)
+
+Assigned request: meter appears to run independently of video. Confirmed cause: video evidence selected a named level, but `advance` used that level's preset BPM. Changed `Counter/Counter/RhythmMeter.swift` to estimate cadence from consistent movement peaks and anchor bar phase to their media timestamps. Interpolation is limited to one measured cycle; no fresh evidence means waiting, never free-running. Audio can refine descriptive labels but does not drive automatic phase. Label holds remain separate from measured timing.
+
+Changed `Counter/Counter/{CounterApp.swift,RhythmGuide.swift,RhythmMeter.swift}`, `Counter/Tests/{main.swift,Media/MediaChecks.swift}`, `Counter/README.md`, `PROJECT_STATUS.md`, and this handoff. Native streams start live tracking automatically. Websites show Video tracking unavailable with a separate manual opt-in, avoiding a misleading automatic-looking metronome. No video storage or saved links introduced.
+
+Baseline signal tests passed. New regressions validate measured 72 and 90 BPM rhythms under the same speed label, video timestamp phase, conflicting audio independence, constant-motion rejection, dropout after one cycle, and full measured-cycle completion. The signed generic iPhone build succeeded. In-memory frame regressions passed; a stronger generated-frame cadence check is included in the final run.
+
+Remaining: verify perceived phase/cadence on the user's native iPhone stream. This is estimated visible-motion timing, not semantic action or subject recognition; website/protected players may not expose frames. Next step: rebuild/install with Command-R, open a native video, and check Video locked versus Waiting for rhythm. No GitHub push. Other Dietum changes are excluded.
+
+Final video-reference verification: the in-memory generated moving-frame test measured 144 BPM (not a preset), and all signal/phase/dropout tests passed. Signed iPhone build and whitespace checks passed. No failed verification commands in this follow-up. No remote push.

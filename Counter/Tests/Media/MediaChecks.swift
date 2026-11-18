@@ -45,12 +45,14 @@ struct MediaChecks {
         for frame in 0..<480 {
             let time = Double(frame) / 12
             meter.advance(to: time)
-            meter.ingest(service.analyze(image(bar: frame % 12 < 6 ? 0 : 24), at: time))
+            meter.ingest(service.analyze(image(bar: (frame / 5) % 2 == 0 ? 0 : 24), at: time))
         }
         precondition(meter.ready)
         precondition(meter.level != .stop)
+        precondition(meter.tracking)
+        precondition(abs(meter.measuredBPM! - 144) < 0.001, "Actual frame-change cadence must determine BPM")
         precondition(meter.samples.count <= 64)
         precondition((meter.samples.last!.time - meter.samples.first!.time) <= 4.01)
-        print("In-memory streaming checks passed: moving/still frames, cut rejection, seek reset, output attachment/removal, no-frame fallback, bounded live classification")
+        print("In-memory streaming checks passed: moving/still frames, cut rejection, seek reset, output attachment/removal, no-frame fallback, bounded live classification, video-derived 144 BPM")
     }
 }

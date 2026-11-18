@@ -72,6 +72,7 @@ struct CounterView: View {
     @StateObject private var guide = RhythmGuideModel()
     @Environment(\.scenePhase) private var scenePhase
     @FocusState private var editingLink: Bool
+    @State private var manualWebsiteMode = false
 
     var body: some View {
         NavigationStack {
@@ -133,11 +134,21 @@ struct CounterView: View {
                             }
                             }
                             .overlay(alignment: .topTrailing) {
-                                if guide.live && guide.enabled {
+                                if model.webMode && !manualWebsiteMode {
+                                    Text("Website player\nVideo tracking unavailable")
+                                        .font(.caption).multilineTextAlignment(.center)
+                                        .padding(10).background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                                        .padding(8).allowsHitTesting(false)
+                                } else if guide.live && guide.enabled {
                                     RhythmGuideOverlay(guide: guide)
                                 } else {
                                     MetronomeOverlay(model: metronome)
                                 }
+                            }
+                            if model.webMode {
+                                Text("Website players don’t expose their video frames here. Open a direct stream with the native player for video tracking.")
+                                    .font(.caption).foregroundStyle(.secondary)
+                                Toggle("Use manual rhythm instead", isOn: $manualWebsiteMode)
                             }
                             if !model.webMode, let player = model.player {
                                 RhythmGuideControls(guide: guide) {
@@ -186,7 +197,11 @@ struct CounterView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase != .active { metronome.stop(); guide.suspend() }
         }
-        .onChange(of: model.reloadID) { _, _ in guide.reset() }
+        .onChange(of: model.reloadID) { _, _ in
+            guide.reset(); metronome.stop(); manualWebsiteMode = false
+            if !model.webMode, let player = model.player { guide.start(player: player) }
+        }
+        .onChange(of: manualWebsiteMode) { _, enabled in if !enabled { metronome.stop() } }
         .onChange(of: guide.enabled) { _, enabled in if enabled { metronome.stop() } }
         .onDisappear { metronome.stop(); guide.reset() }
     }

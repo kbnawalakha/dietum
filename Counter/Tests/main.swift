@@ -72,16 +72,43 @@ for (strength, expected) in [(0.0, RhythmLevel.stop), (0.006, .slow), (0.02, .no
     let window = (0..<48).map { LiveRhythmSample(time: Double($0) / 12, movement: strength, audio: nil) }
     assert(LiveRhythmMeter.classify(window) == expected)
 }
-var cycle = LiveRhythmMeter()
-for frame in 0...48 {
+// Constant motion without rhythmic peaks must NOT turn into a preset metronome.
+var constant = LiveRhythmMeter()
+for frame in 0...240 {
     let time = Double(frame) / 12
-    cycle.advance(to: time)
-    cycle.ingest(LiveRhythmSample(time: time, movement: 0.02, audio: nil))
+    constant.advance(to: time)
+    constant.ingest(LiveRhythmSample(time: time, movement: 0.02, audio: frame % 6 == 0 ? 0.8 : 0))
 }
-assert(cycle.ready && cycle.level == .normal)
-let cycleStart = cycle.position
-cycle.advance(to: 4.375) // half a Normal cycle at 80 BPM
-assert(abs(cycle.position - (1 - cycleStart)) < 0.00001)
-cycle.advance(to: 4.75)
-assert(abs(cycle.position - cycleStart) < 0.00001)
-print("Live levels, >10s holds, bounded memory, seeks, stationary audio rejection, and full-cycle checks passed")
+assert(constant.ready && !constant.tracking && constant.position == 0 && constant.measuredBPM == nil)
+
+func observedMeter(cycleFrames: Int) -> LiveRhythmMeter {
+    var meter = LiveRhythmMeter()
+    for frame in 0...240 {
+        let time = Double(frame) / 12
+        meter.advance(to: time)
+        meter.ingest(LiveRhythmSample(time: time, movement: frame % cycleFrames == 2 ? 0.12 : 0.001,
+                                      audio: frame % 3 == 0 ? 0.8 : 0.001))
+    }
+    return meter
+}
+let slower = observedMeter(cycleFrames: 10) // observed 72 BPM, not a preset
+let faster = observedMeter(cycleFrames: 8)  // observed 90 BPM, same named level
+assert(slower.tracking && faster.tracking)
+assert(abs(slower.measuredBPM! - 72) < 0.001)
+assert(abs(faster.measuredBPM! - 90) < 0.001)
+assert(slower.level == faster.level)
+// At t=20, most recent confirmed video peaks are 232/12 and 234/12.
+let slowPhase = (20 - 232.0 / 12) / (10.0 / 12)
+let fastPhase = (20 - 234.0 / 12) / (8.0 / 12)
+assert(abs(slower.position - (1 - abs(2 * slowPhase - 1))) < 0.00001)
+assert(abs(faster.position - (1 - abs(2 * fastPhase - 1))) < 0.00001)
+var missing = slower
+for frame in 241...264 { missing.advance(to: Double(frame) / 12) }
+assert(!missing.tracking && missing.position == 0 && missing.measuredBPM == nil)
+// A full observed 90 BPM cycle rises and falls, with its phase referenced to the video peak.
+var cycle = faster
+cycle.advance(to: 20.05)
+assert(cycle.position < faster.position)
+cycle.advance(to: 20.2)
+assert(cycle.position == 0) // completes and waits; no invented second cycle
+print("Video-derived 72/90 BPM and phase, audio independence, missing-motion stop, and complete-cycle checks passed")

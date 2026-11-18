@@ -24,6 +24,10 @@ struct LiveRhythmMeter {
     private(set) var level: RhythmLevel = .stop
     private(set) var ready = false
     private(set) var phase = 0.0
+    private(set) var measuredBPM: Double?
+    private(set) var tracking = false
+    private var motionPeak: Double?
+    private var motionPeriod: Double?
     private(set) var heldFor = 0.0
     private(set) var samples: [LiveRhythmSample] = []
     private var lastTime: Double?
@@ -31,7 +35,7 @@ struct LiveRhythmMeter {
     private var pending: RhythmLevel = .stop
     private var pendingSince = 0.0
 
-    var position: Double { level == .stop ? 0 : 1 - abs(2 * phase - 1) }
+    var position: Double { tracking ? 1 - abs(2 * phase - 1) : 0 }
 
     mutating func reset() { self = LiveRhythmMeter() }
 
@@ -43,12 +47,12 @@ struct LiveRhythmMeter {
             if delta < 0 || delta > 0.75 { reset() }
             else {
                 heldFor += delta
-                let increment = delta * level.targetBPM / 60
-                let completedCycle = floor(phase + increment) > 0
-                phase = (phase + increment).truncatingRemainder(dividingBy: 1)
+                let oldPhase = phase
+                updatePhase(at: time)
+                let completedCycle = tracking && phase < oldPhase
                 if ready, heldFor >= 11, pending != level, time - pendingSince >= 2,
-                   (level == .stop || completedCycle) {
-                    level = pending; heldFor = 0; phase = 0
+                   (!tracking || completedCycle) {
+                    level = pending; heldFor = 0
                 }
             }
         }
@@ -64,13 +68,48 @@ struct LiveRhythmMeter {
         // Upper bound even if a source delivers unexpectedly high frame frequency.
         if samples.count > 64 { samples.removeFirst(samples.count - 64) }
         guard let started, sample.time - started >= 3, samples.count >= 12 else { return }
+        updateMotionClock(at: sample.time)
         let candidate = Self.classify(samples)
         if !ready {
             ready = true; level = candidate; pending = candidate
-            pendingSince = sample.time; heldFor = 0; phase = 0
+            pendingSince = sample.time; heldFor = 0
         } else if candidate != pending {
             pending = candidate; pendingSince = sample.time
         }
+    }
+
+    private mutating func updateMotionClock(at time: Double) {
+        let movement = samples.map { RhythmSample(time: $0.time, strength: $0.movement) }
+        let peaks = RhythmTimeline.peaks(movement, floor: 0.012, minimumGap: 0.25)
+        guard peaks.count >= 3 else {
+            motionPeriod = nil; motionPeak = nil; measuredBPM = nil; tracking = false
+            return
+        }
+        let recent = Array(peaks.suffix(5))
+        let gaps = zip(recent, recent.dropFirst()).map { $1 - $0 }
+        let sorted = gaps.sorted()
+        let median = sorted[sorted.count / 2]
+        // Irregular/noisy movement is not a license to invent a regular beat.
+        guard (0.25...2).contains(median), gaps.allSatisfy({ abs($0 - median) <= median * 0.3 }) else {
+            motionPeriod = nil; motionPeak = nil; measuredBPM = nil; tracking = false
+            return
+        }
+        motionPeriod = median
+        motionPeak = recent.last
+        measuredBPM = 60 / median
+        updatePhase(at: time)
+    }
+
+    private mutating func updatePhase(at time: Double) {
+        guard let motionPeak, let motionPeriod else { tracking = false; return }
+        let elapsed = time - motionPeak
+        // Interpolate at most ONE measured cycle. Never free-run through missing movement.
+        guard elapsed >= 0, elapsed < motionPeriod else {
+            tracking = false; phase = 0; measuredBPM = nil
+            return
+        }
+        phase = elapsed / motionPeriod
+        tracking = true
     }
 
     static func classify(_ samples: [LiveRhythmSample]) -> RhythmLevel {

@@ -96,7 +96,7 @@ struct RhythmGuideControls: View {
                 Button("Start live rhythm", systemImage: "waveform.path") { analyze() }
             }
             if let message = guide.message { Text(message).font(.callout).foregroundStyle(.orange) }
-            Text("Analyzes the playing stream without creating video files. No links or analysis history are saved. Levels use recent movement, with audio support when available, and stay over 10 seconds during uninterrupted playback.")
+            Text("Analyzes the playing stream without creating video files. No links or analysis history are saved. The bar follows detected movement timing and waits when no steady rhythm is visible. Speed labels stay over 10 seconds; audio may refine labels but never drives the bar.")
                 .font(.caption).foregroundStyle(.secondary)
         }
     }
@@ -124,10 +124,10 @@ struct RhythmGuideOverlay: View {
             Text(guide.meter.ready ? guide.meter.level.rawValue : "Learning")
                 .font(.subheadline.bold())
             RhythmBar(position: guide.meter.position)
-            if guide.meter.ready && guide.meter.level != .stop {
-                Text("\(Int(guide.meter.level.targetBPM)) BPM").font(.caption.monospacedDigit())
+            if let bpm = guide.meter.measuredBPM, guide.meter.tracking {
+                Text("≈ \(Int(bpm.rounded())) BPM").font(.caption.monospacedDigit())
             }
-            Text(guide.playing ? "Live sync" : "Paused").font(.caption2)
+            Text(!guide.playing ? "Paused" : (guide.meter.tracking ? "Video locked" : "Waiting for rhythm")).font(.caption2)
         }
         .padding(10)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))

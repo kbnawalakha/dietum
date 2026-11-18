@@ -165,3 +165,10 @@ Milestone 0 — Repository and Architecture Foundation
 - Reproduced the user's default device-build failure: Counter required a development team.
 - Configured Debug/Release with the existing Dietum development team and Counter's own `com.kbnawalakha.Counter` bundle identifier; automatic provisioning enabled.
 - Signed generic iPhone build succeeded. Physical installation/playback still needs Xcode Run on the user's phone.
+
+### Counter video-reference timing correction (2026-11-17)
+
+- Fixed the automatic bar using preset BPM after movement selected a label. Bar cadence now comes only from measured movement-peak intervals, and phase is anchored to those video timestamps.
+- Requires consistent video peaks, interpolates at most one measured cycle, then waits for fresh evidence. Constant unpatterned motion or audio alone cannot drive automatic oscillation. Labels retain minimum holds separately.
+- Native streams now start tracking automatically. Website players explicitly show tracking unavailable and require opt-in for a manual meter.
+- Signed iPhone build and signal/frame regressions passed; real iPhone/video alignment still needs verification.
