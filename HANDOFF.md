@@ -286,3 +286,15 @@ Assigned request: sometimes hide the stage time for a random first 30–60 secon
 Baseline stage tests passed. Expanded checks passed mixed hidden/visible selection, inclusive delay range, before/at-deadline reveal, pause, next-stage reset, and stop, alongside all existing stage/Bleepy checks. Signed generic iPhone build and scoped whitespace checks passed. No failed commands.
 
 Remaining: phone visual confirmation. Next step: Command-R, start manual stages, and observe visibility across multiple stages. No persistence or GitHub push. Existing unrelated edits to shared status/handoff documents and staged Dietum-phone work were present before this task; Counter implementation/docs were committed separately. The concurrent Dietum document edits have since been committed independently, so these Counter coordination notes are saved in their own follow-up commit.
+
+### Counter minimal time/stage labels, louder clicks, prize-wheel reel (2026-11-17)
+
+Assigned request: countdown digits without Time remaining text, only current stage number, increased beat sound, and a Price Is Right-style Bleepy wheel visibly traversing options and stopping randomly. Changed `Counter/Counter/{MetronomeOverlay.swift,BleepyWheelView.swift,ManualStageProgram.swift}`, `Counter/Tests/Stages/StageChecks.swift`, `Counter/README.md`, `PROJECT_STATUS.md`, and this handoff.
+
+Removed visible time prefixes and stage totals (including static stage-count hints). Kept semantic accessibility countdown labels. Increased accented/regular click volume to 0.65/0.50 from 0.22/0.14 and retained the existing Beat sound switch. The wheel is now a vertical alternating-color prize drum with full outcome names, a fixed gold center pointer, and easing. It passes all outcomes at least twice before landing on the randomly selected/applied effect. Spin duration is five seconds; 1–5 minute trigger gaps, unrestricted overrides, hidden countdown policy, playback pause, and reduced-motion behavior remain.
+
+Baseline stage tests passed. Updated reel tests pass start position, traversal length, monotonic deceleration and exact selected-row alignment, with all existing timing/override/reveal regressions. Signed generic iPhone build passed before the last small gradient sizing fix. SwiftUI spin/result preview at `/private/tmp/counter-wheel-preview.png` was rendered and inspected: initial gradient inherited the tall reel's size and dimmed labels; fixed the viewport-sized gradient and re-rendered with clear readable labels and correct result alignment. No failed commands.
+
+Remaining: phone volume and perceived scroll smoothness/fit checks. Next step: Command-R, play a video in manual mode, inspect numeric countdown/current stage, then wait for the next Bleepy reel. No saved media/links and no GitHub push; unrelated Dietum edits excluded.
+
+Final reel/readout verification: signed generic iPhone build passed with the viewport gradient fix. All stage/reveal/reel/override checks and existing link/live/embed regressions passed; scoped whitespace checks passed. The final rendered reel preview was visually inspected. No remote push.

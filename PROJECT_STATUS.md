@@ -239,3 +239,10 @@ Milestone 0 — Repository and Architecture Foundation
 - Each manual stage independently has a 50% chance to hide Time remaining for its first random 30–60 running seconds; otherwise it is visible immediately.
 - Shared visibility state covers the meter and settings. Pause freezes reveal time; new stages reroll. Independent RNG leaves pacing/Bleepy randomness unchanged.
 - Visibility and existing scheduler tests plus signed iPhone build passed. Counter code/docs and coordination notes are committed separately from unrelated Dietum edits.
+
+### Counter simplified readouts and prize-wheel drum (2026-11-17)
+
+- Countdown now renders digits only; stage labels show Stage N without the total. Random countdown hiding remains.
+- Beat clicks increased from 0.22/0.14 to 0.65/0.50; the existing sound toggle remains.
+- Replaced the numbered circular Bleepy dial with a vertical prize-wheel reel showing all outcome names. It passes every option twice, decelerates over five seconds, and lands on the actual selected result.
+- Updated scheduler/reel tests and signed iPhone build passed before the final gradient-layout fix. Rendered preview inspected and corrected for label contrast; final verification follows.

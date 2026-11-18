@@ -153,7 +153,7 @@ final class MetronomeModel: ObservableObject {
                 click?.prepareToPlay()
             }
             click?.currentTime = 0
-            click?.volume = beat == 1 ? 0.22 : 0.14
+            click?.volume = beat == 1 ? 0.65 : 0.5
             click?.play()
             soundError = nil
         } catch {
@@ -193,7 +193,7 @@ struct MetronomeOverlay: View {
     }
     private var title: String {
         if model.program.overrideSegment { return "Bleepy" }
-        if model.program.active { return model.program.phase == .rest ? "Break" : "Stage \(model.program.stage)/\(model.program.stageCount)" }
+        if model.program.active { return model.program.phase == .rest ? "Break" : "Stage \(model.program.stage)" }
         return model.program.phase == .finished ? "Complete" : "Manual stages"
     }
     private var control: String {
@@ -222,13 +222,13 @@ struct MetronomeOverlay: View {
                 Text(model.stagePaused ? "Paused" : model.program.level.rawValue)
                     .font(.caption.monospacedDigit())
                 if model.program.stageCountdownVisible {
-                    Text("Time remaining: \(clock(model.program.remaining))")
+                    Text(clock(model.program.remaining))
                         .font(.caption.monospacedDigit()).accessibilityLabel("Stage time remaining \(clock(model.program.remaining))")
                 }
                 if model.program.elapsed - model.program.lastBleepAt < 8 {
                     Text(model.program.lastBleep).font(.caption2).lineLimit(2).frame(maxWidth: 170)
                 }
-            } else { Text("15–20 min · 5–6 stages").font(.caption) }
+            } else { Text("Ready").font(.caption) }
             }
             if let message = model.playbackMessage { Text(message).font(.caption2).frame(maxWidth: 170).lineLimit(3) }
         }
@@ -255,12 +255,12 @@ struct MetronomeOverlay: View {
                     Picker("Stage duration", selection: $model.stageMode) {
                         ForEach(StageDurationMode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
                     }.pickerStyle(.segmented).disabled(model.program.active)
-                    Text("Normal plan: 15–20 min · 5–6 varying stages\n15–30s breaks · Normal Slow ≤20% per stage\nNormal stages start below Ultra and finish Ultra; Bleepy is exempt.")
+                    Text("Normal plan: 15–20 min · varying stages\n15–30s breaks · Normal Slow ≤20% per stage\nNormal stages start below Ultra and finish Ultra; Bleepy is exempt.")
                         .font(.callout).foregroundStyle(.secondary)
                     if model.program.active {
-                        Text("Stage \(model.program.stage)/\(model.program.stageCount)")
+                        Text("Stage \(model.program.stage)")
                         if model.program.stageCountdownVisible {
-                            Text("Time remaining: \(clock(model.program.remaining))").monospacedDigit()
+                            Text(clock(model.program.remaining)).monospacedDigit()
                         }
                     }
                     if let message = model.playbackMessage { Text(message).font(.callout).foregroundStyle(.orange) }
@@ -269,7 +269,7 @@ struct MetronomeOverlay: View {
                         if model.program.active { Button("End program") { model.stop() } }
                     }
                     Toggle("Bleepy sound", isOn: $model.bleepySound)
-                    Text("Bleepy spins every random 1–5 minutes, during any stage, beat or break. The wheel reveals an outcome after three seconds. Bleepy adds ±10/20/30s, −40s, random +10–40s, completion, immediate Ultra or 30s Super slow. Bleepy ignores normal time/cap/closing rules. No playing video freezes the program; mute does not.")
+                    Text("Bleepy spins every random 1–5 minutes, during any stage, beat or break. The wheel reveals an outcome after five seconds. Bleepy adds ±10/20/30s, −40s, random +10–40s, completion, immediate Ultra or 30s Super slow. Bleepy ignores normal time/cap/closing rules. No playing video freezes the program; mute does not.")
                         .font(.caption).foregroundStyle(.secondary)
                     if !model.program.lastBleep.isEmpty { Text(model.program.lastBleep).font(.callout).foregroundStyle(.mint) }
                     DisclosureGroup("Wheel outcomes") {
@@ -277,7 +277,7 @@ struct MetronomeOverlay: View {
                             Text("\(index + 1). \(effect.title)").font(.callout)
                         }
                     }
-                    Toggle("Soft beat clicks", isOn: $model.soundEnabled)
+                    Toggle("Beat sound", isOn: $model.soundEnabled)
                     if let error = model.soundError { Text(error).font(.caption) }
                     Button("Done") { expanded = false }
                 }.padding(24)

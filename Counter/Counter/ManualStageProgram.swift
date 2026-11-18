@@ -85,7 +85,7 @@ struct ManualStageProgram {
     private var stageEnd = 0.0
     private var beatEnd = 0.0
     private var restEnd = 0.0
-    static let wheelDuration = 3.0
+    static let wheelDuration = 5.0
     private(set) var pendingBleepy: BleepyEffect?
     private(set) var selectedBleepy: BleepyEffect?
     private(set) var wheelStarted = -Double.infinity
@@ -283,12 +283,12 @@ struct ManualStageProgram {
     }
 }
 
-/// Sector centers land exactly beneath the fixed top pointer after the spin.
+/// Repeat all outcome labels twice before settling under the drum's fixed center pointer.
 enum BleepyWheelMath {
-    static func rotation(progress: Double, effect: BleepyEffect) -> Double {
+    static func reelPosition(progress: Double, effect: BleepyEffect) -> Double {
         let progress = progress.isFinite ? min(1, max(0, progress)) : 0
-        let index = BleepyEffect.allCases.firstIndex(of: effect)!
-        let final = 360 * 5 - Double(index) * 360 / Double(BleepyEffect.allCases.count)
-        return final * (1 - pow(1 - progress, 3))
+        let count = Double(BleepyEffect.allCases.count)
+        let index = Double(BleepyEffect.allCases.firstIndex(of: effect)!)
+        return count + (2 * count + index) * (1 - pow(1 - progress, 3))
     }
 }

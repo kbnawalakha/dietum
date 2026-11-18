@@ -118,7 +118,7 @@ struct StageChecks {
                 sawMidBeatSpin = sawMidBeatSpin || (program.phase == .stage && program.segmentRemaining > 1 && program.segmentRemaining < Double(program.segmentDuration) - 1)
                 let pending = program.pendingBleepy
                 let resolved = program.resolvedBleepCount
-                program.advance(by: 2.5)
+                program.advance(by: ManualStageProgram.wheelDuration - 0.5)
                 guard program.active else { break }
                 precondition(program.spinning && program.resolvedBleepCount == resolved)
                 program.advance(by: 0.5)
@@ -129,11 +129,12 @@ struct StageChecks {
         precondition(intervals.count > 100 && intervals.min()! >= 60 && intervals.max()! <= 300)
         precondition(sawBreakSpin && sawMidBeatSpin)
         for (index, effect) in BleepyEffect.allCases.enumerated() {
-            precondition(BleepyWheelMath.rotation(progress: 0, effect: effect) == 0)
-            let angle = BleepyWheelMath.rotation(progress: 1, effect: effect)
-            let aligned = (angle + Double(index) * 360 / Double(BleepyEffect.allCases.count)).truncatingRemainder(dividingBy: 360)
-            precondition(abs(aligned) < 1e-6 || abs(aligned - 360) < 1e-6, "Wheel must point at the applied outcome")
-            precondition(BleepyWheelMath.rotation(progress: 0.3, effect: effect) < BleepyWheelMath.rotation(progress: 0.6, effect: effect))
+            precondition(BleepyWheelMath.reelPosition(progress: 0, effect: effect) == Double(BleepyEffect.allCases.count))
+            let final = BleepyWheelMath.reelPosition(progress: 1, effect: effect)
+            let aligned = final.truncatingRemainder(dividingBy: Double(BleepyEffect.allCases.count))
+            precondition(abs(aligned - Double(index)) < 1e-6, "Reel must stop on the applied outcome")
+            precondition(final - Double(BleepyEffect.allCases.count) >= Double(BleepyEffect.allCases.count * 2))
+            precondition(BleepyWheelMath.reelPosition(progress: 0.3, effect: effect) < BleepyWheelMath.reelPosition(progress: 0.6, effect: effect))
         }
         var cancelled = ManualStageProgram()
         cancelled.start(mode: .normal, seed: 42)
