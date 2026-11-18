@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		000000000000000000000071 = {isa = PBXBuildFile; fileRef = 000000000000000000000070; };
 		000000000000000000000061 = {isa = PBXBuildFile; fileRef = 000000000000000000000060; };
 		000000000000000000000051 = {isa = PBXBuildFile; fileRef = 000000000000000000000050; };
 		000000000000000000000047 = {isa = PBXBuildFile; fileRef = 000000000000000000000046; };
@@ -21,6 +22,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		000000000000000000000070 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleepyWheelView.swift; sourceTree = "<group>"; };
 		000000000000000000000060 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualPlaybackGate.swift; sourceTree = "<group>"; };
 		000000000000000000000050 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualStageProgram.swift; sourceTree = "<group>"; };
 		000000000000000000000046 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddedVideoBridge.swift; sourceTree = "<group>"; };
@@ -66,6 +68,7 @@
 				000000000000000000000046 /* EmbeddedVideoBridge.swift */,
 				000000000000000000000050 /* ManualStageProgram.swift */,
 				000000000000000000000060 /* ManualPlaybackGate.swift */,
+				000000000000000000000070 /* BleepyWheelView.swift */,
 			);
 			path = Counter;
 			sourceTree = "<group>";
@@ -130,6 +133,7 @@
 				000000000000000000000047 /* EmbeddedVideoBridge.swift in Sources */,
 				000000000000000000000051 /* ManualStageProgram.swift in Sources */,
 				000000000000000000000061 /* ManualPlaybackGate.swift in Sources */,
+				000000000000000000000071 /* BleepyWheelView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

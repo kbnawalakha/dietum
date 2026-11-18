@@ -220,3 +220,10 @@ Milestone 0 — Repository and Architecture Foundation
 - Applied the user's correction: Bleepy is immediate and exempt from normal duration, percentage, break and closing-segment limits. Removed queued/budget-clamped handling. Normal program rules remain outside overrides; actual totals can exceed normal targets after Bleepy.
 - Added manual-only Super Slow (half Slow's target) and active override playback during breaks. Playback gating and user pause/stop still apply.
 - Normal-program and override-specific tests pass, including 200 ordinary and 200 override runs. Signed iPhone build passed before the final small UI text/tempo adjustment; final verification follows.
+
+### Counter Bleepy interval and fortune wheel (2026-11-17)
+
+- Replaced five-minute blocks with independently randomized 60–300 second trigger intervals, unrelated to stage/beat/break boundaries.
+- Added a three-second fortune wheel with 11 numbered sectors, a fixed pointer, selected-outcome reveal, and matching settings legend. The outcome applies only after settling; its unrestricted override behavior remains.
+- Wheel/program freeze with playback or manual pause; stop/close/completion cancels pending spins. Reduced Motion shows a static wheel and delayed reveal.
+- Interval, phase coverage, reveal ordering, pointer alignment and cancellation tests passed; signed iPhone build passed before the final settings-wheel placement change. Rendered spin/result preview inspected successfully.

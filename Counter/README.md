@@ -99,14 +99,16 @@ Ordinary Slow selection targets at most **20% of each stage**; Bleepy is exempt.
 
 The existing **Soft beat clicks** toggle is reused, enabled by default at reduced volume. There is no extra beat-sound setting. Bleepy retains its separate notification-sound toggle. Both sounds are synthesized in memory. Phone tests are still needed for audible volume, audio mixing, and real-site playback state.
 
-**Bleepy:** at a random point in each five-minute running-program block, one of these **11 equally likely outcomes** occurs:
+**Bleepy:** after a new random interval of **60–300 seconds** from the previous trigger (and from program start for the first trigger), one of these **11 equally likely outcomes** occurs:
 
-- −30 seconds, +30 seconds, or immediate stage completion.
-- Immediate Ultrafast for a random 15–30 seconds.
-- Immediate **Super Slow for 30 seconds**, at half the ordinary Slow target (20 BPM nominal, scaled with the fixed-tempo setting).
+- −30 seconds, +30 seconds, or stage completion when revealed.
+- Ultrafast for a random 15–30 seconds.
+- **Super Slow for 30 seconds**, at half the ordinary Slow target (20 BPM nominal, scaled with the fixed-tempo setting).
 - +10 seconds or +20 seconds.
 - −10 seconds, −20 seconds, or −40 seconds.
 - A random increase of **10–40 seconds**, inclusive.
+
+A three-second fortune-wheel animation appears over the player and in manual settings, then reveals and applies the selected outcome. Its eleven numbered sectors match the outcomes list in settings. The pointer lands on the actual chosen result. Stage/beat/break time continues while the wheel spins, so Bleepy does not wait for any boundary. Video/manual pause freezes both the wheel and program. Stop/close/program completion cancels a pending spin. Reduced Motion uses a static wheel with the same delayed reveal.
 
 Bleepy is explicitly an unrestricted override: no queueing, cap-budget checks, closing-segment protection, 10–30 second normal segment constraint, or 15–20 minute plan clamp applies to it. The normal scheduler's rules apply between overrides, but actual percentages/durations can exceed their normal targets afterward. A later Bleepy may interrupt an earlier override.
 

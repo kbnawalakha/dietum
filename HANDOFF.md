@@ -255,3 +255,15 @@ Baseline previous stage and link/live/embed checks passed. The first revised tes
 Remaining: phone UI/sound feel and user review of the unrestricted effects. Super Slow uses the existing soft-click switch; no new sound toggle. Next step: Command-R and start manual rhythm; Bleepy notices display the selected action. No GitHub push; unrelated Dietum files excluded.
 
 Final Bleepy verification: signed generic iPhone build passed after all changes. Expanded stage/override tests and all link/live-meter/embed-input regressions passed, as did scoped whitespace checks. Normal invariants are tested without overrides; unrestricted Bleepy behavior is tested separately. Updated `DECISIONS.md` records the new manual-only level and explicit rule supersession. No remote push.
+
+### Counter Bleepy 1–5 minute scheduling and fortune wheel (2026-11-17)
+
+Assigned request: Bleepy may occur any time 1–5 minutes apart, during any stage/beat, with a fortune-wheel presentation before selecting. Changed `Counter/Counter/{ManualStageProgram.swift,MetronomeOverlay.swift}`, `Counter/Counter.xcodeproj/project.pbxproj`, `Counter/Tests/Stages/StageChecks.swift`, `Counter/README.md`, `PROJECT_STATUS.md`, and this handoff; added `Counter/Counter/BleepyWheelView.swift`.
+
+Each trigger is a new seeded random 60–300 second interval from the prior trigger (first from program start), independent of stage, beat and break boundaries. Trigger starts a three-second spin and existing Bleepy cue sound; state keeps a pending outcome separate from revealed/applied outcome. Ordinary time continues during the spin. Only on settle does the outcome apply with its existing unrestricted override semantics. The 11-sector wheel's fixed pointer matches the chosen effect, with numbers linked to a readable settings legend. It appears on the player and inside settings. Video/manual pause freezes program time/spin; stop/close/natural completion cancels pending state. Reduced Motion uses a static wheel plus delayed reveal.
+
+Baseline prior Bleepy/link tests passed. Expanded suite passed normal and override regressions plus 200-seed interval/reveal runs, demonstrating 60–300s gaps, mid-beat/break triggers, no early apply, correct reveal, all pointer alignments, and cancellation. Signed generic iPhone build succeeded before the final settings-wheel placement change. Rendered macOS SwiftUI spin/result preview at `/private/tmp/counter-wheel-preview.png` was visually inspected; layout and selected sector match. No failed commands in this follow-up.
+
+Remaining: phone spin smoothness, overlay sizing, VoiceOver/reduced-motion behavior, and perceived timing/audio. Next step: Command-R, start manual rhythm while video plays, and wait for the next 1–5 minute Bleepy trigger. No media/link persistence and no GitHub push; unrelated Dietum changes excluded.
+
+Final wheel verification: signed generic iPhone build passed with the compact player/settings layout. All stage/override/wheel and existing link/live/embed-input checks passed, as did scoped whitespace checks. The final compact preview was rendered and visually inspected. No remote push.

@@ -209,6 +209,10 @@ struct MetronomeOverlay: View {
                 }.labelStyle(.iconOnly).accessibilityLabel(control + " manual rhythm")
                 Button("Manual settings", systemImage: "slider.horizontal.3") { expanded = true }.labelStyle(.iconOnly)
             }
+            if model.program.wheelVisible, let effect = model.program.pendingBleepy ?? model.program.selectedBleepy {
+                BleepyWheelView(effect: effect, progress: model.program.wheelProgress,
+                    spinning: model.program.spinning, message: model.program.lastBleep)
+            } else {
             TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !model.running)) { context in
                 let elapsed = max(0, context.date.timeIntervalSince(model.lastBeat))
                 let phase = (elapsed * model.effectiveBPM / 60).truncatingRemainder(dividingBy: 1)
@@ -224,6 +228,7 @@ struct MetronomeOverlay: View {
                     Text(model.program.lastBleep).font(.caption2).lineLimit(2).frame(maxWidth: 170)
                 }
             } else { Text("15–20 min · 5–6 stages").font(.caption) }
+            }
             if let message = model.playbackMessage { Text(message).font(.caption2).frame(maxWidth: 170).lineLimit(3) }
         }
         .tint(.mint).padding(10)
@@ -232,6 +237,11 @@ struct MetronomeOverlay: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     Text("Manual rhythm").font(.title2.bold())
+                    if model.program.wheelVisible, let effect = model.program.pendingBleepy ?? model.program.selectedBleepy {
+                        BleepyWheelView(effect: effect, progress: model.program.wheelProgress,
+                            spinning: model.program.spinning, message: model.program.lastBleep)
+                            .frame(maxWidth: .infinity)
+                    }
                     Picker("Program", selection: $model.useStages) {
                         Text("Stages").tag(true); Text("Fixed tempo").tag(false)
                     }.pickerStyle(.segmented)
@@ -258,9 +268,14 @@ struct MetronomeOverlay: View {
                         if model.program.active { Button("End program") { model.stop() } }
                     }
                     Toggle("Bleepy sound", isOn: $model.bleepySound)
-                    Text("Closing Ultra grows from 10–15s toward 30s. Bleepy adds ±10/20/30s, −40s, random +10–40s, completion, immediate Ultra or 30s Super slow. Bleepy ignores normal time/cap/closing rules. No playing video freezes the program; mute does not.")
+                    Text("Bleepy spins every random 1–5 minutes, during any stage, beat or break. The wheel reveals an outcome after three seconds. Bleepy adds ±10/20/30s, −40s, random +10–40s, completion, immediate Ultra or 30s Super slow. Bleepy ignores normal time/cap/closing rules. No playing video freezes the program; mute does not.")
                         .font(.caption).foregroundStyle(.secondary)
                     if !model.program.lastBleep.isEmpty { Text(model.program.lastBleep).font(.callout).foregroundStyle(.mint) }
+                    DisclosureGroup("Wheel outcomes") {
+                        ForEach(Array(BleepyEffect.allCases.enumerated()), id: \.offset) { index, effect in
+                            Text("\(index + 1). \(effect.title)").font(.callout)
+                        }
+                    }
                     Toggle("Soft beat clicks", isOn: $model.soundEnabled)
                     if let error = model.soundError { Text(error).font(.caption) }
                     Button("Done") { expanded = false }

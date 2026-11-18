@@ -110,3 +110,9 @@ Decision: the user's latest correction makes Bleepy independent of ordinary dura
 Add manual-only `RhythmLevel.superSlow` at half Slow's nominal target, used for the new 30-second outcome. All eleven outcomes are selected with equal probability, including the original four and the seven new ones. This supersedes the Bleepy constraint/queue portions of ADR-003/004.
 
 Status: Accepted per explicit user correction.
+
+## Counter ADR-006 — Bleepy Trigger Intervals and Reveal Order
+
+Decision: replace fixed five-minute blocks with independent 60–300 second start-to-start trigger intervals. A trigger begins a three-second fortune-wheel reveal; its randomly chosen outcome remains pending and does not affect the program until the wheel settles. Stage/beat/break timing continues during the spin. Stop or completion cancels pending outcomes, and playback/manual pause freezes spin progress. Preserve equal odds and unrestricted outcome effects after reveal.
+
+Status: Accepted per the user's latest Bleepy scheduling/presentation request.

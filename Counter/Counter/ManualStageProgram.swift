@@ -6,6 +6,22 @@ enum BleepyEffect: Int, CaseIterable {
     case decrease, increase, complete, ultrafast
     case superSlow, increase10, increase20, decrease10, decrease20, decrease40, randomIncrease
 
+    var title: String {
+        switch self {
+        case .decrease: return "−30 seconds"
+        case .increase: return "+30 seconds"
+        case .complete: return "Stage complete"
+        case .ultrafast: return "Ultrafast · 15–30s"
+        case .superSlow: return "Super slow · 30s"
+        case .increase10: return "+10 seconds"
+        case .increase20: return "+20 seconds"
+        case .decrease10: return "−10 seconds"
+        case .decrease20: return "−20 seconds"
+        case .decrease40: return "−40 seconds"
+        case .randomIncrease: return "Random +10–40s"
+        }
+    }
+
     var adjustment: Int? {
         switch self {
         case .decrease: return -30
@@ -51,6 +67,7 @@ struct ManualStageProgram {
     private(set) var activeTime = 0.0
     private(set) var ultraTime = 0.0
     private(set) var bleepCount = 0
+    private(set) var resolvedBleepCount = 0
     private(set) var lastBleep = ""
     private(set) var lastStageSlowFraction = 0.0
     private(set) var stageDuration = 0
@@ -66,7 +83,14 @@ struct ManualStageProgram {
     private var stageEnd = 0.0
     private var beatEnd = 0.0
     private var restEnd = 0.0
-    private var nextBlock = 0
+    static let wheelDuration = 3.0
+    private(set) var pendingBleepy: BleepyEffect?
+    private(set) var selectedBleepy: BleepyEffect?
+    private(set) var wheelStarted = -Double.infinity
+    private var wheelSettlesAt = Double.infinity
+    var spinning: Bool { pendingBleepy != nil }
+    var wheelProgress: Double { spinning ? min(1, max(0, (elapsed - wheelStarted) / Self.wheelDuration)) : 1 }
+    var wheelVisible: Bool { spinning || (selectedBleepy != nil && elapsed - lastBleepAt < 5) }
 
     var active: Bool { phase == .stage || phase == .rest }
     var sessionRemaining: Double { max(0, Double(totalDuration) - elapsed) }
@@ -103,7 +127,7 @@ struct ManualStageProgram {
     mutating func stop() { self = ManualStageProgram() }
     private mutating func draw(_ range: ClosedRange<Int>) -> Int { Int.random(in: range, using: &rng) }
     private mutating func scheduleBleep() {
-        nextBleep = Double(nextBlock * 300 + draw(1...299)); nextBlock += 1
+        nextBleep = elapsed + Double(draw(60...300))
     }
 
     mutating func advance(by seconds: Double) {
@@ -116,7 +140,7 @@ struct ManualStageProgram {
             case .rest: boundary = overrideSegment ? min(restEnd, beatEnd) : restEnd
             case .stage: boundary = min(stageEnd, beatEnd)
             }
-            let next = min(target, boundary, nextBleep)
+            let next = min(target, boundary, nextBleep, wheelSettlesAt)
             let delta = max(0, next - elapsed)
             if phase == .stage || overrideSegment {
                 activeTime += delta
@@ -129,8 +153,15 @@ struct ManualStageProgram {
             elapsed = next
             if elapsed >= nextBleep {
                 bleepCount += 1
-                applyBleepy(BleepyEffect.allCases[draw(0...(BleepyEffect.allCases.count - 1))])
+                pendingBleepy = BleepyEffect.allCases[draw(0...(BleepyEffect.allCases.count - 1))]
+                selectedBleepy = nil; wheelStarted = elapsed
+                wheelSettlesAt = elapsed + Self.wheelDuration
+                lastBleep = "Bleepy: spinning…"; lastBleepAt = elapsed
                 scheduleBleep()
+            }
+            if elapsed >= wheelSettlesAt, let effect = pendingBleepy {
+                pendingBleepy = nil; selectedBleepy = effect; wheelSettlesAt = .infinity; resolvedBleepCount += 1
+                applyBleepy(effect)
             }
             if phase == .stage && elapsed >= stageEnd { finishStage() }
             else if phase == .rest && elapsed >= restEnd { beginStage() }
@@ -209,7 +240,7 @@ struct ManualStageProgram {
     private mutating func finishStage() {
         lastStageSlowFraction = stageActiveTime > 0 ? stageSlowTime / stageActiveTime : 0
         level = .stop; closing = false; overrideSegment = false
-        if stage == stageCount { phase = .finished; return }
+        if stage == stageCount { phase = .finished; pendingBleepy = nil; wheelSettlesAt = .infinity; return }
         phase = .rest; restStart = elapsed; breakDuration = rests[stage - 1]; restEnd = elapsed + Double(breakDuration)
     }
 
@@ -244,5 +275,15 @@ struct ManualStageProgram {
         }
         segment += 1
         beatEnd = elapsed + Double(segmentDuration)
+    }
+}
+
+/// Sector centers land exactly beneath the fixed top pointer after the spin.
+enum BleepyWheelMath {
+    static func rotation(progress: Double, effect: BleepyEffect) -> Double {
+        let progress = progress.isFinite ? min(1, max(0, progress)) : 0
+        let index = BleepyEffect.allCases.firstIndex(of: effect)!
+        let final = 360 * 5 - Double(index) * 360 / Double(BleepyEffect.allCases.count)
+        return final * (1 - pow(1 - progress, 3))
     }
 }

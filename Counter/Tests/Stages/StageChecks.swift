@@ -98,6 +98,50 @@ struct StageChecks {
             precondition(program.phase == .finished, "Override fuzz programs must terminate")
         }
         print("11 Bleepy outcomes passed: exact edits, random 10–40s, immediate 30s Super Slow/Ultra, cap bypass, closing/break overrides, 200 randomized programs")
+        var intervals = Set<Int>()
+        var sawBreakSpin = false, sawMidBeatSpin = false
+        for seed in 0..<200 {
+            var program = ManualStageProgram()
+            program.start(mode: .normal, seed: UInt64(seed))
+            precondition((60...300).contains(Int(program.nextBleep)))
+            var previousStart = 0.0
+            for _ in 0..<30 where program.active {
+                let wait = program.nextBleep - program.elapsed
+                let interval = program.nextBleep - previousStart
+                precondition((60.0...300.0).contains(interval))
+                intervals.insert(Int(interval))
+                program.advance(by: wait)
+                guard program.active else { break }
+                precondition(program.spinning && program.selectedBleepy == nil)
+                previousStart = program.wheelStarted
+                sawBreakSpin = sawBreakSpin || program.phase == .rest
+                sawMidBeatSpin = sawMidBeatSpin || (program.phase == .stage && program.segmentRemaining > 1 && program.segmentRemaining < Double(program.segmentDuration) - 1)
+                let pending = program.pendingBleepy
+                let resolved = program.resolvedBleepCount
+                program.advance(by: 2.5)
+                guard program.active else { break }
+                precondition(program.spinning && program.resolvedBleepCount == resolved)
+                program.advance(by: 0.5)
+                precondition(!program.spinning && program.selectedBleepy == pending)
+                precondition(program.resolvedBleepCount == resolved + 1)
+            }
+        }
+        precondition(intervals.count > 100 && intervals.min()! >= 60 && intervals.max()! <= 300)
+        precondition(sawBreakSpin && sawMidBeatSpin)
+        for (index, effect) in BleepyEffect.allCases.enumerated() {
+            precondition(BleepyWheelMath.rotation(progress: 0, effect: effect) == 0)
+            let angle = BleepyWheelMath.rotation(progress: 1, effect: effect)
+            let aligned = (angle + Double(index) * 360 / Double(BleepyEffect.allCases.count)).truncatingRemainder(dividingBy: 360)
+            precondition(abs(aligned) < 1e-6 || abs(aligned - 360) < 1e-6, "Wheel must point at the applied outcome")
+            precondition(BleepyWheelMath.rotation(progress: 0.3, effect: effect) < BleepyWheelMath.rotation(progress: 0.6, effect: effect))
+        }
+        var cancelled = ManualStageProgram()
+        cancelled.start(mode: .normal, seed: 42)
+        cancelled.advance(by: cancelled.nextBleep)
+        precondition(cancelled.spinning)
+        cancelled.stop(); cancelled.advance(by: 10)
+        precondition(!cancelled.spinning && !cancelled.wheelVisible && cancelled.resolvedBleepCount == 0)
+        print("Bleepy wheel checks passed: 60–300s gaps, mid-beat/break triggers, delayed reveal/application, all pointer targets, cancellation")
         var gate = ManualPlaybackGate()
         precondition(!gate.playing)
         gate.update(playing: true, now: 0)
