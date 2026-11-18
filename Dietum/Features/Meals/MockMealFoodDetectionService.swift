@@ -1,102 +1,246 @@
 import Foundation
+import ImageIO
+import Vision
 
-struct LocalMealNutritionAnalysisService: MealFoodDetectionService {
+enum FoodDataCentralMealAnalysisError: LocalizedError, Equatable {
+    case missingAPIKey
+    case invalidImage
+    case visionFailed
+    case noFoodDetected
+    case noNutritionData
+    case requestFailed
+
+    var errorDescription: String? {
+        switch self {
+        case .missingAPIKey:
+            return "Meal analysis needs a USDA FoodData Central API key. Add USDA_FOOD_DATA_CENTRAL_API_KEY to the app build settings."
+        case .invalidImage:
+            return "The meal photo could not be read. Choose another photo or describe the meal."
+        case .visionFailed:
+            return "Apple Vision could not classify this meal photo. Add a meal description and try again."
+        case .noFoodDetected:
+            return "No food was identified. Add a description such as chicken, rice, or broccoli and try again."
+        case .noNutritionData:
+            return "USDA FoodData Central did not return nutrition data for the identified food."
+        case .requestFailed:
+            return "USDA FoodData Central could not be reached. Check your connection and try again."
+        }
+    }
+}
+struct FoodDataCentralConfiguration: Sendable, Equatable {
+    let apiKey: String
+
+    init(info: [String: Any] = Bundle.main.infoDictionary ?? [:]) {
+        let value = info["USDAFoodDataCentralAPIKey"] as? String ?? ""
+        apiKey = value.contains("$(") ? "" : value.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    var isConfigured: Bool {
+        !apiKey.isEmpty
+    }
+}
+
+struct FoodDataCentralMealAnalysisService: MealFoodDetectionService {
+    private let configuration: FoodDataCentralConfiguration
+    private let session: URLSession
+
+    init(
+        configuration: FoodDataCentralConfiguration = FoodDataCentralConfiguration(),
+        session: URLSession = .shared
+    ) {
+        self.configuration = configuration
+        self.session = session
+    }
+
     func analyzeMeal(description: String, photo: PhotoMetadata?) async throws -> MealFoodDetectionResult {
-        try await Task.sleep(nanoseconds: 650_000_000)
+        guard configuration.isConfigured else {
+            throw FoodDataCentralMealAnalysisError.missingAPIKey
+        }
 
-        let normalizedDescription = description
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
-        guard !normalizedDescription.isEmpty else {
-            if photo != nil {
-                return MealFoodDetectionResult(
-                    detectedFoods: [
-                        DetectedMealFood(
-                            name: "Photo meal estimate",
-                            confidence: 0.25,
-                            estimatedWeightGrams: 450,
-                            nutritionPer100Grams: NutritionAmounts(
-                                calories: 116,
-                                proteinGrams: 6.7,
-                                carbohydrateGrams: 12.2,
-                                fatGrams: 4,
-                                fiberGrams: 1.6
-                            )
-                        )
-                    ],
-                    notes: "Photo estimate uses a general mixed-meal profile because this local build has no food-segmentation model. Add a description and adjust the gram portion before saving."
-                )
+        let describedQueries = Self.queryTerms(from: description)
+        let photoQueries: [VisionFoodLabel]
+        if let imageData = photo?.imageData {
+            photoQueries = try await VisionFoodClassifier().classify(imageData: imageData)
+        } else {
+            photoQueries = []
+        }
+
+        let queries = Self.uniqueQueries(describedQueries + photoQueries.map(\.query))
+        guard !queries.isEmpty else {
+            throw FoodDataCentralMealAnalysisError.noFoodDetected
+        }
+
+        var detectedFoods: [DetectedMealFood] = []
+
+        for query in queries.prefix(6) {
+            guard let food = try await lookup(query: query) else {
+                continue
             }
 
-            return MealFoodDetectionResult(
-                detectedFoods: [],
-                notes: "Describe the meal before analyzing it. Include broad ingredients such as chicken, rice, vegetables, eggs, or pasta."
+            let visionConfidence = photoQueries.first(where: { $0.query == query })?.confidence
+            detectedFoods.append(
+                DetectedMealFood(
+                    name: food.description,
+                    confidence: visionConfidence ?? (describedQueries.contains(query) ? 0.8 : 0.6),
+                    estimatedWeightGrams: 100,
+                    nutritionPer100Grams: food.nutritionPer100Grams
+                )
             )
         }
 
-        let foods = Self.catalog.filter { item in
-            item.keywords.contains { normalizedDescription.contains($0) }
-        }.map { item in
-            DetectedMealFood(
-                name: item.name,
-                confidence: 0.9,
-                estimatedWeightGrams: item.defaultPortionGrams,
-                nutritionPer100Grams: item.nutritionPer100Grams
-            )
+        guard !detectedFoods.isEmpty else {
+            throw FoodDataCentralMealAnalysisError.noNutritionData
         }
 
-        guard !foods.isEmpty else {
-            return MealFoodDetectionResult(
-                detectedFoods: [
-                    DetectedMealFood(
-                        name: "General meal estimate",
-                        confidence: 0.35,
-                        estimatedWeightGrams: 350,
-                        nutritionPer100Grams: NutritionAmounts(
-                            calories: 143,
-                            proteinGrams: 7.1,
-                            carbohydrateGrams: 15.7,
-                            fatGrams: 5.1,
-                            fiberGrams: 1.7
-                        )
-                    )
-                ],
-                notes: "Broad local estimate because the description did not match a known ingredient. Adjust the gram portion and macros for a more accurate result before saving."
-            )
-        }
-
+        let source = photoQueries.isEmpty ? "your description" : "Apple Vision and your description"
         return MealFoodDetectionResult(
-            detectedFoods: foods,
-            notes: "Local estimate uses cooked/raw nutrition per 100 g and a default portion for each detected food. Review gram portions and correct anything before saving."
+            detectedFoods: detectedFoods,
+            notes: "Nutrition comes from USDA FoodData Central using \(source). Values are per 100 g; adjust each portion before saving. Photo classification estimates food identity, not weight or hidden oils."
+        )
+    }
+
+    private func lookup(query: String) async throws -> FoodDataCentralMatch? {
+        var components = URLComponents(string: "https://api.nal.usda.gov/fdc/v1/foods/search")!
+        components.queryItems = [
+            URLQueryItem(name: "api_key", value: configuration.apiKey),
+            URLQueryItem(name: "query", value: query),
+            URLQueryItem(name: "pageSize", value: "5"),
+            URLQueryItem(name: "dataType", value: "Foundation,SR Legacy")
+        ]
+
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 12
+
+        do {
+            let (data, response) = try await session.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200..<300).contains(httpResponse.statusCode) else {
+                throw FoodDataCentralMealAnalysisError.requestFailed
+            }
+
+            let result = try JSONDecoder().decode(FoodDataCentralSearchResponse.self, from: data)
+            return result.foods.compactMap(FoodDataCentralMatch.init).first
+        } catch let error as FoodDataCentralMealAnalysisError {
+            throw error
+        } catch {
+            throw FoodDataCentralMealAnalysisError.requestFailed
+        }
+    }
+}
+
+private struct VisionFoodLabel: Sendable {
+    let query: String
+    let confidence: Double
+}
+
+private struct VisionFoodClassifier: Sendable {
+    func classify(imageData: Data) async throws -> [VisionFoodLabel] {
+        guard let source = CGImageSourceCreateWithData(imageData as CFData, nil),
+              let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
+            throw FoodDataCentralMealAnalysisError.invalidImage
+        }
+
+        return try await withCheckedThrowingContinuation { continuation in
+            let request = VNClassifyImageRequest { request, error in
+                if error != nil {
+                    continuation.resume(throwing: FoodDataCentralMealAnalysisError.visionFailed)
+                    return
+                }
+
+                let observations = (request.results as? [VNClassificationObservation] ?? [])
+                    .filter { $0.confidence >= 0.05 }
+                    .prefix(8)
+                    .map { VisionFoodLabel(query: Self.normalizedQuery($0.identifier), confidence: Double($0.confidence)) }
+                    .filter { !$0.query.isEmpty }
+
+                guard !observations.isEmpty else {
+                    continuation.resume(throwing: FoodDataCentralMealAnalysisError.visionFailed)
+                    return
+                }
+
+                continuation.resume(returning: Array(observations))
+            }
+
+            request.revision = VNClassifyImageRequestRevision2
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    try VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
+                } catch {
+                    continuation.resume(throwing: FoodDataCentralMealAnalysisError.visionFailed)
+                }
+            }
+        }
+    }
+
+    private static func normalizedQuery(_ identifier: String) -> String {
+        let ignoredLabels = Set([
+            "food", "dish", "meal", "cuisine", "plate", "table", "indoor", "restaurant", "produce"
+        ])
+        let query = identifier
+            .replacingOccurrences(of: "_", with: " ")
+            .split(separator: ",", maxSplits: 1)
+            .first
+            .map(String.init) ?? ""
+        let normalized = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return ignoredLabels.contains(normalized) ? "" : normalized
+    }
+}
+
+private struct FoodDataCentralSearchResponse: Decodable {
+    let foods: [FoodDataCentralFood]
+}
+
+private struct FoodDataCentralFood: Decodable {
+    let description: String
+    let foodNutrients: [FoodDataCentralNutrient]
+}
+
+private struct FoodDataCentralNutrient: Decodable {
+    let nutrientId: Int?
+    let value: Double?
+}
+
+private struct FoodDataCentralMatch {
+    let description: String
+    let nutritionPer100Grams: NutritionAmounts
+
+    init?(food: FoodDataCentralFood) {
+        let values = food.foodNutrients.reduce(into: [Int: Double]()) { values, nutrient in
+            guard let id = nutrient.nutrientId, let value = nutrient.value else {
+                return
+            }
+            values[id] = value
+        }
+
+        guard let calories = values[1008] ?? values[208] else {
+            return nil
+        }
+
+        description = food.description
+        nutritionPer100Grams = NutritionAmounts(
+            calories: Int(calories.rounded()),
+            proteinGrams: values[1003] ?? values[203] ?? 0,
+            carbohydrateGrams: values[1005] ?? values[205] ?? 0,
+            fatGrams: values[1004] ?? values[204] ?? 0,
+            fiberGrams: values[1079] ?? values[291] ?? 0
         )
     }
 }
 
-private extension LocalMealNutritionAnalysisService {
-    struct CatalogItem: Sendable {
-        let name: String
-        let keywords: [String]
-        let nutritionPer100Grams: NutritionAmounts
-        let defaultPortionGrams: Double
+private extension FoodDataCentralMealAnalysisService {
+    static func queryTerms(from description: String) -> [String] {
+        description
+            .lowercased()
+            .replacingOccurrences(of: " with ", with: ",")
+            .replacingOccurrences(of: " and ", with: ",")
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
     }
 
-    static let catalog: [CatalogItem] = [
-        CatalogItem(name: "Chicken", keywords: ["chicken"], nutritionPer100Grams: NutritionAmounts(calories: 165, proteinGrams: 31, fatGrams: 3.6), defaultPortionGrams: 150),
-        CatalogItem(name: "Salmon", keywords: ["salmon"], nutritionPer100Grams: NutritionAmounts(calories: 208, proteinGrams: 20.4, fatGrams: 13.4), defaultPortionGrams: 140),
-        CatalogItem(name: "Eggs", keywords: ["egg", "eggs"], nutritionPer100Grams: NutritionAmounts(calories: 143, proteinGrams: 12.6, carbohydrateGrams: 0.7, fatGrams: 9.5), defaultPortionGrams: 100),
-        CatalogItem(name: "Rice", keywords: ["rice"], nutritionPer100Grams: NutritionAmounts(calories: 130, proteinGrams: 2.7, carbohydrateGrams: 28.2, fatGrams: 0.3, fiberGrams: 0.4), defaultPortionGrams: 180),
-        CatalogItem(name: "Pasta", keywords: ["pasta", "spaghetti"], nutritionPer100Grams: NutritionAmounts(calories: 157, proteinGrams: 5.8, carbohydrateGrams: 30.9, fatGrams: 0.9, fiberGrams: 1.8), defaultPortionGrams: 180),
-        CatalogItem(name: "Potato", keywords: ["potato", "potatoes"], nutritionPer100Grams: NutritionAmounts(calories: 93, proteinGrams: 2.5, carbohydrateGrams: 21.2, fatGrams: 0.1, fiberGrams: 2.2), defaultPortionGrams: 180),
-        CatalogItem(name: "Broccoli", keywords: ["broccoli"], nutritionPer100Grams: NutritionAmounts(calories: 35, proteinGrams: 2.4, carbohydrateGrams: 7.2, fatGrams: 0.4, fiberGrams: 3.3), defaultPortionGrams: 100),
-        CatalogItem(name: "Vegetables", keywords: ["vegetable", "vegetables", "salad"], nutritionPer100Grams: NutritionAmounts(calories: 45, proteinGrams: 2, carbohydrateGrams: 8, fatGrams: 0.5, fiberGrams: 3), defaultPortionGrams: 150),
-        CatalogItem(name: "Greek yogurt", keywords: ["yogurt", "yoghurt"], nutritionPer100Grams: NutritionAmounts(calories: 73, proteinGrams: 10, carbohydrateGrams: 3.9, fatGrams: 2), defaultPortionGrams: 170),
-        CatalogItem(name: "Blueberries", keywords: ["blueberry", "blueberries"], nutritionPer100Grams: NutritionAmounts(calories: 57, proteinGrams: 0.7, carbohydrateGrams: 14.5, fatGrams: 0.3, fiberGrams: 2.4), defaultPortionGrams: 100),
-        CatalogItem(name: "Banana", keywords: ["banana"], nutritionPer100Grams: NutritionAmounts(calories: 89, proteinGrams: 1.1, carbohydrateGrams: 22.8, fatGrams: 0.3, fiberGrams: 2.6), defaultPortionGrams: 118),
-        CatalogItem(name: "Avocado", keywords: ["avocado"], nutritionPer100Grams: NutritionAmounts(calories: 160, proteinGrams: 2, carbohydrateGrams: 8.5, fatGrams: 14.7, fiberGrams: 6.7), defaultPortionGrams: 100),
-        CatalogItem(name: "Granola", keywords: ["granola"], nutritionPer100Grams: NutritionAmounts(calories: 471, proteinGrams: 10, carbohydrateGrams: 64, fatGrams: 20, fiberGrams: 7), defaultPortionGrams: 45),
-        CatalogItem(name: "Bread", keywords: ["bread", "toast"], nutritionPer100Grams: NutritionAmounts(calories: 265, proteinGrams: 9, carbohydrateGrams: 49, fatGrams: 3.2, fiberGrams: 2.7), defaultPortionGrams: 64),
-        CatalogItem(name: "Beef", keywords: ["beef", "steak"], nutritionPer100Grams: NutritionAmounts(calories: 217, proteinGrams: 26, fatGrams: 12), defaultPortionGrams: 150)
-    ]
+    static func uniqueQueries(_ queries: [String]) -> [String] {
+        var seen = Set<String>()
+        return queries.filter { seen.insert($0).inserted }
     }
-
-typealias MockMealFoodDetectionService = LocalMealNutritionAnalysisService
+}

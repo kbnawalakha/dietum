@@ -15,7 +15,7 @@ struct MealLoggingView: View {
                 AppHeroCard(
                     eyebrow: "Meal logging",
                     title: "Describe, analyze, correct.",
-                    message: "Tell Dietum generally what is in the meal and review the complete local calorie and nutrition estimate in this window."
+                    message: "Tell Dietum generally what is in the meal and review the Vision and USDA calorie and nutrition estimate in this window."
                 )
 
                 AppSurfaceCard {
@@ -56,7 +56,7 @@ struct MealLoggingView: View {
                                 .foregroundStyle(AppPalette.textSecondary)
                         }
 
-                        Text(viewModel.hasSelectedPhoto ? "Photo estimate is ready to review. Add a description for a more specific analysis, or edit the detected foods below." : "No photo selected. A general food description is enough for the local estimate.")
+                        Text(viewModel.hasSelectedPhoto ? "Photo analysis is ready to review. Add a description for a more specific lookup, or edit the detected foods below." : "No photo selected. A general food description is enough to search USDA nutrition data.")
                             .font(.subheadline)
                             .foregroundStyle(AppPalette.textSecondary)
 
@@ -193,7 +193,7 @@ struct MealLoggingView: View {
                         ), axis: .vertical)
                         .textFieldStyle(.appTextField)
 
-                        Text("This is a local estimate based on the general description. Review and correct anything needed before saving.")
+                        Text("USDA values are estimates per 100 g. Review portion size, cooking oils, and hidden ingredients before saving.")
                             .font(.caption)
                             .foregroundStyle(AppPalette.textSecondary)
 

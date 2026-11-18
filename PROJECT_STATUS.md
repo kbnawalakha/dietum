@@ -59,6 +59,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Fixed meal saving so selected meal photos persist with their nutrition entries, remain visible on today's meal page, and are available under Settings -> History -> Meal Photos with date-grouped daily totals and photo drill-down
 - Added confirmation-required left-swipe deletion for saved progress-photo days and meal-photo history days
 - Replaced fixed meal-analysis servings with per-100 g nutrition values, realistic default portions, editable gram weights, and persisted gram quantities on saved meal items
+- Replaced mock meal detection with Apple Vision food classification and USDA FoodData Central nutrition lookups; missing configuration now fails clearly instead of inventing calories
 
 # In Progress
 
@@ -73,6 +74,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Request Family Controls capability approval in the Apple Developer account
 - Add a Device Activity report extension to render authorized usage totals
 - Configure Google OAuth build settings for a device build if Drive backup is desired
+- Configure `USDA_FOOD_DATA_CENTRAL_API_KEY` in Xcode Build Settings for real meal-photo and description analysis
 
 # Dependency Tracking
 
@@ -105,7 +107,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Fixed `SwiftDataNutritionTargetRepository` protocol conformance by adding the missing active nutrition-target save adapter
 - Elevated generic simulator build and test-bundle compilation now succeed; existing Swift concurrency warnings remain
 - Meal-history `build-for-testing` verification succeeded; simulator test execution was not run in this pass
-- Calorie-estimate `build-for-testing` verification succeeded; photo-only analysis still uses a general local profile until a trained food-segmentation model or configured USDA-backed service is supplied
+- Real meal analysis now requires `USDA_FOOD_DATA_CENTRAL_API_KEY`; Vision identifies likely food labels, while USDA supplies per-100 g nutrition. A 2D photo cannot reliably infer exact portion weight, cooking oils, or hidden ingredients, so the editable estimate remains required
 
 # Active Agents
 
@@ -172,3 +174,10 @@ Milestone 0 — Repository and Architecture Foundation
 - Requires consistent video peaks, interpolates at most one measured cycle, then waits for fresh evidence. Constant unpatterned motion or audio alone cannot drive automatic oscillation. Labels retain minimum holds separately.
 - Native streams now start tracking automatically. Website players explicitly show tracking unavailable and require opt-in for a manual meter.
 - Signed iPhone build and signal/frame regressions passed; real iPhone/video alignment still needs verification.
+
+### Counter embedded website tracking (2026-11-17)
+
+- Added best-effort live movement tracking for HTML videos inside WebKit pages, iframes, and open shadow roots. Native and embedded sources share the motion-timed bar engine.
+- Isolated-world reply-controlled bridge passes only bounded numeric frame samples and playback state. No media files, saved links, stream extraction, or protection bypass.
+- Blocked frame access is explicit; manual mode remains opt-in. Pause, seek, navigation, player switching, backgrounding, and teardown reset/suspend tracking as appropriate.
+- Signed iPhone build, bridge/script checks, and actual macOS WebKit top-level/iframe live-video integration passed. External sites and iPhone embedded playback still need device verification.

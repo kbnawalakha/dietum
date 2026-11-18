@@ -20,7 +20,8 @@ codex/repo-foundation
 - Added drill-down views showing every saved meal photo for a selected date.
 - Added trailing swipe actions with confirmation before deleting a complete progress-photo day or meal-photo history day.
 - Added a regression test covering photo persistence and today's saved-meal refresh.
-- Replaced fixed meal servings with per-100 g food nutrition, editable gram portions, and saved item quantities; photo-only estimates remain explicitly general until a segmentation/database service is configured.
+- Replaced fixed meal servings with per-100 g food nutrition, editable gram portions, and saved item quantities.
+- Replaced the mock meal detector with Apple Vision classification plus USDA FoodData Central search; analysis now returns a typed configuration/data error instead of fabricated calories when the API key or nutrition match is unavailable.
 
 - Added `BodyFatEstimateBreakdown` for chest, arms, legs, back, and visceral estimates.
 - Persisted the optional breakdown through the SwiftData progress-photo model.
@@ -37,6 +38,8 @@ codex/repo-foundation
 - `Dietum/App/AppContainer.swift`
 - `Dietum/App/RootView.swift`
 - `Dietum/DietumTests/NutritionAdjustmentRecommendationServiceTests.swift`
+- `Dietum/Features/Meals/MockMealFoodDetectionService.swift` (legacy filename; production implementation is `FoodDataCentralMealAnalysisService`)
+- `Dietum/Info.plist`
 
 - `Dietum/Domain/Models/DomainModelPlaceholder.swift`
 - `Dietum/Data/SwiftData/Models/StoredProgressPhotoMetadata.swift`
@@ -56,6 +59,7 @@ codex/repo-foundation
 - Sleep-signal update: `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -destination 'generic/platform=iOS' -derivedDataPath /private/tmp/dietum-sleep-signals-device CODE_SIGNING_ALLOWED=NO` succeeded.
 - The refreshed simulator test command was attempted but could not start because CoreSimulatorService was unavailable and no simulator destination was discoverable in this environment.
 - `git diff --check` passed.
+- `xcodebuild build-for-testing -project Dietum.xcodeproj -scheme Dietum -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-real-meal-analysis-tests CODE_SIGNING_ALLOWED=NO`
 - `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-progress-delete-build CODE_SIGNING_ALLOWED=NO` reached the existing SwiftData macro-plugin malformed-response failure after the new progress-photo source compiled.
 
 ## Work Remaining
@@ -67,7 +71,8 @@ codex/repo-foundation
 - Actual Screen Time totals are not yet available because the project does not have a Device Activity report extension.
 - The default device build uses the existing HealthKit-only profile; Screen Time authorization remains unavailable until Family Controls is enabled in Apple Developer and Xcode.
 - Dashboard sleep signals now have a visible refresh action and a direct Sleep Setup route; phone usage remains clearly marked as unavailable until the Screen Time capability and report extension exist.
-- Meal and body-photo uploads now trigger local estimates automatically; the detected foods, macros, body-fat ranges, and regional values remain editable before saving.
+- Meal and body-photo uploads now trigger analysis automatically; detected foods, macros, body-fat ranges, and regional values remain editable before saving.
+- Real meal analysis requires `USDA_FOOD_DATA_CENTRAL_API_KEY` in Xcode Build Settings. Vision provides likely food labels and USDA provides per-100 g nutrition; exact grams, oils, and hidden ingredients still require user review.
 - Progress-photo picker selection now retains its pose through PhotosUI dismissal and awaits staging plus analysis before clearing the selection.
 - Progress-photo history now shows capture dates as the primary records; use the trash action on a date to remove its full photo set and analysis.
 - Removed meal-reminder navigation and dashboard entry points per product direction; legacy reminder model/export types remain only for local compatibility.
@@ -92,7 +97,7 @@ codex/repo-foundation
 
 ## Exact Next Step
 
-- Run the full simulator XCTest suite when CoreSimulatorService is available, then continue with the Device Activity report extension if Family Controls approval is granted.
+- Add the USDA API key to the app build configuration and run meal analysis on a physical device or simulator with network access, then run the full simulator XCTest suite when CoreSimulatorService is available.
 
 ## Counter — Separate Local App (2026-11-17)
 
@@ -179,3 +184,13 @@ Baseline signal tests passed. New regressions validate measured 72 and 90 BPM rh
 Remaining: verify perceived phase/cadence on the user's native iPhone stream. This is estimated visible-motion timing, not semantic action or subject recognition; website/protected players may not expose frames. Next step: rebuild/install with Command-R, open a native video, and check Video locked versus Waiting for rhythm. No GitHub push. Other Dietum changes are excluded.
 
 Final video-reference verification: the in-memory generated moving-frame test measured 144 BPM (not a preset), and all signal/phase/dropout tests passed. Signed iPhone build and whitespace checks passed. No failed verification commands in this follow-up. No remote push.
+
+### Counter embedded-video support (2026-11-17)
+
+Assigned request: allow embedded videos with tracking. Added `Counter/Counter/EmbeddedVideoBridge.swift` and `Counter/Tests/Embedded/{ScriptChecks.swift,WebKitChecks.swift}`; changed `Counter/Counter/{WebsitePlayer.swift,RhythmGuide.swift,CounterApp.swift}`, `Counter/Counter.xcodeproj/project.pbxproj`, `Counter/Tests/main.swift`, `Counter/README.md`, `DECISIONS.md`, `PROJECT_STATUS.md`, and this handoff.
+
+A per-frame isolated-world WebKit script discovers playing HTML video in pages/iframes/open shadow roots, samples a small canvas into numeric brightness grids, and forwards bounded state through a reply-controlled bridge. Swift validates payloads, chooses one current player, handles pause/seek/source changes, and uses the existing live movement meter. There are no video files, persisted links, audio recording, separate downloads, or stream-URL extraction. CORS/DRM failures remain explicit, and manual mode is opt-in. Embedded analysis is movement-only; native analysis retains optional audio-label refinement.
+
+Baseline signal checks passed. Sandboxed signed builds could not access Xcode accounts/profiles; elevated signed feature build passed. Initial new tests exposed fixture timing assumptions: a cadence assertion landed exactly on an unconfirmed new peak, and two mocked async bridge steps ran without an intervening microtask turn. Adjusted fixture timing/scheduling, then all tests passed. Bridge checks cover malformed input, duplicate/iframe filtering, active-player selection, pauses, seeks, blocked access, and numeric motion cadence. JavaScriptCore checks cover sampling, pause, seek, CORS/DRM rejection, disabling and page cleanup. A real macOS WKWebView integration received generated live video frames from both the top-level document and iframe, using no media files or network fixtures.
+
+Remaining: real external-site/iPhone compatibility, CORS/protected-player fallback, foreground/background behavior, thermal/CPU behavior, and perceived bar timing. Not all sites expose accessible video pixels; system fullscreen/Picture in Picture does not include the inline overlay. Next step: Command-R on iPhone, open a website with an embedded video, play it inline, and observe Video locked or the explicit frame-access message. No GitHub push; unrelated Dietum work is excluded.

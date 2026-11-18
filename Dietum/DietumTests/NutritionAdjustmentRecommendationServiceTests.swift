@@ -241,38 +241,56 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(breakdown.fiberCalories ?? 0, 50, accuracy: 0.001)
     }
 
-    func testLocalMealAnalysisReturnsCompleteNutritionForDescribedIngredients() async throws {
-        let result = try await LocalMealNutritionAnalysisService().analyzeMeal(
-            description: "chicken rice broccoli",
-            photo: nil
+    func testFoodDataCentralAnalysisRequiresConfiguredAPIKey() async {
+        let service = FoodDataCentralMealAnalysisService(
+            configuration: FoodDataCentralConfiguration(info: ["USDAFoodDataCentralAPIKey": ""])
         )
 
-        XCTAssertEqual(result.detectedFoods.map(\.name), ["Chicken", "Rice", "Broccoli"])
-        XCTAssertEqual(result.detectedFoods.map(\.estimatedWeightGrams), [150, 180, 100])
-        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.calories }, 517)
-        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.proteinGrams }, 53.76, accuracy: 0.001)
-        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.carbohydrateGrams }, 57.96, accuracy: 0.001)
-        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.fatGrams }, 6.34, accuracy: 0.001)
-        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.fiberGrams }, 4.02, accuracy: 0.001)
-        XCTAssertTrue(result.notes?.contains("Local estimate") == true)
+        do {
+            _ = try await service.analyzeMeal(description: "chicken rice broccoli", photo: nil)
+            XCTFail("Expected the production analyzer to reject an unconfigured USDA key")
+        } catch let error as FoodDataCentralMealAnalysisError {
+            XCTAssertEqual(error, .missingAPIKey)
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
     }
 
-    func testLocalMealAnalysisReturnsEditableEstimateForPhotoWithoutDescription() async throws {
-        let result = try await LocalMealNutritionAnalysisService().analyzeMeal(
-            description: "",
-            photo: PhotoMetadata(storageIdentifier: "meal-photo", imageData: Data([1, 2, 3]))
+    func testDetectedFoodCalculatesEditableNutritionFromPer100Grams() async throws {
+        let food = DetectedMealFood(
+            name: "Chicken",
+            confidence: 0.9,
+            estimatedWeightGrams: 150,
+            nutritionPer100Grams: NutritionAmounts(calories: 165, proteinGrams: 31, fatGrams: 3.6)
         )
 
-        XCTAssertEqual(result.detectedFoods.map(\.name), ["Photo meal estimate"])
-        XCTAssertEqual(result.detectedFoods.first?.estimatedWeightGrams, 450)
-        XCTAssertEqual(result.detectedFoods.first?.nutrition.calories, 522)
-        XCTAssertEqual(result.detectedFoods.first?.nutrition.proteinGrams ?? -1, 30.15, accuracy: 0.001)
-        XCTAssertTrue(result.notes?.contains("Photo estimate") == true)
+        XCTAssertEqual(food.nutrition.calories, 248)
+        XCTAssertEqual(food.nutrition.proteinGrams, 46.5, accuracy: 0.001)
+        XCTAssertEqual(food.nutrition.fatGrams, 5.4, accuracy: 0.001)
     }
 
     @MainActor
     func testMealAnalysisProvidesEditableFallbackEstimateAndRecalculatesCalories() async {
-        let viewModel = MealLoggingViewModel()
+        let service = TestMealFoodDetectionService(
+            result: MealFoodDetectionResult(
+                detectedFoods: [
+                    DetectedMealFood(
+                        name: "General meal estimate",
+                        confidence: 0.35,
+                        estimatedWeightGrams: 350,
+                        nutritionPer100Grams: NutritionAmounts(
+                            calories: 143,
+                            proteinGrams: 7.1,
+                            carbohydrateGrams: 15.7,
+                            fatGrams: 5.1,
+                            fiberGrams: 1.7
+                        )
+                    )
+                ],
+                notes: "Test estimate"
+            )
+        )
+        let viewModel = MealLoggingViewModel(detectionService: service)
         viewModel.updateFoodDescription("a homemade bowl")
 
         await viewModel.analyzeMeal()
@@ -526,6 +544,14 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
 
     private static func day(_ dayOffset: Double) -> Date {
         Date(timeIntervalSince1970: 1_700_000_000 + (86_400 * dayOffset))
+    }
+}
+
+private struct TestMealFoodDetectionService: MealFoodDetectionService {
+    let result: MealFoodDetectionResult
+
+    func analyzeMeal(description: String, photo: PhotoMetadata?) async throws -> MealFoodDetectionResult {
+        result
     }
 }
 

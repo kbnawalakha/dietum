@@ -30,6 +30,8 @@
 	<string>$(GOOGLE_OAUTH_REDIRECT_URI)</string>
 	<key>GoogleOAuthScheme</key>
 	<string>$(GOOGLE_OAUTH_SCHEME)</string>
+	<key>USDAFoodDataCentralAPIKey</key>
+	<string>$(USDA_FOOD_DATA_CENTRAL_API_KEY)</string>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.kbnawalakha.Dietum.weekly-backup</string>

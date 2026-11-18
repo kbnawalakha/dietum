@@ -59,7 +59,7 @@ final class MealLoggingViewModel: ObservableObject {
 
     init(
         draft: MealLoggingDraft = MealLoggingDraft(),
-        detectionService: MealFoodDetectionService = LocalMealNutritionAnalysisService(),
+        detectionService: MealFoodDetectionService = FoodDataCentralMealAnalysisService(),
         mealEntryRepository: (any MealEntryRepository)? = nil
     ) {
         self.draft = draft
@@ -99,9 +99,9 @@ final class MealLoggingViewModel: ObservableObject {
     var headline: String {
         switch analysisState {
         case .idle:
-            return "Describe the meal, then review the complete local nutrition estimate."
+            return "Describe the meal, then review the Vision and USDA nutrition estimate."
         case .analyzing:
-            return "Calculating the meal estimate locally."
+            return "Identifying foods and looking up nutrition data."
         case .ready:
             return "Review the detected foods and make any corrections before saving."
         case .needsReview:
@@ -222,6 +222,9 @@ final class MealLoggingViewModel: ObservableObject {
         } catch is CancellationError {
             analysisState = .idle
             analysisNotes = "Analysis was canceled. Add a description or photo and try again."
+        } catch let error as FoodDataCentralMealAnalysisError {
+            analysisState = .failed(error.localizedDescription)
+            analysisNotes = "No estimate was invented. Add a clearer description, configure USDA FoodData Central, or try another photo."
         } catch {
             analysisState = .failed("Meal analysis could not be completed.")
             analysisNotes = "Check the meal description or photo, then try again."
