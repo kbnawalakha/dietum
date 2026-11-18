@@ -267,6 +267,13 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(MealIngredientListParser.parse("आलू गोभी"), ["potato", "cauliflower"])
     }
 
+    func testRomanizedIndianNamesMapToEnglishCatalogTerms() {
+        XCTAssertEqual(
+            MealIngredientListParser.parse("rajma, chole, bhindi, baingan, lauki, poha"),
+            ["kidney beans", "chickpeas", "okra", "eggplant", "bottle gourd", "rice flakes"]
+        )
+    }
+
     func testIndianRecipeCatalogProvidesNutritionWithoutUSDAKey() async throws {
         let recipe = IndianRecipeNutrition(
             id: "TEST-001",
