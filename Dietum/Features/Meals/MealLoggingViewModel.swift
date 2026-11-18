@@ -8,6 +8,7 @@ struct MealLoggingDraft: Hashable, Sendable {
     var photoDescription: String = ""
     var foodDescription: String = ""
     var detectedFoods: [DetectedMealFood] = []
+    var nutritionOverride: NutritionAmounts?
 
     var trimmedNotes: String {
         notes.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -164,7 +165,7 @@ final class MealLoggingViewModel: ObservableObject {
     }
 
     var nutritionTotals: NutritionAmounts {
-        draft.detectedFoods.reduce(into: NutritionAmounts()) { totals, food in
+        let calculatedTotals = draft.detectedFoods.reduce(into: NutritionAmounts()) { totals, food in
             totals.calories += food.nutrition.calories
             totals.proteinGrams += food.nutrition.proteinGrams
             totals.carbohydrateGrams += food.nutrition.carbohydrateGrams
@@ -193,6 +194,23 @@ final class MealLoggingViewModel: ObservableObject {
             totals.micronutrients.vitaminB12Micrograms += food.nutrition.micronutrients.vitaminB12Micrograms
             totals.micronutrients.cholineMilligrams += food.nutrition.micronutrients.cholineMilligrams
         }
+
+        return draft.nutritionOverride ?? calculatedTotals
+    }
+
+    func updateTotalMacros(protein: Double, carbohydrates: Double, fat: Double) {
+        let current = nutritionTotals
+        updateDraft { draft in
+            draft.nutritionOverride = NutritionAmounts(
+                calories: Int((protein * 4 + carbohydrates * 4 + fat * 9).rounded()),
+                proteinGrams: max(0, protein),
+                carbohydrateGrams: max(0, carbohydrates),
+                fatGrams: max(0, fat),
+                fiberGrams: current.fiberGrams,
+                micronutrients: current.micronutrients
+            )
+        }
+        analysisState = .needsReview
     }
 
     var reviewPillText: String {
@@ -241,6 +259,7 @@ final class MealLoggingViewModel: ObservableObject {
             )
             updateDraft { draft in
                 draft.detectedFoods = result.detectedFoods
+                draft.nutritionOverride = nil
             }
             reviewedItemIDs = []
             analysisNotes = result.notes
@@ -261,6 +280,7 @@ final class MealLoggingViewModel: ObservableObject {
         updateDraft { draft in
             draft.foodDescription = description
             draft.detectedFoods = []
+            draft.nutritionOverride = nil
         }
         reviewedItemIDs = []
         selectedItemID = nil
@@ -271,6 +291,7 @@ final class MealLoggingViewModel: ObservableObject {
     func addFood() {
         updateDraft { draft in
             draft.detectedFoods.append(DetectedMealFood(name: "New food"))
+            draft.nutritionOverride = nil
         }
         if case .idle = analysisState {
             analysisState = .needsReview
@@ -348,6 +369,7 @@ final class MealLoggingViewModel: ObservableObject {
             draft.detectedFoods[index].nutritionPer100Grams = updatedNutrition.scaled(
                 toGrams: 10_000 / max(draft.detectedFoods[index].estimatedWeightGrams, 1)
             )
+            draft.nutritionOverride = nil
         }
         reviewedItemIDs.remove(id)
         analysisState = .needsReview
@@ -371,6 +393,7 @@ final class MealLoggingViewModel: ObservableObject {
             draft.detectedFoods[index].nutritionPer100Grams = updatedNutrition.scaled(
                 toGrams: 10_000 / max(draft.detectedFoods[index].estimatedWeightGrams, 1)
             )
+            draft.nutritionOverride = nil
         }
         reviewedItemIDs.remove(id)
         analysisState = .needsReview
@@ -385,6 +408,7 @@ final class MealLoggingViewModel: ObservableObject {
             let clampedGrams = min(max(grams, 1), 2_000)
             draft.detectedFoods[index].estimatedWeightGrams = clampedGrams
             draft.detectedFoods[index].nutrition = draft.detectedFoods[index].nutritionPer100Grams.scaled(toGrams: clampedGrams)
+            draft.nutritionOverride = nil
         }
         reviewedItemIDs.remove(id)
         analysisState = .needsReview
@@ -403,6 +427,7 @@ final class MealLoggingViewModel: ObservableObject {
             draft.detectedFoods[index].nutrition = draft.detectedFoods[index].nutritionPer100Grams.scaled(
                 toGrams: draft.detectedFoods[index].estimatedWeightGrams
             )
+            draft.nutritionOverride = nil
         }
         reviewedItemIDs.remove(id)
         analysisState = .needsReview
@@ -411,6 +436,7 @@ final class MealLoggingViewModel: ObservableObject {
     func removeFood(id: DetectedMealFood.ID) {
         updateDraft { draft in
             draft.detectedFoods.removeAll { $0.id == id }
+            draft.nutritionOverride = nil
         }
         reviewedItemIDs.remove(id)
         if draft.detectedFoods.isEmpty, case .ready = analysisState {

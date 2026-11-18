@@ -546,6 +546,49 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
     }
 
     @MainActor
+    func testMealAnalysisAllowsEditingTotalMacrosAfterEstimate() async {
+        let service = TestMealFoodDetectionService(
+            result: MealFoodDetectionResult(
+                detectedFoods: [
+                    DetectedMealFood(
+                        name: "Dal and rice",
+                        estimatedWeightGrams: 300,
+                        nutritionPer100Grams: NutritionAmounts(
+                            calories: 140,
+                            proteinGrams: 5,
+                            carbohydrateGrams: 22,
+                            fatGrams: 3,
+                            fiberGrams: 2
+                        )
+                    )
+                ],
+                notes: "Test estimate"
+            )
+        )
+        let viewModel = MealLoggingViewModel(detectionService: service)
+        viewModel.updateFoodDescription("dal and rice")
+
+        await viewModel.analyzeMeal()
+        XCTAssertEqual(viewModel.nutritionTotals.calories, 420)
+
+        viewModel.updateTotalMacros(protein: 24, carbohydrates: 66, fat: 12)
+
+        XCTAssertEqual(viewModel.nutritionTotals.calories, 468)
+        XCTAssertEqual(viewModel.nutritionTotals.proteinGrams, 24, accuracy: 0.001)
+        XCTAssertEqual(viewModel.nutritionTotals.carbohydrateGrams, 66, accuracy: 0.001)
+        XCTAssertEqual(viewModel.nutritionTotals.fatGrams, 12, accuracy: 0.001)
+        XCTAssertEqual(viewModel.nutritionTotals.fiberGrams, 6, accuracy: 0.001)
+
+        guard let foodID = viewModel.detectedFoods.first?.id else {
+            return XCTFail("Expected an analyzed food")
+        }
+
+        viewModel.updateFoodWeight(id: foodID, grams: 150)
+        XCTAssertEqual(viewModel.nutritionTotals.calories, 210)
+        XCTAssertEqual(viewModel.nutritionTotals.proteinGrams, 7.5, accuracy: 0.001)
+    }
+
+    @MainActor
     func testPhotoSelectionWaitsForDescriptionBeforeAnalysis() async {
         let service = TestMealFoodDetectionService(
             result: MealFoodDetectionResult(

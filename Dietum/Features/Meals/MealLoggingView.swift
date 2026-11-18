@@ -121,7 +121,17 @@ struct MealLoggingView: View {
                             .font(.subheadline)
                             .foregroundStyle(AppPalette.textSecondary)
 
-                        NutritionBreakdownView(nutrition: viewModel.summary.nutrition)
+                        NutritionBreakdownView(
+                            nutrition: viewModel.summary.nutrition,
+                            isEditable: viewModel.analysisState == .ready || viewModel.analysisState == .needsReview,
+                            onUpdateMacros: { macros in
+                                viewModel.updateTotalMacros(
+                                    protein: macros.protein,
+                                    carbohydrates: macros.carbohydrates,
+                                    fat: macros.fat
+                                )
+                            }
+                        )
                     }
                 }
 
@@ -249,6 +259,18 @@ struct MealLoggingView: View {
 
 private struct NutritionBreakdownView: View {
     let nutrition: NutritionAmounts
+    let isEditable: Bool
+    let onUpdateMacros: ((MealMacroValues) -> Void)?
+
+    init(
+        nutrition: NutritionAmounts,
+        isEditable: Bool = false,
+        onUpdateMacros: ((MealMacroValues) -> Void)? = nil
+    ) {
+        self.nutrition = nutrition
+        self.isEditable = isEditable
+        self.onUpdateMacros = onUpdateMacros
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.small) {
@@ -265,6 +287,36 @@ private struct NutritionBreakdownView: View {
                 nutritionMetric("Fat", "\(nutrition.fatGrams.formatted(.number.precision(.fractionLength(0)))) g")
             }
             nutritionMetric("Fiber", "\(nutrition.fiberGrams.formatted(.number.precision(.fractionLength(0)))) g")
+
+            if isEditable, let onUpdateMacros {
+                Text("Adjust the estimated totals before saving")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AppPalette.textSecondary)
+
+                HStack(spacing: AppSpacing.small) {
+                    macroField(title: "Protein g", value: nutrition.proteinGrams) { newValue in
+                        onUpdateMacros(MealMacroValues(
+                            protein: newValue,
+                            carbohydrates: nutrition.carbohydrateGrams,
+                            fat: nutrition.fatGrams
+                        ))
+                    }
+                    macroField(title: "Carbs g", value: nutrition.carbohydrateGrams) { newValue in
+                        onUpdateMacros(MealMacroValues(
+                            protein: nutrition.proteinGrams,
+                            carbohydrates: newValue,
+                            fat: nutrition.fatGrams
+                        ))
+                    }
+                    macroField(title: "Fat g", value: nutrition.fatGrams) { newValue in
+                        onUpdateMacros(MealMacroValues(
+                            protein: nutrition.proteinGrams,
+                            carbohydrates: nutrition.carbohydrateGrams,
+                            fat: newValue
+                        ))
+                    }
+                }
+            }
 
             DisclosureGroup("Micronutrients") {
                 let micros = nutrition.micronutrients
@@ -310,6 +362,20 @@ private struct NutritionBreakdownView: View {
                 .foregroundStyle(AppPalette.textPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func macroField(title: String, value: Double, onChange: @escaping (Double) -> Void) -> some View {
+        TextField(
+            title,
+            value: Binding(
+                get: { value },
+                set: { onChange(max(0, $0)) }
+            ),
+            format: .number.precision(.fractionLength(0...1))
+        )
+        .textFieldStyle(.appTextField)
+        .keyboardType(.decimalPad)
+        .accessibilityLabel(title)
     }
 
     private func nutrientRow(_ title: String, _ value: Double, _ unit: String) -> some View {
