@@ -178,7 +178,7 @@ struct MealIngredientListParser: Sendable {
         if let expansion = phraseExpansions[term] {
             return expansion
         }
-        return [aliases[term] ?? term]
+        return [aliases[term] ?? IndianFoodGlossary.aliases[term] ?? term]
     }
 }
 

@@ -274,6 +274,13 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         )
     }
 
+    func testGlossaryAliasesCoverCommonGrainsDairySpicesAndVegetables() {
+        XCTAssertEqual(
+            MealIngredientListParser.parse("toor dal, paneer, jeera, haldi, methi, nariyal, sabudana"),
+            ["pigeon peas", "paneer", "cumin", "turmeric", "fenugreek", "coconut", "sago"]
+        )
+    }
+
     func testIndianRecipeCatalogProvidesNutritionWithoutUSDAKey() async throws {
         let recipe = IndianRecipeNutrition(
             id: "TEST-001",

@@ -73,6 +73,7 @@
 		1000000000000000000000F0 /* AccountFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000F1 /* AccountFeature.swift */; };
 		1000000000000000000000F6 /* indb_recipes.json in Resources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000F5 /* indb_recipes.json */; };
 		1000000000000000000000F4 /* IndianRecipeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000F3 /* IndianRecipeCatalog.swift */; };
+		1000000000000000000000F8 /* IndianFoodGlossary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000F9 /* IndianFoodGlossary.swift */; };
 		82E9B69C30AD392B006E5ED8 /* Dietum-phone.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 82E9B69030AD392B006E5ED8 /* Dietum-phone.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -177,6 +178,7 @@
 		1000000000000000000000F1 /* AccountFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountFeature.swift; sourceTree = "<group>"; };
 		1000000000000000000000F5 /* indb_recipes.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = indb_recipes.json; sourceTree = "<group>"; };
 		1000000000000000000000F3 /* IndianRecipeCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndianRecipeCatalog.swift; sourceTree = "<group>"; };
+		1000000000000000000000F9 /* IndianFoodGlossary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndianFoodGlossary.swift; sourceTree = "<group>"; };
 		82E9B69030AD392B006E5ED8 /* Dietum-phone.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = "Dietum-phone.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -425,6 +427,7 @@
 				100000000000000000000059 /* MealLoggingViewModel.swift */,
 				10000000000000000000005A /* MealFoodAnalysisService.swift */,
 				1000000000000000000000F3 /* IndianRecipeCatalog.swift */,
+				1000000000000000000000F9 /* IndianFoodGlossary.swift */,
 				1000000000000000000000C2 /* MealReminderView.swift */,
 				1000000000000000000000C3 /* MealReminderViewModel.swift */,
 				1000000000000000000000D9 /* MealExportService.swift */,
@@ -683,6 +686,7 @@
 				100000000000000000000062 /* MealLoggingViewModel.swift in Sources */,
 				100000000000000000000063 /* MealFoodAnalysisService.swift in Sources */,
 				1000000000000000000000F4 /* IndianRecipeCatalog.swift in Sources */,
+				1000000000000000000000F8 /* IndianFoodGlossary.swift in Sources */,
 				1000000000000000000000C0 /* MealReminderView.swift in Sources */,
 				1000000000000000000000C1 /* MealReminderViewModel.swift in Sources */,
 				1000000000000000000000D0 /* HabitAdherenceModels.swift in Sources */,
