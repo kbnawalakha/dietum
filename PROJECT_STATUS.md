@@ -58,6 +58,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Added date-grouped progress-photo deletion so users can remove every saved angle and its complete body analysis for one day without affecting other dates
 - Fixed meal saving so selected meal photos persist with their nutrition entries, remain visible on today's meal page, and are available under Settings -> History -> Meal Photos with date-grouped daily totals and photo drill-down
 - Added confirmation-required left-swipe deletion for saved progress-photo days and meal-photo history days
+- Replaced fixed meal-analysis servings with per-100 g nutrition values, realistic default portions, editable gram weights, and persisted gram quantities on saved meal items
 
 # In Progress
 
@@ -104,6 +105,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Fixed `SwiftDataNutritionTargetRepository` protocol conformance by adding the missing active nutrition-target save adapter
 - Elevated generic simulator build and test-bundle compilation now succeed; existing Swift concurrency warnings remain
 - Meal-history `build-for-testing` verification succeeded; simulator test execution was not run in this pass
+- Calorie-estimate `build-for-testing` verification succeeded; photo-only analysis still uses a general local profile until a trained food-segmentation model or configured USDA-backed service is supplied
 
 # Active Agents
 

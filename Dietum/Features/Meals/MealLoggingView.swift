@@ -125,7 +125,7 @@ struct MealLoggingView: View {
                         VStack(alignment: .leading, spacing: AppSpacing.item) {
                             AppSectionHeader(
                                 title: "Detected foods",
-                                message: "Edit or remove anything the estimate got wrong, then confirm each food."
+                                message: "Edit or remove anything the estimate got wrong. Confirmation is optional before saving."
                             )
 
                             Label(viewModel.reviewStatusText, systemImage: "checkmark.shield")
@@ -147,6 +147,7 @@ struct MealLoggingView: View {
                                         },
                                         onUpdateName: { viewModel.updateFood(id: food.id, name: $0) },
                                         onUpdateConfidence: { viewModel.updateFoodConfidence(id: food.id, confidence: $0) },
+                                        onUpdateWeight: { viewModel.updateFoodWeight(id: food.id, grams: $0) },
                                         onUpdateMacros: { viewModel.updateFoodMacros(id: food.id, protein: $0.protein, carbohydrates: $0.carbohydrates, fat: $0.fat) },
                                         onRemove: {
                                             viewModel.removeFood(id: food.id)
@@ -403,6 +404,7 @@ private struct MealDetectedFoodRow: View {
     let onToggleReviewed: () -> Void
     let onUpdateName: (String) -> Void
     let onUpdateConfidence: (Double?) -> Void
+    let onUpdateWeight: (Double) -> Void
     let onUpdateMacros: (MealMacroValues) -> Void
     let onRemove: () -> Void
 
@@ -464,13 +466,15 @@ private struct MealDetectedFoodRow: View {
             }
 
             if isExpanded {
-                Text(needsAttention ? "This estimate is uncertain. Correct the name or confidence, then confirm it." : "Confirm this food once the detected name looks right.")
+                Text(needsAttention ? "This estimate is uncertain. Correct the name, portion, or confidence before saving." : "Review this food if the detected name and portion look right.")
                     .font(.caption)
                     .foregroundStyle(AppPalette.textSecondary)
 
-                Text("Adjust the estimate if the portion looks different. Calories update from protein, carbs, and fat.")
+                Text("Adjust the portion in grams when the serving looks different. Calories update from the per-100 g estimate.")
                     .font(.caption)
                     .foregroundStyle(AppPalette.textSecondary)
+
+                macroField(title: "Portion g", value: food.estimatedWeightGrams, onChange: onUpdateWeight)
 
                 HStack(spacing: AppSpacing.small) {
                     macroField(title: "Protein g", value: food.nutrition.proteinGrams) { newValue in

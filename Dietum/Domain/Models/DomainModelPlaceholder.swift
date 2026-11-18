@@ -51,6 +51,17 @@ struct NutritionAmounts: Codable, Hashable, Sendable {
         self.fatGrams = fatGrams
         self.fiberGrams = fiberGrams
     }
+
+    func scaled(toGrams grams: Double) -> NutritionAmounts {
+        let multiplier = max(0, grams) / 100
+        return NutritionAmounts(
+            calories: Int((Double(calories) * multiplier).rounded()),
+            proteinGrams: proteinGrams * multiplier,
+            carbohydrateGrams: carbohydrateGrams * multiplier,
+            fatGrams: fatGrams * multiplier,
+            fiberGrams: fiberGrams * multiplier
+        )
+    }
 }
 
 struct MealTimePreference: Codable, Hashable, Sendable {

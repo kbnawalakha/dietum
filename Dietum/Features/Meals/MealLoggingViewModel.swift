@@ -131,7 +131,7 @@ final class MealLoggingViewModel: ObservableObject {
             return "Every detected food has been confirmed."
         }
 
-        return "\(remaining) food\(remaining == 1 ? "" : "s") still need confirmation before saving."
+        return "\(remaining) food\(remaining == 1 ? "" : "s") have not been manually confirmed. Saving remains available."
     }
 
     func isFoodReviewed(_ id: DetectedMealFood.ID) -> Bool {
@@ -307,13 +307,31 @@ final class MealLoggingViewModel: ObservableObject {
             }
 
             let fiber = draft.detectedFoods[index].nutrition.fiberGrams
-            draft.detectedFoods[index].nutrition = NutritionAmounts(
+            let updatedNutrition = NutritionAmounts(
                 calories: Int((protein * 4 + carbohydrates * 4 + fat * 9).rounded()),
                 proteinGrams: max(0, protein),
                 carbohydrateGrams: max(0, carbohydrates),
                 fatGrams: max(0, fat),
                 fiberGrams: fiber
             )
+            draft.detectedFoods[index].nutrition = updatedNutrition
+            draft.detectedFoods[index].nutritionPer100Grams = updatedNutrition.scaled(
+                toGrams: 10_000 / max(draft.detectedFoods[index].estimatedWeightGrams, 1)
+            )
+        }
+        reviewedItemIDs.remove(id)
+        analysisState = .needsReview
+    }
+
+    func updateFoodWeight(id: DetectedMealFood.ID, grams: Double) {
+        updateDraft { draft in
+            guard let index = draft.detectedFoods.firstIndex(where: { $0.id == id }) else {
+                return
+            }
+
+            let clampedGrams = min(max(grams, 1), 2_000)
+            draft.detectedFoods[index].estimatedWeightGrams = clampedGrams
+            draft.detectedFoods[index].nutrition = draft.detectedFoods[index].nutritionPer100Grams.scaled(toGrams: clampedGrams)
         }
         reviewedItemIDs.remove(id)
         analysisState = .needsReview
@@ -362,7 +380,14 @@ final class MealLoggingViewModel: ObservableObject {
                     imageData: $0.jpegData(compressionQuality: 0.85)
                 )
             },
-            items: draft.detectedFoods.map { MealItem(name: $0.name, nutrition: $0.nutrition) },
+            items: draft.detectedFoods.map {
+                MealItem(
+                    name: $0.name,
+                    quantity: $0.estimatedWeightGrams,
+                    unit: "g",
+                    nutrition: $0.nutrition
+                )
+            },
             nutrition: nutritionTotals
         )
 

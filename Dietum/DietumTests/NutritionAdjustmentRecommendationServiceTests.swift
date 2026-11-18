@@ -248,11 +248,12 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         )
 
         XCTAssertEqual(result.detectedFoods.map(\.name), ["Chicken", "Rice", "Broccoli"])
-        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.calories }, 595)
-        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.proteinGrams }, 70, accuracy: 0.001)
-        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.carbohydrateGrams }, 56, accuracy: 0.001)
-        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.fatGrams }, 8, accuracy: 0.001)
-        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.fiberGrams }, 6, accuracy: 0.001)
+        XCTAssertEqual(result.detectedFoods.map(\.estimatedWeightGrams), [150, 180, 100])
+        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.calories }, 517)
+        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.proteinGrams }, 53.76, accuracy: 0.001)
+        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.carbohydrateGrams }, 57.96, accuracy: 0.001)
+        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.fatGrams }, 6.34, accuracy: 0.001)
+        XCTAssertEqual(result.detectedFoods.reduce(0) { $0 + $1.nutrition.fiberGrams }, 4.02, accuracy: 0.001)
         XCTAssertTrue(result.notes?.contains("Local estimate") == true)
     }
 
@@ -263,8 +264,9 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         )
 
         XCTAssertEqual(result.detectedFoods.map(\.name), ["Photo meal estimate"])
-        XCTAssertEqual(result.detectedFoods.first?.nutrition.calories, 520)
-        XCTAssertEqual(result.detectedFoods.first?.nutrition.proteinGrams ?? -1, 30, accuracy: 0.001)
+        XCTAssertEqual(result.detectedFoods.first?.estimatedWeightGrams, 450)
+        XCTAssertEqual(result.detectedFoods.first?.nutrition.calories, 522)
+        XCTAssertEqual(result.detectedFoods.first?.nutrition.proteinGrams ?? -1, 30.15, accuracy: 0.001)
         XCTAssertTrue(result.notes?.contains("Photo estimate") == true)
     }
 
@@ -280,6 +282,9 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         guard let foodID = viewModel.detectedFoods.first?.id else {
             return XCTFail("Expected a fallback meal estimate")
         }
+
+        viewModel.updateFoodWeight(id: foodID, grams: 200)
+        XCTAssertEqual(viewModel.nutritionTotals.calories, 286)
 
         viewModel.updateFoodMacros(id: foodID, protein: 30, carbohydrates: 40, fat: 10)
 

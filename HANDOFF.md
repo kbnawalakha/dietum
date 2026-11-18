@@ -20,6 +20,7 @@ codex/repo-foundation
 - Added drill-down views showing every saved meal photo for a selected date.
 - Added trailing swipe actions with confirmation before deleting a complete progress-photo day or meal-photo history day.
 - Added a regression test covering photo persistence and today's saved-meal refresh.
+- Replaced fixed meal servings with per-100 g food nutrition, editable gram portions, and saved item quantities; photo-only estimates remain explicitly general until a segmentation/database service is configured.
 
 - Added `BodyFatEstimateBreakdown` for chest, arms, legs, back, and visceral estimates.
 - Persisted the optional breakdown through the SwiftData progress-photo model.
