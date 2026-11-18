@@ -51,6 +51,7 @@ Milestone 0 — Repository and Architecture Foundation
 - Hardened meal analysis cancellation and error handling, including clearing stale estimates when the description changes
 - Fixed progress-photo library uploads so the selected pose remains associated while the PhotosPicker image loads asynchronously
 - Added a user-triggered Screen Time authorization flow in Sleep Setup; Family Controls remains optional until Apple approval
+- Added the Device Activity report extension scaffold and embedded today's total-activity report in Sleep Setup after authorization
 - Grouped saved progress photos by capture date and added automatic regional body-fat estimates for chest, arms, legs, back, and visceral fat
 - Relaxed body-photo analysis so valid uploaded images still receive an editable analysis when Vision pose detection is inconclusive
 - Made meal-photo and body-photo analysis start automatically after upload, while keeping estimates editable before local save
@@ -68,7 +69,7 @@ Milestone 0 — Repository and Architecture Foundation
 
 # In Progress
 
-- Screen Time totals still require Apple approval for the Family Controls capability plus a Device Activity report extension
+- Screen Time totals require Apple approval for Family Controls, refreshed provisioning profiles, and physical-device verification
 
 # Blocked
 
@@ -76,8 +77,8 @@ Milestone 0 — Repository and Architecture Foundation
 
 # Next Tasks
 
-- Request Family Controls capability approval in the Apple Developer account
-- Add a Device Activity report extension to render authorized usage totals
+- Request Family Controls capability approval in the Apple Developer account and refresh the app/extension provisioning profiles
+- Install on a physical iPhone and verify the authorized daily total-activity report
 - Configure Google OAuth build settings for a device build if Drive backup is desired
 - Configure `USDA_FOOD_DATA_CENTRAL_API_KEY` in Xcode Build Settings for real meal-photo and description analysis
 
@@ -93,9 +94,9 @@ Milestone 0 — Repository and Architecture Foundation
 - Progress-photo uploads are local-only; camera access still requires a physical device or a simulator camera configuration
 - `Dietum.xcodeproj/project.pbxproj` has an unrelated uncommitted Xcode-generated modification and remains intentionally untouched
 - Google Drive is intentionally disabled until `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_REDIRECT_URI`, and `GOOGLE_OAUTH_SCHEME` are configured
-- Phone usage totals remain unavailable until the Family Controls capability is approved and a Device Activity report extension is added; HealthKit only provides the in-bed intervals used for estimates
-- The default device build intentionally excludes Family Controls because the current provisioning profile does not include that capability
-- Dashboard sleep signals now expose an explicit HealthKit refresh and Sleep Setup path; phone usage totals remain unavailable until Family Controls and a Device Activity report extension are provisioned
+- Device Activity reporting is now wired in code, but actual totals remain unavailable until Apple approves Family Controls and the app/extension provisioning profiles include the entitlement
+- The app and Device Activity extension now declare Family Controls; installation remains blocked until Apple approves the capability and refreshed profiles include the entitlement
+- Dashboard sleep signals now expose an explicit HealthKit refresh and Sleep Setup path; phone usage totals remain unavailable until Family Controls is approved and provisioned
 - Body-fat regional values are visual estimates, not clinical measurements; visceral fat cannot be measured from a photograph
 - Vision pose detection can be inconclusive for cropped, dark, side-profile, or simulator images; those images now fall back to automatic general-range estimates instead of failing outright
 - Current local Xcode verification can fail before app compilation when the SwiftData macro plugin returns a malformed response; rerun after CoreSimulator/Xcode services recover

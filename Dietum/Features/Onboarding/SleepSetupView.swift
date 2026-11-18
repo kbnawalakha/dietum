@@ -1,4 +1,9 @@
 import SwiftUI
+import DeviceActivity
+
+private extension DeviceActivityReport.Context {
+    static let totalActivity = Self("Total Activity")
+}
 
 struct SleepSetupView: View {
     @StateObject private var viewModel: SleepSetupViewModel
@@ -94,6 +99,20 @@ struct SleepSetupView: View {
                         Text("Authorization is the first step. Apple requires a separate Device Activity report extension and approved Family Controls capability before Dietum can show actual usage totals.")
                             .font(.caption)
                             .foregroundStyle(AppPalette.textSecondary)
+
+                        if viewModel.screenTimeAuthorizationState == .authorized {
+                            DeviceActivityReport(
+                                .totalActivity,
+                                filter: DeviceActivityFilter(
+                                    segment: .daily(during: DateInterval(
+                                        start: Calendar.current.startOfDay(for: .now),
+                                        end: .now
+                                    ))
+                                )
+                            )
+                            .frame(minHeight: 72)
+                            .accessibilityLabel("Today's Screen Time usage report")
+                        }
                     }
                 }
 

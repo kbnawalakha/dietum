@@ -54,11 +54,11 @@
 		1000000000000000000000B7 /* SleepSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B2 /* SleepSetupView.swift */; };
 		1000000000000000000000B8 /* SleepSetupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B3 /* SleepSetupViewModel.swift */; };
 		1000000000000000000000B9 /* OnboardingDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B4 /* OnboardingDraft.swift */; };
-		1000000000000000000000C5 /* HealthKitSleepService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000C4 /* HealthKitSleepService.swift */; };
 		1000000000000000000000BB /* GoalSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000BC /* GoalSetupView.swift */; };
 		1000000000000000000000BE /* CheckInDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000BF /* CheckInDraft.swift */; };
 		1000000000000000000000C0 /* MealReminderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000C2 /* MealReminderView.swift */; };
 		1000000000000000000000C1 /* MealReminderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000C3 /* MealReminderViewModel.swift */; };
+		1000000000000000000000C5 /* HealthKitSleepService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000C4 /* HealthKitSleepService.swift */; };
 		1000000000000000000000D0 /* HabitAdherenceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D1 /* HabitAdherenceModels.swift */; };
 		1000000000000000000000D2 /* HabitAdherenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D3 /* HabitAdherenceService.swift */; };
 		1000000000000000000000D4 /* HabitAdherenceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D5 /* HabitAdherenceViewModel.swift */; };
@@ -71,6 +71,7 @@
 		1000000000000000000000E4 /* NutritionTrendInsightsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000E5 /* NutritionTrendInsightsViewModel.swift */; };
 		1000000000000000000000E6 /* NutritionTrendInsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000E7 /* NutritionTrendInsightsView.swift */; };
 		1000000000000000000000F0 /* AccountFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000F1 /* AccountFeature.swift */; };
+		82E9B69C30AD392B006E5ED8 /* Dietum-phone.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 82E9B69030AD392B006E5ED8 /* Dietum-phone.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -81,7 +82,28 @@
 			remoteGlobalIDString = 10000000000000000000000B;
 			remoteInfo = Dietum;
 		};
+		82E9B69A30AD392B006E5ED8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 100000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 82E9B68F30AD392B006E5ED8;
+			remoteInfo = "Dietum-phone";
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		82E9B6A130AD392B006E5ED8 /* Embed ExtensionKit Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
+			dstSubfolderSpec = 16;
+			files = (
+				82E9B69C30AD392B006E5ED8 /* Dietum-phone.appex in Embed ExtensionKit Extensions */,
+			);
+			name = "Embed ExtensionKit Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		10000000000000000000000D /* Dietum.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dietum.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -134,11 +156,11 @@
 		1000000000000000000000B2 /* SleepSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepSetupView.swift; sourceTree = "<group>"; };
 		1000000000000000000000B3 /* SleepSetupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepSetupViewModel.swift; sourceTree = "<group>"; };
 		1000000000000000000000B4 /* OnboardingDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDraft.swift; sourceTree = "<group>"; };
-		1000000000000000000000C4 /* HealthKitSleepService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitSleepService.swift; sourceTree = "<group>"; };
 		1000000000000000000000BC /* GoalSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalSetupView.swift; sourceTree = "<group>"; };
 		1000000000000000000000BF /* CheckInDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInDraft.swift; sourceTree = "<group>"; };
 		1000000000000000000000C2 /* MealReminderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealReminderView.swift; sourceTree = "<group>"; };
 		1000000000000000000000C3 /* MealReminderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealReminderViewModel.swift; sourceTree = "<group>"; };
+		1000000000000000000000C4 /* HealthKitSleepService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitSleepService.swift; sourceTree = "<group>"; };
 		1000000000000000000000D1 /* HabitAdherenceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitAdherenceModels.swift; sourceTree = "<group>"; };
 		1000000000000000000000D3 /* HabitAdherenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitAdherenceService.swift; sourceTree = "<group>"; };
 		1000000000000000000000D5 /* HabitAdherenceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitAdherenceViewModel.swift; sourceTree = "<group>"; };
@@ -151,7 +173,30 @@
 		1000000000000000000000E5 /* NutritionTrendInsightsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionTrendInsightsViewModel.swift; sourceTree = "<group>"; };
 		1000000000000000000000E7 /* NutritionTrendInsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionTrendInsightsView.swift; sourceTree = "<group>"; };
 		1000000000000000000000F1 /* AccountFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountFeature.swift; sourceTree = "<group>"; };
+		82E9B69030AD392B006E5ED8 /* Dietum-phone.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = "Dietum-phone.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		82E9B69D30AD392B006E5ED8 /* Exceptions for "Dietum-phone" folder in "Dietum-phone" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 82E9B68F30AD392B006E5ED8 /* Dietum-phone */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		82E9B69130AD392B006E5ED8 /* Dietum-phone */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				82E9B69D30AD392B006E5ED8 /* Exceptions for "Dietum-phone" folder in "Dietum-phone" target */,
+			);
+			name = "Dietum-phone";
+			path = "../Dietum-phone";
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		100000000000000000000009 /* Frameworks */ = {
@@ -169,6 +214,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		82E9B68D30AD392B006E5ED8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -177,6 +229,7 @@
 			children = (
 				10000000000000000000000D /* Dietum.app */,
 				1000000000000000000000A1 /* DietumTests.xctest */,
+				82E9B69030AD392B006E5ED8 /* Dietum-phone.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -191,6 +244,7 @@
 				100000000000000000000028 /* Domain */,
 				100000000000000000000029 /* Support */,
 				1000000000000000000000A2 /* DietumTests */,
+				82E9B69130AD392B006E5ED8 /* Dietum-phone */,
 				823EBF8930153B4700C96A81 /* Recovered References */,
 				10000000000000000000000C /* Products */,
 			);
@@ -464,10 +518,12 @@
 				100000000000000000000008 /* Sources */,
 				100000000000000000000009 /* Frameworks */,
 				10000000000000000000000A /* Resources */,
+				82E9B6A130AD392B006E5ED8 /* Embed ExtensionKit Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				82E9B69B30AD392B006E5ED8 /* PBXTargetDependency */,
 			);
 			name = Dietum;
 			productName = Dietum;
@@ -492,6 +548,28 @@
 			productReference = 1000000000000000000000A1 /* DietumTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		82E9B68F30AD392B006E5ED8 /* Dietum-phone */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 82E9B69E30AD392B006E5ED8 /* Build configuration list for PBXNativeTarget "Dietum-phone" */;
+			buildPhases = (
+				82E9B68C30AD392B006E5ED8 /* Sources */,
+				82E9B68D30AD392B006E5ED8 /* Frameworks */,
+				82E9B68E30AD392B006E5ED8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				82E9B69130AD392B006E5ED8 /* Dietum-phone */,
+			);
+			name = "Dietum-phone";
+			packageProductDependencies = (
+			);
+			productName = "Dietum-phone";
+			productReference = 82E9B69030AD392B006E5ED8 /* Dietum-phone.appex */;
+			productType = "com.apple.product-type.extensionkit-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -499,10 +577,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2720;
 				LastUpgradeCheck = 2720;
 				TargetAttributes = {
 					10000000000000000000000B = {
 						CreatedOnToolsVersion = 26.5;
+					};
+					82E9B68F30AD392B006E5ED8 = {
+						CreatedOnToolsVersion = 27.2;
 					};
 				};
 			};
@@ -521,6 +603,7 @@
 			targets = (
 				10000000000000000000000B /* Dietum */,
 				1000000000000000000000AA /* DietumTests */,
+				82E9B68F30AD392B006E5ED8 /* Dietum-phone */,
 			);
 		};
 /* End PBXProject section */
@@ -534,6 +617,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		1000000000000000000000A9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		82E9B68E30AD392B006E5ED8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -620,6 +710,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		82E9B68C30AD392B006E5ED8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -627,6 +724,11 @@
 			isa = PBXTargetDependency;
 			target = 10000000000000000000000B /* Dietum */;
 			targetProxy = 1000000000000000000000AC /* PBXContainerItemProxy */;
+		};
+		82E9B69B30AD392B006E5ED8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 82E9B68F30AD392B006E5ED8 /* Dietum-phone */;
+			targetProxy = 82E9B69A30AD392B006E5ED8 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -657,6 +759,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = Dietum/Dietum.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_LANGUAGE = en;
@@ -671,7 +774,6 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = Dietum/Info.plist;
-				CODE_SIGN_ENTITLEMENTS = Dietum/Dietum.entitlements;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -719,6 +821,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = Dietum/Dietum.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_LANGUAGE = en;
@@ -732,7 +835,6 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = Dietum/Info.plist;
-				CODE_SIGN_ENTITLEMENTS = Dietum/Dietum.entitlements;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -759,8 +861,8 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
 				"CODE_SIGNING_ALLOWED[sdk=iphoneos*]" = YES;
+				CODE_SIGNING_REQUIRED = NO;
 				"CODE_SIGNING_REQUIRED[sdk=iphoneos*]" = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -774,6 +876,7 @@
 				PRODUCT_NAME = Dietum;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 6.0;
+				USDA_FOOD_DATA_CENTRAL_API_KEY = hmBRJQ78mhB8FHNh8WkKt87dMJwnhCnqCNDT7zBD;
 			};
 			name = Debug;
 		};
@@ -783,8 +886,8 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
 				"CODE_SIGNING_ALLOWED[sdk=iphoneos*]" = YES;
+				CODE_SIGNING_REQUIRED = NO;
 				"CODE_SIGNING_REQUIRED[sdk=iphoneos*]" = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -798,6 +901,7 @@
 				PRODUCT_NAME = Dietum;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 6.0;
+				USDA_FOOD_DATA_CENTRAL_API_KEY = hmBRJQ78mhB8FHNh8WkKt87dMJwnhCnqCNDT7zBD;
 			};
 			name = Release;
 		};
@@ -843,6 +947,110 @@
 			};
 			name = Release;
 		};
+		82E9B69F30AD392B006E5ED8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = "Dietum-phone/Dietum_phone.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 4UG4MJSBUL;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Dietum-phone/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Dietum-phone";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 27.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.kbnawalakha.Dietum.Dietum-phone";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		82E9B6A030AD392B006E5ED8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = "Dietum-phone/Dietum_phone.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 4UG4MJSBUL;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Dietum-phone/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Dietum-phone";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 27.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.kbnawalakha.Dietum.Dietum-phone";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -869,6 +1077,15 @@
 			buildConfigurations = (
 				1000000000000000000000AD /* Debug */,
 				1000000000000000000000AE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		82E9B69E30AD392B006E5ED8 /* Build configuration list for PBXNativeTarget "Dietum-phone" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				82E9B69F30AD392B006E5ED8 /* Debug */,
+				82E9B6A030AD392B006E5ED8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

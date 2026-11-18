@@ -67,6 +67,7 @@ codex/repo-foundation
 - `xcodebuild build-for-testing -project Dietum.xcodeproj -scheme Dietum -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-real-meal-analysis-tests CODE_SIGNING_ALLOWED=NO`
 - `xcodebuild build-for-testing -project Dietum.xcodeproj -scheme Dietum -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-meal-tracker-fix CODE_SIGNING_ALLOWED=NO` succeeded with `TEST BUILD SUCCEEDED`.
 - `xcodebuild build-for-testing -project Dietum.xcodeproj -scheme Dietum -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-progress-comparison-tests CODE_SIGNING_ALLOWED=NO` succeeded with `TEST BUILD SUCCEEDED`.
+- `xcodebuild build-for-testing -project Dietum.xcodeproj -scheme Dietum -destination 'generic/platform=iOS' -derivedDataPath /private/tmp/dietum-device-activity-tests CODE_SIGNING_ALLOWED=NO` succeeded with `TEST BUILD SUCCEEDED` and embedded `Dietum-phone.appex` in `Dietum.app`.
 - `xcodebuild build -project Dietum.xcodeproj -scheme Dietum -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/dietum-progress-delete-build CODE_SIGNING_ALLOWED=NO` reached the existing SwiftData macro-plugin malformed-response failure after the new progress-photo source compiled.
 
 ## Work Remaining
@@ -75,9 +76,9 @@ codex/repo-foundation
 
 - Body-fat regional values are estimates and should be replaced or edited with measured data when available.
 - Vision pose detection remains best-effort; valid images with inconclusive framing use an editable general-range fallback.
-- Actual Screen Time totals are not yet available because the project does not have a Device Activity report extension.
-- The default device build uses the existing HealthKit-only profile; Screen Time authorization remains unavailable until Family Controls is enabled in Apple Developer and Xcode.
-- Dashboard sleep signals now have a visible refresh action and a direct Sleep Setup route; phone usage remains clearly marked as unavailable until the Screen Time capability and report extension exist.
+- Added the `Dietum-phone` Device Activity report extension scaffold and embedded its daily total-activity report in Sleep Setup after authorization.
+- Actual Screen Time totals still require Apple approval for Family Controls and provisioning profiles that include the entitlement.
+- Dashboard sleep signals now have a visible refresh action and a direct Sleep Setup route; phone usage remains clearly marked as unavailable until Family Controls is approved and provisioned.
 - Meal and body-photo uploads now trigger analysis automatically; detected foods, macros, body-fat ranges, and regional values remain editable before saving.
 - Real meal analysis requires `USDA_FOOD_DATA_CENTRAL_API_KEY` in Xcode Build Settings. Vision provides likely food labels and USDA provides per-100 g nutrition; exact grams, oils, and hidden ingredients still require user review.
 - Without the USDA key, live analysis intentionally fails with a configuration message; no mock calories are generated.
@@ -108,7 +109,7 @@ codex/repo-foundation
 
 ## Exact Next Step
 
-- Add the USDA API key to the app build configuration and run meal analysis on a physical device or simulator with network access, then run the full simulator XCTest suite when CoreSimulatorService is available.
+- Request Family Controls approval, refresh provisioning profiles, install on a physical iPhone, and verify the embedded Device Activity report after authorization.
 
 ## Counter — Separate Local App (2026-11-17)
 
