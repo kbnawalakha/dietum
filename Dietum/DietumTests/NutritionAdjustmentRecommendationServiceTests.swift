@@ -617,6 +617,41 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
     }
 
     @MainActor
+    func testSelectingNewPhotoClearsPreviousDetectedFoodsAndMacroOverride() async {
+        let service = TestMealFoodDetectionService(
+            result: MealFoodDetectionResult(
+                detectedFoods: [
+                    DetectedMealFood(
+                        name: "Paneer",
+                        estimatedWeightGrams: 100,
+                        nutritionPer100Grams: NutritionAmounts(
+                            calories: 265,
+                            proteinGrams: 18,
+                            carbohydrateGrams: 6,
+                            fatGrams: 20
+                        )
+                    )
+                ],
+                notes: "Test estimate"
+            )
+        )
+        let viewModel = MealLoggingViewModel(detectionService: service)
+        viewModel.updateFoodDescription("paneer")
+
+        await viewModel.analyzeMeal()
+        XCTAssertEqual(viewModel.detectedFoods.count, 1)
+
+        viewModel.updateTotalMacros(protein: 30, carbohydrates: 10, fat: 25)
+        XCTAssertEqual(viewModel.nutritionTotals.calories, 385)
+
+        viewModel.setSelectedPhoto(UIImage())
+
+        XCTAssertTrue(viewModel.detectedFoods.isEmpty)
+        XCTAssertEqual(viewModel.nutritionTotals.calories, 0)
+        XCTAssertEqual(viewModel.analysisState, .idle)
+    }
+
+    @MainActor
     func testNutritionLabelServingCountRecalculatesEditableTotals() async {
         let service = TestMealFoodDetectionService(
             result: MealFoodDetectionResult(

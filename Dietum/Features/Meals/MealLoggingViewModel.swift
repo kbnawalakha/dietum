@@ -86,6 +86,8 @@ final class MealLoggingViewModel: ObservableObject {
         photoSelectionError = nil
         updateDraft { draft in
             draft.photoDescription = "Selected local meal photo"
+            draft.detectedFoods = []
+            draft.nutritionOverride = nil
         }
         analysisState = .idle
         analysisNotes = nil
