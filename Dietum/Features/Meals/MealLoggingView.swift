@@ -509,6 +509,18 @@ private struct MealDetectedFoodRow: View {
                     .font(.caption)
             }
 
+            if food.servingSizeGrams != nil && !isExpanded {
+                HStack(spacing: AppSpacing.small) {
+                    Text("Servings")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(AppPalette.textSecondary)
+                    macroField(title: "Number", value: food.servings, onChange: onUpdateServings)
+                    Text("of \(food.servingSizeGrams?.formatted(.number.precision(.fractionLength(0))) ?? "-") g")
+                        .font(.caption)
+                        .foregroundStyle(AppPalette.textSecondary)
+                }
+            }
+
             if isExpanded {
                 Text(needsAttention ? "This estimate is uncertain. Correct the name, portion, or confidence before saving." : "Review this food if the detected name and portion look right.")
                     .font(.caption)
