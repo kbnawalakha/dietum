@@ -41,6 +41,8 @@ private struct ProgressPhotoBodyMetrics {
     let bodyWidthRatio: Double
     let shoulderWidthRatio: Double
     let hipWidthRatio: Double
+    let waistSilhouetteRatio: Double
+    let hipSilhouetteRatio: Double
     let definitionScore: Double
     let chestDefinitionScore: Double
     let armDefinitionScore: Double
@@ -60,6 +62,8 @@ private enum ProgressPhotoComparisonAnalyzer {
 
         let bodyWidthChange = signedChange(from: earlierMetrics.bodyWidthRatio, to: laterMetrics.bodyWidthRatio)
         let hipWidthChange = signedChange(from: earlierMetrics.hipWidthRatio, to: laterMetrics.hipWidthRatio)
+        let waistChange = signedChange(from: earlierMetrics.waistSilhouetteRatio, to: laterMetrics.waistSilhouetteRatio)
+        let hipSilhouetteChange = signedChange(from: earlierMetrics.hipSilhouetteRatio, to: laterMetrics.hipSilhouetteRatio)
         let shoulderChange = signedChange(from: earlierMetrics.shoulderWidthRatio, to: laterMetrics.shoulderWidthRatio)
         let definitionChange = signedChange(from: earlierMetrics.definitionScore, to: laterMetrics.definitionScore)
         let chestDefinitionChange = signedChange(from: earlierMetrics.chestDefinitionScore, to: laterMetrics.chestDefinitionScore)
@@ -67,7 +71,12 @@ private enum ProgressPhotoComparisonAnalyzer {
         let legDefinitionChange = signedChange(from: earlierMetrics.legDefinitionScore, to: laterMetrics.legDefinitionScore)
 
         return ProgressPhotoVisualComparison(
-            fatDescription: fullnessDescription(bodyWidthChange: bodyWidthChange, hipWidthChange: hipWidthChange),
+            fatDescription: fullnessDescription(
+                bodyWidthChange: bodyWidthChange,
+                hipWidthChange: hipWidthChange,
+                waistChange: waistChange,
+                hipSilhouetteChange: hipSilhouetteChange
+            ),
             muscleDescription: definitionDescription(
                 definitionChange: definitionChange,
                 shoulderChange: shoulderChange,
@@ -78,9 +87,11 @@ private enum ProgressPhotoComparisonAnalyzer {
             shapeDescription: shapeDescription(
                 bodyWidthChange: bodyWidthChange,
                 hipWidthChange: hipWidthChange,
+                waistChange: waistChange,
+                hipSilhouetteChange: hipSilhouetteChange,
                 shoulderChange: shoulderChange
             ),
-            methodDescription: "Compared Vision body keypoints, normalized silhouette ratios, and chest, arm, leg, and whole-body surface-definition signals. This is a 2D visual comparison, not a 3D mesh or clinical body-composition measurement."
+            methodDescription: "Compared Vision pose landmarks, a normalized person silhouette profile at the waist and hips, and regional surface-definition signals. This is a 2D visual comparison, not the paper's DXA-calibrated model or a clinical body-composition measurement."
         )
     }
 
@@ -128,17 +139,91 @@ private enum ProgressPhotoComparisonAnalyzer {
         let bodyWidthRatio = (maxX - minX) / bodyHeight
         let shoulderWidthRatio = distance(leftShoulder, rightShoulder) / bodyHeight
         let hipWidthRatio = distance(leftHip, rightHip) / bodyHeight
+        let silhouette = silhouetteMetrics(for: image)
 
         let bodyBounds = CGRect(x: minX, y: minY, width: maxX - minX, height: bodyHeight)
         return ProgressPhotoBodyMetrics(
             bodyWidthRatio: bodyWidthRatio,
             shoulderWidthRatio: shoulderWidthRatio,
             hipWidthRatio: hipWidthRatio,
+            waistSilhouetteRatio: silhouette?.waistWidthRatio ?? bodyWidthRatio,
+            hipSilhouetteRatio: silhouette?.hipWidthRatio ?? hipWidthRatio,
             definitionScore: surfaceDefinitionScore(image, bodyBounds: bodyBounds),
             chestDefinitionScore: regionDefinitionScore(image, bodyBounds: bodyBounds, x: 0.25...0.75, y: 0.35...0.65),
             armDefinitionScore: regionDefinitionScore(image, bodyBounds: bodyBounds, x: 0.05...0.95, y: 0.25...0.65),
             legDefinitionScore: regionDefinitionScore(image, bodyBounds: bodyBounds, x: 0.20...0.80, y: 0.00...0.40)
         )
+    }
+
+    private static func silhouetteMetrics(for image: CGImage) -> (waistWidthRatio: Double, hipWidthRatio: Double)? {
+        let request = VNGeneratePersonSegmentationRequest()
+        request.qualityLevel = .accurate
+        request.outputPixelFormat = kCVPixelFormatType_OneComponent8
+
+        do {
+            try VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
+        } catch {
+            return nil
+        }
+
+        guard let mask = request.results?.first?.pixelBuffer else {
+            return nil
+        }
+
+        CVPixelBufferLockBaseAddress(mask, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(mask, .readOnly) }
+
+        guard let baseAddress = CVPixelBufferGetBaseAddress(mask) else {
+            return nil
+        }
+
+        let width = CVPixelBufferGetWidth(mask)
+        let height = CVPixelBufferGetHeight(mask)
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(mask)
+        let pixels = baseAddress.assumingMemoryBound(to: UInt8.self)
+        let threshold: UInt8 = 128
+
+        var firstRow: Int?
+        var lastRow: Int?
+        var rows: [(minX: Int, maxX: Int)] = []
+        rows.reserveCapacity(height)
+
+        for y in 0..<height {
+            var minX = width
+            var maxX = -1
+            let row = pixels.advanced(by: y * bytesPerRow)
+            for x in 0..<width where row[x] >= threshold {
+                minX = min(minX, x)
+                maxX = max(maxX, x)
+            }
+            rows.append((minX, maxX))
+            if maxX >= minX {
+                firstRow = firstRow ?? y
+                lastRow = y
+            }
+        }
+
+        guard let firstRow, let lastRow, lastRow > firstRow else {
+            return nil
+        }
+
+        let bodyHeight = Double(lastRow - firstRow + 1)
+
+        func widthRatio(at fraction: Double) -> Double? {
+            let rowIndex = min(lastRow, max(firstRow, firstRow + Int(bodyHeight * fraction)))
+            let row = rows[rowIndex]
+            guard row.maxX >= row.minX else {
+                return nil
+            }
+            return Double(row.maxX - row.minX + 1) / bodyHeight
+        }
+
+        guard let waistWidthRatio = widthRatio(at: 0.52),
+              let hipWidthRatio = widthRatio(at: 0.65) else {
+            return nil
+        }
+
+        return (waistWidthRatio, hipWidthRatio)
     }
 
     private static func regionDefinitionScore(
@@ -207,8 +292,13 @@ private enum ProgressPhotoComparisonAnalyzer {
         return (later - earlier) / earlier
     }
 
-    private static func fullnessDescription(bodyWidthChange: Double, hipWidthChange: Double) -> String {
-        let change = (bodyWidthChange + hipWidthChange) / 2
+    private static func fullnessDescription(
+        bodyWidthChange: Double,
+        hipWidthChange: Double,
+        waistChange: Double,
+        hipSilhouetteChange: Double
+    ) -> String {
+        let change = (bodyWidthChange + hipWidthChange + waistChange + hipSilhouetteChange) / 4
         if change < -0.04 { return "The later photo looks less full through the torso and hips than the earlier photo." }
         if change > 0.04 { return "The later photo looks fuller through the torso and hips than the earlier photo." }
         return "The torso and hip fullness looks the same in both photos."
@@ -250,14 +340,22 @@ private enum ProgressPhotoComparisonAnalyzer {
         return nil
     }
 
-    private static func shapeDescription(bodyWidthChange: Double, hipWidthChange: Double, shoulderChange: Double) -> String {
+    private static func shapeDescription(
+        bodyWidthChange: Double,
+        hipWidthChange: Double,
+        waistChange: Double,
+        hipSilhouetteChange: Double,
+        shoulderChange: Double
+    ) -> String {
         let trunk = shapeChangeText("torso", change: bodyWidthChange)
+        let waist = shapeChangeText("waist", change: waistChange)
         let hips = shapeChangeText("hips", change: hipWidthChange)
         let shoulders = shapeChangeText("shoulders", change: shoulderChange)
-        if [bodyWidthChange, hipWidthChange, shoulderChange].allSatisfy({ abs($0) <= 0.04 }) {
-            return "The torso, hips, and shoulders look the same in both photos."
+        let silhouetteHips = shapeChangeText("hip contour", change: hipSilhouetteChange)
+        if [bodyWidthChange, hipWidthChange, waistChange, hipSilhouetteChange, shoulderChange].allSatisfy({ abs($0) <= 0.04 }) {
+            return "The torso, waist, hips, and shoulders look the same in both photos."
         }
-        return "\(trunk) \(hips) \(shoulders)"
+        return "\(trunk) \(waist) \(hips) \(silhouetteHips) \(shoulders)"
     }
 
     private static func shapeChangeText(_ region: String, change: Double) -> String {
