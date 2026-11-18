@@ -87,19 +87,30 @@ The WebKit integration generates live canvas-stream videos in a top-level page a
 
 ## Manual stages and Bleepy
 
-Enable **Manual rhythm**, open the meter settings, choose **Stages** or **Fixed tempo**, then Start. Both choices are finite stage programs: a random **15–20 minutes of running time**, including inter-stage breaks, with exactly **5–6 varying-length stages**. The fixed choice uses a steadier Normal/Fast pattern, mostly 20-second segments, and a configurable base tempo. It no longer runs an unlimited flat metronome.
+Enable **Manual rhythm**, open the meter settings, choose **Stages** or **Fixed tempo**, then Start. Both choices start with a normal **15–20 minute running-time plan**, including inter-stage breaks, with **5–6 varying-length stages**. Bleepy can override this plan and its limits. The fixed choice uses a steadier Normal/Fast pattern, mostly 20-second segments, and a configurable base tempo. It no longer runs an unlimited flat metronome.
 
-Each stage starts below Ultrafast and ends with a protected closing Ultrafast segment. Closing length grows monotonically from 10–15 seconds in the first stage toward 28–30 seconds in the last. Normal speed segments last 10–30 seconds and change to another speed. Breaks between stages last 15–30 seconds. There is no extra break after completion. The meter displays the **full current beat-segment duration**, not a Change in countdown.
+Ordinary stages start below Ultrafast and end with a closing Ultrafast segment; Bleepy may override either rule. Closing length grows monotonically from 10–15 seconds in the first stage toward 28–30 seconds in the last. Normal speed segments last 10–30 seconds and change to another speed. Breaks between stages last 15–30 seconds. There is no extra break after completion. The meter displays the **full current beat-segment duration**, not a Change in countdown.
 
-Normal duration mode initially distributes stages within 2–4 minutes. Random mode varies them more, but zero-length stages are no longer used: every stage needs a non-Ultra opening, enough time to fund its Ultra ending, and a share of the complete 15–20 minute budget. Stages can change length after Bleepy edits while the overall program stays within bounds. The final stage completes the program automatically.
+Normal duration mode initially distributes stages within 2–4 minutes. Random mode varies them more, but zero-length stages are no longer used: every stage needs a non-Ultra opening, enough time to fund its Ultra ending, and a share of the complete 15–20 minute budget. Bleepy edits can change stage and overall duration without those normal bounds. The final stage completes the program automatically.
 
-Slow stays at or below **20% of each stage**. Its eligible selection chance decreases from 50% toward a 20% floor in the final stage. Ultrafast stays at or below **50% of active beat time**, excluding breaks. The scheduler reserves budget for each mandatory closing Ultra before allowing optional Ultra segments. All timing and planned stage numbers remain in RAM; there is no saved link/video/program history.
+Ordinary Slow selection targets at most **20% of each stage**; Bleepy is exempt. Its eligible selection chance decreases from 50% toward a 20% floor in the final stage. Ordinary Ultrafast selection targets at most **50% of active beat time**, excluding breaks; Bleepy is exempt. The scheduler reserves budget for each mandatory closing Ultra before allowing optional Ultra segments. All timing and planned stage numbers remain in RAM; there is no saved link/video/program history.
 
 **Playback gating:** manual bar movement and clocks run only when the native player reports playing, or an embedded HTML video reports playing and sufficiently ready. Pause, end, buffering, missing playback information, or no video pauses the program automatically. Playback resuming automatically resumes it unless manually paused. Muting the video or switching off beat clicks does **not** stop the visual program. Embedded manual mode observes playback metadata only; it does not need pixel access or audio capture. Unknown/custom players remain paused with Waiting for video playback.
 
 The existing **Soft beat clicks** toggle is reused, enabled by default at reduced volume. There is no extra beat-sound setting. Bleepy retains its separate notification-sound toggle. Both sounds are synthesized in memory. Phone tests are still needed for audible volume, audio mixing, and real-site playback state.
 
-**Bleepy:** one equal-probability event is scheduled at a random second in each five-minute block of running program time: stage −30s, +30s, completion, or 15–30s queued Ultra. Time edits redistribute future-stage budgets and are clamped to preserve the 15–20 minute limit, valid segment lengths, and closing Ultra. Completion finishes the current segment and moves toward the protected closing Ultra rather than cutting it off; it may be deferred by the session's minimum duration. Requests during closing Ultra cannot shorten/extend that closing segment. Forced Ultra never starts a stage, never occupies the last non-closing slot, and waits for cap budget. Pending requests expire at program completion.
+**Bleepy:** at a random point in each five-minute running-program block, one of these **11 equally likely outcomes** occurs:
+
+- −30 seconds, +30 seconds, or immediate stage completion.
+- Immediate Ultrafast for a random 15–30 seconds.
+- Immediate **Super Slow for 30 seconds**, at half the ordinary Slow target (20 BPM nominal, scaled with the fixed-tempo setting).
+- +10 seconds or +20 seconds.
+- −10 seconds, −20 seconds, or −40 seconds.
+- A random increase of **10–40 seconds**, inclusive.
+
+Bleepy is explicitly an unrestricted override: no queueing, cap-budget checks, closing-segment protection, 10–30 second normal segment constraint, or 15–20 minute plan clamp applies to it. The normal scheduler's rules apply between overrides, but actual percentages/durations can exceed their normal targets afterward. A later Bleepy may interrupt an earlier override.
+
+Time edits apply directly to the currently running stage or break countdown. If a reduction exhausts it, that phase completes immediately (timers never display negative values). Completion ends the current stage immediately; during a break it completes the break and starts the next stage. Speed effects interrupt immediately, including during breaks/closing Ultra. The current phase extends if needed to play the requested speed duration. Ordinary scheduling resumes afterward. Video playback gating and user pause/stop remain effective.
 
 Closing/reloading the video, switching back to live tracking, or leaving the foreground ends the program. Manual pause freezes running time, so wall-clock time may exceed 20 minutes if playback/manual pauses occur.
 
@@ -110,7 +121,7 @@ swiftc -parse-as-library -module-cache-path /private/tmp/counter-swift-cache Cou
 /private/tmp/counter-stage-tests
 ```
 
-The suite exercises 200 seeds, both program styles, artificial and scheduled Bleepy edits, complete 15–20 minute sessions, 5–6 stages, progressive Ultra endings, non-Ultra starts, minimum segment lengths, caps, and stale/paused playback evidence. Real WebKit integration tests confirm muted-but-playing videos remain playing and paused videos report stopped, without media files.
+The suite separately checks 200 normal-program seeds with Bleepy disabled, all 11 override outcomes, exact signed edits, random increases, immediate speed changes, intentional cap/closing/break bypass, 200 randomized override runs, and stale/paused playback evidence. Real WebKit integration tests confirm muted-but-playing videos remain playing and paused videos report stopped, without media files.
 
 ## Embed-code input
 

@@ -1,10 +1,11 @@
 import Foundation
 
 enum RhythmLevel: String, CaseIterable, Sendable {
-    case stop = "Stop", slow = "Slow", normal = "Normal", fast = "Fast", ultrafast = "Ultrafast"
+    case stop = "Stop", superSlow = "Super slow", slow = "Slow", normal = "Normal", fast = "Fast", ultrafast = "Ultrafast"
     var targetBPM: Double {
         switch self {
         case .stop: return 0
+        case .superSlow: return 20
         case .slow: return 40
         case .normal: return 80
         case .fast: return 120

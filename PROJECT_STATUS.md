@@ -211,3 +211,10 @@ Milestone 0 — Repository and Architecture Foundation
 - Accepts embed URLs and iframe/video/source HTML; extracts and validates only the player src URL, decodes entities/protocol-relative sources, and routes embedded mode through WebKit.
 - Pasted markup/scripts are not rendered; malformed/source-less and non-HTTP(S) inputs are rejected. Existing no-storage/no-history behavior remains.
 - Embed parser regressions and signed iPhone build passed; actual provider/device playback remains a manual check.
+
+### Counter expanded unrestricted Bleepy (2026-11-17)
+
+- Added the seven requested outcomes: Super Slow 30s, +10s, +20s, −10s, −20s, −40s, and random +10–40s; all 11 total outcomes are equally likely.
+- Applied the user's correction: Bleepy is immediate and exempt from normal duration, percentage, break and closing-segment limits. Removed queued/budget-clamped handling. Normal program rules remain outside overrides; actual totals can exceed normal targets after Bleepy.
+- Added manual-only Super Slow (half Slow's target) and active override playback during breaks. Playback gating and user pause/stop still apply.
+- Normal-program and override-specific tests pass, including 200 ordinary and 200 override runs. Signed iPhone build passed before the final small UI text/tempo adjustment; final verification follows.

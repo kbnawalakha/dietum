@@ -102,3 +102,11 @@ Decision: manual rhythm now consists of 5–6 nonempty stages over 900–1200 se
 The user clarified “no sound” to mean **no video is playing**. Therefore gate timers/clicks/bar on playback state, not audio loudness, mute, or the existing beat-click toggle. Native playback uses timeControlStatus; embedded playback uses bounded HTML media state without audio capture or pixel reads. Reuse the existing click switch with soft, default-on clicks. The UI shows complete current segment duration rather than time to change.
 
 Status: Accepted, supersedes ADR-003's unlimited/zero-stage and independent-video-clock behavior. Pauses do not count toward running duration; backgrounding/closing ends the program.
+
+## Counter ADR-005 — Bleepy Is an Unrestricted Override
+
+Decision: the user's latest correction makes Bleepy independent of ordinary duration/proportion/closing rules. Time changes apply directly to the active stage or break; exhausted timers complete immediately. Stage completion is immediate. Speed effects interrupt immediately and can extend the phase to fit their duration. They are never queued or cap-clamped. Consequently Bleepy may push actual program duration outside 15–20 minutes, exceed normal Slow/Ultra percentages, interrupt closing Ultra, or run a speed effect during a break. Normal rules still guide ordinary scheduling; video playback/user stop/pause and no-persistence behavior remain.
+
+Add manual-only `RhythmLevel.superSlow` at half Slow's nominal target, used for the new 30-second outcome. All eleven outcomes are selected with equal probability, including the original four and the seven new ones. This supersedes the Bleepy constraint/queue portions of ADR-003/004.
+
+Status: Accepted per explicit user correction.

@@ -4,6 +4,20 @@ enum StageDurationMode: String, CaseIterable { case normal = "Normal", random = 
 enum ManualProgramStyle { case varied, consistent }
 enum BleepyEffect: Int, CaseIterable {
     case decrease, increase, complete, ultrafast
+    case superSlow, increase10, increase20, decrease10, decrease20, decrease40, randomIncrease
+
+    var adjustment: Int? {
+        switch self {
+        case .decrease: return -30
+        case .increase: return 30
+        case .increase10: return 10
+        case .increase20: return 20
+        case .decrease10: return -10
+        case .decrease20: return -20
+        case .decrease40: return -40
+        default: return nil
+        }
+    }
 }
 
 struct StageRandom: RandomNumberGenerator {
@@ -45,7 +59,8 @@ struct ManualStageProgram {
     private(set) var lastBleepAt = -Double.infinity
     private(set) var breakDuration = 0
     private(set) var nextBleep = Double.infinity
-    private(set) var forcedUltra: Int?
+    private(set) var overrideSegment = false
+    private var restStart = 0.0
     private var mode: StageDurationMode = .normal
     private var rng = StageRandom(state: 1)
     private var stageEnd = 0.0
@@ -60,7 +75,7 @@ struct ManualStageProgram {
     var slowChance: Double { max(0.2, 0.5 - 0.3 * Double(max(0, stage - 1)) / Double(max(1, stageCount - 1))) }
     var ultraFraction: Double { activeTime > 0 ? ultraTime / activeTime : 0 }
 
-    mutating func start(mode: StageDurationMode, seed: UInt64, style: ManualProgramStyle = .varied) {
+    mutating func start(mode: StageDurationMode, seed: UInt64, style: ManualProgramStyle = .varied, bleepyEnabled: Bool = true) {
         self = ManualStageProgram()
         self.mode = mode; self.style = style; rng = StageRandom(state: seed)
         stageCount = draw(5...6); totalDuration = draw(900...1200)
@@ -83,7 +98,7 @@ struct ManualStageProgram {
         if Set(stageLengths).count == 1 {
             stageLengths[0] += 5; stageLengths[stageCount - 1] -= 5
         }
-        scheduleBleep(); beginStage()
+        if bleepyEnabled { scheduleBleep() }; beginStage()
     }
     mutating func stop() { self = ManualStageProgram() }
     private mutating func draw(_ range: ClosedRange<Int>) -> Int { Int.random(in: range, using: &rng) }
@@ -98,102 +113,94 @@ struct ManualStageProgram {
             let boundary: Double
             switch phase {
             case .idle, .finished: return
-            case .rest: boundary = restEnd
+            case .rest: boundary = overrideSegment ? min(restEnd, beatEnd) : restEnd
             case .stage: boundary = min(stageEnd, beatEnd)
             }
             let next = min(target, boundary, nextBleep)
             let delta = max(0, next - elapsed)
-            if phase == .stage {
-                activeTime += delta; stageActiveTime += delta
-                if level == .slow { stageSlowTime += delta }
+            if phase == .stage || overrideSegment {
+                activeTime += delta
                 if level == .ultrafast { ultraTime += delta }
+                if phase == .stage {
+                    stageActiveTime += delta
+                    if level == .slow || level == .superSlow { stageSlowTime += delta }
+                }
             }
             elapsed = next
             if elapsed >= nextBleep {
                 bleepCount += 1
-                applyBleepy(BleepyEffect(rawValue: draw(0...3))!)
+                applyBleepy(BleepyEffect.allCases[draw(0...(BleepyEffect.allCases.count - 1))])
                 scheduleBleep()
             }
             if phase == .stage && elapsed >= stageEnd { finishStage() }
-            else if phase == .stage && elapsed >= beatEnd { chooseBeat() }
             else if phase == .rest && elapsed >= restEnd { beginStage() }
+            else if elapsed >= beatEnd && overrideSegment {
+                overrideSegment = false
+                if phase == .stage { chooseBeat() } else { level = .stop }
+            }
+            else if phase == .stage && elapsed >= beatEnd { chooseBeat() }
         }
     }
 
     mutating func applyBleepy(_ effect: BleepyEffect) {
         guard active else { return }
         lastBleepAt = elapsed
-        let index = phase == .rest ? stage : stage - 1
         switch effect {
-        case .decrease, .increase:
-            guard index < stageCount else { return }
-            let delta = effect == .decrease ? -30 : 30
-            if closing { lastBleep = "Bleepy: closing Ultrafast protected"; return }
-            resizeStage(index: index, desired: stageLengths[index] + delta)
-            lastBleep = effect == .decrease ? "Bleepy: stage −30s (within limits)" : "Bleepy: stage +30s (within limits)"
-        case .complete:
-            if closing { lastBleep = "Bleepy: closing Ultrafast already running"; return }
+        case .decrease, .increase, .increase10, .increase20, .decrease10, .decrease20, .decrease40, .randomIncrease:
+            let delta = effect == .randomIncrease ? draw(10...40) : effect.adjustment!
             if phase == .stage {
-                resizeStage(index: index, desired: minimumCurrentDuration())
-            } else if index < stageCount {
-                resizeStage(index: index, desired: closingLengths[index] * 2 + 20)
+                stageEnd = max(elapsed, stageEnd + Double(delta))
+                if closing && !overrideSegment {
+                    beatEnd = stageEnd
+                    segmentDuration = max(1, segmentDuration + delta)
+                }
+                syncDuration()
+                if elapsed >= stageEnd { finishStage() }
+            } else {
+                restEnd = max(elapsed, restEnd + Double(delta)); syncDuration()
+                if elapsed >= restEnd { beginStage() }
             }
-            lastBleep = "Bleepy: finish after closing Ultrafast"
+            lastBleep = "Bleepy: \(delta >= 0 ? "+" : "")\(delta)s"
+        case .complete:
+            if phase == .stage {
+                stageEnd = elapsed; syncDuration(); finishStage()
+            } else {
+                restEnd = elapsed; syncDuration(); beginStage()
+            }
+            lastBleep = "Bleepy: stage complete"
+        case .superSlow:
+            beginOverride(.superSlow, duration: 30)
+            lastBleep = "Bleepy: Super slow 30s"
         case .ultrafast:
-            if closing && stage == stageCount { lastBleep = "Bleepy: final Ultrafast already running"; return }
-            forcedUltra = draw(15...30)
-            lastBleep = "Bleepy: Ultrafast \(forcedUltra!)s queued"
+            let duration = draw(15...30)
+            beginOverride(.ultrafast, duration: duration)
+            lastBleep = "Bleepy: Ultrafast \(duration)s"
         }
     }
 
-    private func minimumCurrentDuration() -> Int {
-        let tail = Double(closingLengths[stage - 1])
-        let restOfBeat = max(0, beatEnd - elapsed)
-        let fundsAfterBeat = activeTime - 2 * ultraTime + (level == .ultrafast ? -restOfBeat : restOfBeat)
-        var extra = max(0, Int(ceil(tail - fundsAfterBeat)))
-        if extra > 0 || level == .ultrafast { extra = max(10, extra) }
-        return Int(ceil(beatEnd - stageStart)) + extra + Int(tail)
+    /// Bleepy deliberately ignores ordinary duration, proportion and closing-segment rules.
+    private mutating func beginOverride(_ level: RhythmLevel, duration: Int) {
+        overrideSegment = true; closing = false
+        self.level = level; segmentDuration = duration; segment += 1
+        beatEnd = elapsed + Double(duration)
+        if phase == .stage { stageEnd = max(stageEnd, beatEnd) }
+        else { restEnd = max(restEnd, beatEnd) }
+        syncDuration()
     }
 
-    /// Redistribute time rather than silently violating the 15–20 minute program boundary.
-    private mutating func resizeStage(index: Int, desired: Int) {
-        let current = phase == .stage && index == stage - 1
-        var target = max(current ? minimumCurrentDuration() : closingLengths[index] * 2 + 20, desired)
-        if current {
-            let afterBeat = Double(target) + stageStart - Double(closingLengths[index]) - beatEnd
-            if afterBeat > 0 && afterBeat < 10 { target += Int(ceil(10 - afterBeat)) }
-            if level == .ultrafast && afterBeat < 10 { target += Int(ceil(10 - afterBeat)) }
-        }
-        let wanted = target - stageLengths[index]
-        let future = Array((index + 1)..<stageCount)
-        let capacity = future.reduce(0) { total, i in
-            total + (wanted > 0 ? max(0, stageLengths[i] - (closingLengths[i] * 2 + 20)) : max(0, 240 - stageLengths[i]))
-        }
-        let sessionSlack = wanted > 0 ? 1200 - totalDuration : totalDuration - 900
-        var amount = min(abs(wanted), capacity + sessionSlack)
-        if current {
-            while amount > 0 {
-                let candidate = stageLengths[index] + (wanted >= 0 ? amount : -amount)
-                let gap = Double(candidate) + stageStart - Double(closingLengths[index]) - beatEnd
-                if candidate >= minimumCurrentDuration(), gap >= 10 || (abs(gap) < 0.01 && level != .ultrafast) { break }
-                amount -= 1
-            }
-        }
-        let delta = wanted >= 0 ? amount : -amount
-        stageLengths[index] += delta
-        var remaining = amount
-        for i in future {
-            let room = wanted > 0 ? max(0, stageLengths[i] - (closingLengths[i] * 2 + 20)) : max(0, 240 - stageLengths[i])
-            let use = min(room, remaining)
-            stageLengths[i] += wanted > 0 ? -use : use
-            remaining -= use
+    private mutating func syncDuration() {
+        if phase == .stage {
+            stageDuration = max(0, Int(ceil(stageEnd - stageStart)))
+            stageLengths[stage - 1] = stageDuration
+        } else if phase == .rest {
+            breakDuration = max(0, Int(ceil(restEnd - restStart)))
+            rests[stage - 1] = breakDuration
         }
         totalDuration = stageLengths.reduce(0, +) + rests.reduce(0, +)
-        if current { stageDuration = stageLengths[index]; stageEnd = stageStart + Double(stageDuration) }
     }
 
     private mutating func beginStage() {
-        stage += 1; segment = 0; stageActiveTime = 0; stageSlowTime = 0; level = .stop; closing = false
+        stage += 1; segment = 0; stageActiveTime = 0; stageSlowTime = 0; level = .stop; closing = false; overrideSegment = false
         stageStart = elapsed; stageDuration = stageLengths[stage - 1]
         phase = .stage; stageEnd = elapsed + Double(stageDuration)
         chooseBeat()
@@ -201,16 +208,16 @@ struct ManualStageProgram {
 
     private mutating func finishStage() {
         lastStageSlowFraction = stageActiveTime > 0 ? stageSlowTime / stageActiveTime : 0
-        level = .stop; closing = false
-        if stage == stageCount { phase = .finished; forcedUltra = nil; return }
-        phase = .rest; breakDuration = rests[stage - 1]; restEnd = elapsed + Double(breakDuration)
+        level = .stop; closing = false; overrideSegment = false
+        if stage == stageCount { phase = .finished; return }
+        phase = .rest; restStart = elapsed; breakDuration = rests[stage - 1]; restEnd = elapsed + Double(breakDuration)
     }
 
     private mutating func chooseBeat() {
         let tail = closingLengths[stage - 1]
         let remaining = max(0, Int((stageEnd - Double(tail) - elapsed).rounded()))
         if remaining == 0 {
-            closing = true; level = .ultrafast; segmentDuration = tail; segment += 1; beatEnd = stageEnd
+            closing = true; level = .ultrafast; segmentDuration = max(1, Int((stageEnd - elapsed).rounded())); segment += 1; beatEnd = stageEnd
             return
         }
         // Bleepy time reductions may intentionally shorten the last segment.
@@ -219,14 +226,10 @@ struct ManualStageProgram {
         }
         let duration = style == .consistent ? valid.min(by: { abs($0 - 20) < abs($1 - 20) })! : valid[draw(0...(valid.count - 1))]
         let previous = level
-        // Prefix budgets keep caps true even if Bleepy ends/shortens a stage unexpectedly.
+        // Ordinary choices use available budgets; Bleepy is explicitly exempt.
         let slowBudget = max(0, (stageActiveTime - 5 * stageSlowTime) / 4)
         let ultraBudget = max(0, activeTime - 2 * ultraTime)
-        if let forcedUltra, segment > 0, previous != .ultrafast, Double(forcedUltra + tail) <= ultraBudget + 1e-8,
-           remaining - forcedUltra >= 10 {
-            self.forcedUltra = nil
-            level = .ultrafast; segmentDuration = forcedUltra
-        } else {
+        do {
             var others: [RhythmLevel] = [.normal, .fast]
             if style == .varied, segment > 0, previous != .ultrafast,
                remaining - duration >= 10, Double(duration + tail) <= ultraBudget + 1e-8 { others.append(.ultrafast) }

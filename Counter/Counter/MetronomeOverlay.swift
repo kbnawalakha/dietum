@@ -53,7 +53,7 @@ final class MetronomeModel: ObservableObject {
     }
 
     var effectiveBPM: Double {
-        guard program.active, program.phase == .stage, program.segmentDuration > 0 else { return Double(bpm) }
+        guard program.active, (program.phase == .stage || program.overrideSegment), program.segmentDuration > 0 else { return Double(bpm) }
         let duration = Double(program.segmentDuration)
         return max(1, (duration * targetTempo / 60).rounded()) * 60 / duration
     }
@@ -90,7 +90,7 @@ final class MetronomeModel: ObservableObject {
     }
 
     private func applyStageTempo() {
-        guard !stagePaused, playbackGate.playing, program.phase == .stage else { stopBeat(); return }
+        guard !stagePaused, playbackGate.playing, (program.phase == .stage || program.overrideSegment) else { stopBeat(); return }
         let tempo = Int(targetTempo.rounded())
         let key = program.stage * 1000 + program.segment
         if bpm != tempo || !running || lastAppliedSegment != key {
@@ -192,6 +192,7 @@ struct MetronomeOverlay: View {
         return "\(value / 60):" + String(format: "%02d", value % 60)
     }
     private var title: String {
+        if model.program.overrideSegment { return "Bleepy" }
         if model.program.active { return model.program.phase == .rest ? "Break" : "Stage \(model.program.stage)/\(model.program.stageCount)" }
         return model.program.phase == .finished ? "Complete" : "Manual stages"
     }
@@ -216,7 +217,7 @@ struct MetronomeOverlay: View {
             if model.program.active {
                 Text(model.stagePaused ? "Paused" : "\(model.program.level.rawValue) · \(clock(model.program.remaining))")
                     .font(.caption.monospacedDigit())
-                if model.program.phase == .stage {
+                if model.program.phase == .stage || model.program.overrideSegment {
                     Text("Beat duration: \(model.program.segmentDuration)s").font(.caption2.monospacedDigit())
                 }
                 if model.program.elapsed - model.program.lastBleepAt < 8 {
@@ -243,11 +244,11 @@ struct MetronomeOverlay: View {
                     Picker("Stage duration", selection: $model.stageMode) {
                         ForEach(StageDurationMode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
                     }.pickerStyle(.segmented).disabled(model.program.active)
-                    Text("15–20 min total · 5–6 varying stages\n15–30s breaks · Slow ≤20% per stage\nEvery stage starts below Ultra and finishes Ultra.")
+                    Text("Normal plan: 15–20 min · 5–6 varying stages\n15–30s breaks · Normal Slow ≤20% per stage\nNormal stages start below Ultra and finish Ultra; Bleepy is exempt.")
                         .font(.callout).foregroundStyle(.secondary)
                     if model.program.active {
                         Text("Stage \(model.program.stage)/\(model.program.stageCount) · Program \(clock(model.program.sessionRemaining)) left")
-                        Text(model.program.phase == .stage ? "Current beat duration: \(model.program.segmentDuration)s" : "Break duration: \(model.program.breakDuration)s")
+                        Text(model.program.phase == .stage || model.program.overrideSegment ? "Current beat duration: \(model.program.segmentDuration)s" : "Break duration: \(model.program.breakDuration)s")
                         Text("Slow \(Int(model.program.stageSlowTime))s / \(Int(model.program.stageActiveTime))s · Ultrafast \(Int(model.program.ultraFraction * 100))%")
                             .font(.caption).foregroundStyle(.secondary)
                     }
@@ -257,7 +258,7 @@ struct MetronomeOverlay: View {
                         if model.program.active { Button("End program") { model.stop() } }
                     }
                     Toggle("Bleepy sound", isOn: $model.bleepySound)
-                    Text("Closing Ultra grows from 10–15s toward 30s. Bleepy edits preserve the program bounds and closing segment. No playing video, a pause or buffering stops the beat and freezes timers. Muted/silent videos still count as playing.")
+                    Text("Closing Ultra grows from 10–15s toward 30s. Bleepy adds ±10/20/30s, −40s, random +10–40s, completion, immediate Ultra or 30s Super slow. Bleepy ignores normal time/cap/closing rules. No playing video freezes the program; mute does not.")
                         .font(.caption).foregroundStyle(.secondary)
                     if !model.program.lastBleep.isEmpty { Text(model.program.lastBleep).font(.callout).foregroundStyle(.mint) }
                     Toggle("Soft beat clicks", isOn: $model.soundEnabled)
