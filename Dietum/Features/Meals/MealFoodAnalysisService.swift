@@ -50,7 +50,7 @@ struct MealIngredientListParser: Sendable {
             .replacingOccurrences(of: " and ", with: ",")
 
         var seen = Set<String>()
-        return normalized
+        let terms = normalized
             .split(whereSeparator: { $0 == "," || $0 == ";" || $0 == "\n" || $0 == "•" })
             .map { token in
                 token
@@ -59,7 +59,35 @@ struct MealIngredientListParser: Sendable {
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                     .lowercased()
             }
+
+        return terms
+            .flatMap { indianExpansions(for: $0) }
             .filter { !$0.isEmpty && seen.insert($0).inserted }
+    }
+
+    private static func indianExpansions(for term: String) -> [String] {
+        let aliases: [String: String] = [
+            "daal": "dal",
+            "dhal": "dal",
+            "chaval": "chawal",
+            "bhaat": "chawal",
+            "bhat": "chawal"
+        ]
+        let phraseExpansions: [String: [String]] = [
+            "daal chaval": ["dal", "rice"],
+            "dal chawal": ["dal", "rice"],
+            "dal bhaat": ["dal", "rice"],
+            "dal bhat": ["dal", "rice"],
+            "rajma chawal": ["rajma", "rice"],
+            "rajma chaval": ["rajma", "rice"],
+            "chole chawal": ["chickpeas", "rice"],
+            "chole chaval": ["chickpeas", "rice"]
+        ]
+
+        if let expansion = phraseExpansions[term] {
+            return expansion
+        }
+        return [aliases[term] ?? term]
     }
 }
 

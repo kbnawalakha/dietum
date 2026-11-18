@@ -43,7 +43,7 @@ struct BundledIndianRecipeCatalog: IndianRecipeCatalog {
                 if normalizedName == normalizedQuery {
                     return (recipe, 100)
                 }
-                if normalizedName.contains(normalizedQuery) {
+                if nameTokens.contains(normalizedQuery) {
                     return (recipe, 80)
                 }
                 guard queryTokens.count > 1, queryTokens.isSubset(of: nameTokens) else {

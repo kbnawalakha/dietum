@@ -247,6 +247,11 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(ingredients, ["chicken", "rice", "broccoli", "olive oil"])
     }
 
+    func testIngredientListParserExpandsIndianCompoundMealNames() {
+        XCTAssertEqual(MealIngredientListParser.parse("daal chaval"), ["dal", "rice"])
+        XCTAssertEqual(MealIngredientListParser.parse("dal chawal with yogurt"), ["dal", "rice", "yogurt"])
+    }
+
     func testIndianRecipeCatalogProvidesNutritionWithoutUSDAKey() async throws {
         let recipe = IndianRecipeNutrition(
             id: "TEST-001",
@@ -275,6 +280,31 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
         XCTAssertTrue(result.notes?.contains("Indian Nutrient Databank") == true)
     }
 
+    func testIndianCompoundMealResolvesDaalChavalIntoDalAndRice() async throws {
+        let catalog = BundledIndianRecipeCatalog(recipes: [
+            IndianRecipeNutrition(
+                id: "TEST-005",
+                name: "Mixed dal",
+                servingUnit: "bowl",
+                per100Nutrition: NutritionAmounts(calories: 115, proteinGrams: 7)
+            ),
+            IndianRecipeNutrition(
+                id: "TEST-006",
+                name: "Boiled rice (Uble chawal)",
+                servingUnit: "cup",
+                per100Nutrition: NutritionAmounts(calories: 130, carbohydrateGrams: 28)
+            )
+        ])
+        let service = FoodDataCentralMealAnalysisService(
+            configuration: FoodDataCentralConfiguration(info: ["USDAFoodDataCentralAPIKey": ""]),
+            indianRecipeCatalog: catalog
+        )
+
+        let result = try await service.analyzeMeal(description: "daal chaval", photo: nil)
+
+        XCTAssertEqual(result.detectedFoods.map(\.name), ["Mixed dal", "Boiled rice (Uble chawal)"])
+    }
+
     func testIndianRecipeCatalogMatchesNormalizedMultiWordQueries() {
         let recipe = IndianRecipeNutrition(
             id: "TEST-002",
@@ -286,6 +316,25 @@ final class NutritionAdjustmentRecommendationServiceTests: XCTestCase {
 
         XCTAssertEqual(catalog.match(for: "PALAK PANEER")?.id, "TEST-002")
         XCTAssertNil(catalog.match(for: "sushi"))
+    }
+
+    func testIndianRecipeCatalogDoesNotMatchDalInsideDaliya() {
+        let catalog = BundledIndianRecipeCatalog(recipes: [
+            IndianRecipeNutrition(
+                id: "TEST-003",
+                name: "Cracked wheat porridge (Meetha daliya)",
+                servingUnit: "bowl",
+                per100Nutrition: NutritionAmounts(calories: 120)
+            ),
+            IndianRecipeNutrition(
+                id: "TEST-004",
+                name: "Mixed dal",
+                servingUnit: "bowl",
+                per100Nutrition: NutritionAmounts(calories: 110)
+            )
+        ])
+
+        XCTAssertEqual(catalog.match(for: "dal")?.id, "TEST-004")
     }
 
     func testNutritionMicronutrientsScaleWithEditablePortion() {
