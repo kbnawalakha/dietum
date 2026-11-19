@@ -43,6 +43,49 @@ struct ProgressChartsView: View {
                 AppSurfaceCard {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
+                            title: "Body measurement trend",
+                            message: "Visual circumference estimates from saved progress photos, using the selected range."
+                        )
+
+                        if viewModel.measurementPoints.isEmpty {
+                            ContentUnavailableView(
+                                "No measurement history yet",
+                                systemImage: "ruler",
+                                description: Text("Save analyzed progress photos to build measurement trends.")
+                            )
+                            .frame(maxWidth: .infinity, minHeight: 220)
+                        } else {
+                            Chart {
+                                ForEach(viewModel.measurementPoints) { point in
+                                    LineMark(
+                                        x: .value("Date", point.date),
+                                        y: .value("Centimeters", point.value)
+                                    )
+                                    .interpolationMethod(.catmullRom)
+                                    .foregroundStyle(by: .value("Measurement", point.metric))
+
+                                    PointMark(
+                                        x: .value("Date", point.date),
+                                        y: .value("Centimeters", point.value)
+                                    )
+                                    .foregroundStyle(by: .value("Measurement", point.metric))
+                                }
+                            }
+                            .frame(minHeight: 240)
+                            .chartXAxis {
+                                AxisMarks(values: .automatic(desiredCount: 4))
+                            }
+                            .chartYAxis {
+                                AxisMarks(position: .leading)
+                            }
+                            .chartLegend(position: .bottom, alignment: .leading)
+                        }
+                    }
+                }
+
+                AppSurfaceCard {
+                    VStack(alignment: .leading, spacing: AppSpacing.item) {
+                        AppSectionHeader(
                             title: "Snapshot",
                             message: viewModel.chartNotes
                         )

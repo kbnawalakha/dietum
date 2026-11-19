@@ -134,7 +134,7 @@ struct ProgressPhotosView: View {
 
                         AppSectionHeader(
                             title: "Estimated measurements",
-                            message: "Visual circumference estimates in centimeters. They are normalized to a generic 170 cm reference height, so camera distance, pose, clothing, and perspective can change the result."
+                            message: "Visual circumference estimates in centimeters. They are normalized to a \(viewModel.measurementReferenceHeightCentimeters.formatted(.number.precision(.fractionLength(0)))) cm height reference, so camera distance, pose, clothing, and perspective can change the result."
                         )
 
                         if let measurements = viewModel.measurementEstimate {
@@ -288,6 +288,24 @@ struct ProgressPhotosView: View {
                                 }
 
                             }
+
+                            VStack(alignment: .leading, spacing: AppSpacing.small) {
+                                Text("Estimated measurement changes")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(AppPalette.textPrimary)
+
+                                ForEach(viewModel.comparisonMeasurementChanges) { change in
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(change.title)
+                                            .font(.caption.weight(.semibold))
+                                            .foregroundStyle(AppPalette.textPrimary)
+                                        Text(change.detail)
+                                            .font(.caption)
+                                            .foregroundStyle(AppPalette.textSecondary)
+                                    }
+                                    .accessibilityElement(children: .combine)
+                                }
+                            }
                         }
 
                         Text(viewModel.comparisonSelectionText)
@@ -398,6 +416,7 @@ struct ProgressPhotosView: View {
             }
         }
         .task {
+            await viewModel.loadProfileHeight()
             await viewModel.loadRecentPhotos()
         }
         .photosPicker(

@@ -42,19 +42,29 @@ final class ProgressChartsViewModel: ObservableObject {
         let value: Double
     }
 
+    struct MeasurementChartPoint: Identifiable, Hashable {
+        let id = UUID()
+        let date: Date
+        let metric: String
+        let value: Double
+    }
+
     @Published private(set) var loadState: LoadState = .idle
     @Published private(set) var weightPoints: [WeightChartPoint] = []
     @Published private(set) var nutritionPoints: [NutritionChartPoint] = []
+    @Published private(set) var measurementPoints: [MeasurementChartPoint] = []
     @Published var selectedRange: ProgressChartRange = .threeMonths
 
     private let weightLogRepository: any WeightLogRepository
     private let recommendationService: any NutritionAdjustmentRecommendationService
     private let goalWeightKilograms: Double
     private let baseNutritionTarget: NutritionTarget
+    private let progressPhotoRepository: (any ProgressPhotoRepository)?
 
     init(
         weightLogRepository: any WeightLogRepository,
         recommendationService: any NutritionAdjustmentRecommendationService,
+        progressPhotoRepository: (any ProgressPhotoRepository)? = nil,
         goalWeightKilograms: Double = 79.5,
         baseNutritionTarget: NutritionTarget = NutritionTarget(
             dailyGoal: NutritionAmounts(
@@ -72,6 +82,7 @@ final class ProgressChartsViewModel: ObservableObject {
         self.recommendationService = recommendationService
         self.goalWeightKilograms = goalWeightKilograms
         self.baseNutritionTarget = baseNutritionTarget
+        self.progressPhotoRepository = progressPhotoRepository
     }
 
     func loadCharts() async {
@@ -85,7 +96,9 @@ final class ProgressChartsViewModel: ObservableObject {
             let start = Calendar.current.date(byAdding: .day, value: -selectedRange.days, to: .now) ?? .now
             let window = DateInterval(start: start, end: .now)
             let logs = try await weightLogRepository.fetchWeightLogs(in: window)
+            let photos = try await progressPhotoRepository?.fetchProgressPhotos(in: window) ?? []
             let sortedLogs = logs.sorted { $0.recordedAt < $1.recordedAt }
+            measurementPoints = makeMeasurementSeries(from: photos)
 
             if sortedLogs.isEmpty {
                 weightPoints = []
@@ -102,6 +115,22 @@ final class ProgressChartsViewModel: ObservableObject {
             nutritionPoints = []
             loadState = .failed("Unable to load progress charts right now.")
         }
+    }
+
+    private func makeMeasurementSeries(from photos: [ProgressPhotoMetadata]) -> [MeasurementChartPoint] {
+        photos.flatMap { photo in
+            guard let estimate = photo.bodyMeasurementEstimate else { return [] }
+            return [
+                ("Chest", estimate.chestCentimeters),
+                ("Waist", estimate.waistCentimeters),
+                ("Hips", estimate.hipCentimeters),
+                ("Arms", estimate.upperArmCentimeters),
+                ("Thighs", estimate.thighCentimeters)
+            ].compactMap { metric, value in
+                value.map { MeasurementChartPoint(date: photo.capturedAt, metric: metric, value: $0) }
+            }
+        }
+        .sorted { $0.date < $1.date }
     }
 
     func setRange(_ range: ProgressChartRange) {

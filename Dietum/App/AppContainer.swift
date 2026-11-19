@@ -9,6 +9,7 @@ struct AppContainer {
     private let mealEntryRepository: any MealEntryRepository
     private let nutritionTargetRepository: any NutritionTargetRepository
     private let weightLogRepository: any WeightLogRepository
+    private let userProfileRepository: any UserProfileRepository
     private let progressPhotoRepository: any ProgressPhotoRepository
     private let nutritionAdjustmentRecommendationService: any NutritionAdjustmentRecommendationService
 
@@ -18,6 +19,7 @@ struct AppContainer {
         self.mealEntryRepository = SwiftDataMealEntryRepository(modelContext: resolvedContainer.mainContext)
         self.nutritionTargetRepository = SwiftDataNutritionTargetRepository(modelContext: resolvedContainer.mainContext)
         self.weightLogRepository = SwiftDataWeightEntryRepository(modelContext: resolvedContainer.mainContext)
+        self.userProfileRepository = SwiftDataUserProfileRepository(modelContext: resolvedContainer.mainContext)
         self.progressPhotoRepository = SwiftDataProgressPhotoRepository(modelContext: resolvedContainer.mainContext)
         self.nutritionAdjustmentRecommendationService = DeterministicNutritionAdjustmentRecommendationService()
     }
@@ -35,13 +37,17 @@ struct AppContainer {
     }
 
     func makeProgressPhotosViewModel() -> ProgressPhotosViewModel {
-        ProgressPhotosViewModel(progressPhotoRepository: progressPhotoRepository)
+        ProgressPhotosViewModel(
+            progressPhotoRepository: progressPhotoRepository,
+            userProfileRepository: userProfileRepository
+        )
     }
 
     func makeProgressChartsViewModel() -> ProgressChartsViewModel {
         ProgressChartsViewModel(
             weightLogRepository: weightLogRepository,
-            recommendationService: nutritionAdjustmentRecommendationService
+            recommendationService: nutritionAdjustmentRecommendationService,
+            progressPhotoRepository: progressPhotoRepository
         )
     }
 

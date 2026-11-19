@@ -472,6 +472,7 @@ final class ProgressPhotosViewModel: ObservableObject {
     @Published var backBodyFatText: String = ""
     @Published var visceralBodyFatText: String = ""
     @Published private(set) var measurementEstimate: BodyMeasurementEstimate?
+    @Published private(set) var measurementReferenceHeightCentimeters: Double = 170
     @Published var selectedBodyFatReferenceID: String?
     @Published var stagedPhotos: [ProgressPhotoAngle: PhotoMetadata] = [:]
     @Published var photoDate: Date = .now
@@ -486,10 +487,28 @@ final class ProgressPhotosViewModel: ObservableObject {
     @Published private(set) var bodyAnalysisState: BodyAnalysisState = .idle
 
     private let progressPhotoRepository: any ProgressPhotoRepository
+    private let userProfileRepository: (any UserProfileRepository)?
     private var captureSequence: Int = 0
 
-    init(progressPhotoRepository: any ProgressPhotoRepository = MemoryProgressPhotoRepository()) {
+    init(
+        progressPhotoRepository: any ProgressPhotoRepository = MemoryProgressPhotoRepository(),
+        userProfileRepository: (any UserProfileRepository)? = nil
+    ) {
         self.progressPhotoRepository = progressPhotoRepository
+        self.userProfileRepository = userProfileRepository
+    }
+
+    func loadProfileHeight() async {
+        guard let userProfileRepository else { return }
+
+        do {
+            if let profile = try await userProfileRepository.fetchUserProfile(),
+               (100...250).contains(profile.heightCentimeters) {
+                measurementReferenceHeightCentimeters = profile.heightCentimeters
+            }
+        } catch {
+            // Keep the documented generic reference when profile storage is unavailable.
+        }
     }
 
     func loadRecentPhotos() async {
@@ -665,11 +684,17 @@ final class ProgressPhotosViewModel: ObservableObject {
             return
         }
 
+        let referenceHeight = measurementReferenceHeightCentimeters
         let analysis = await Task.detached(priority: .userInitiated) {
             let detectedCount = Self.detectedHumanBodyCount(in: imageData)
             let measurements = imageData
                 .compactMap { UIImage(data: $0)?.cgImage }
-                .compactMap { ProgressPhotoComparisonAnalyzer.estimatedMeasurements(for: $0) }
+                .compactMap {
+                    ProgressPhotoComparisonAnalyzer.estimatedMeasurements(
+                        for: $0,
+                        referenceHeightCentimeters: referenceHeight
+                    )
+                }
             return (detectedCount, Self.averageMeasurements(measurements))
         }.value
         measurementEstimate = analysis.1
@@ -848,6 +873,34 @@ final class ProgressPhotosViewModel: ObservableObject {
                 detail: visualShapeDetail
             )
         ]
+    }
+
+    var comparisonMeasurementChanges: [ProgressPhotoChange] {
+        guard let earlier = comparisonBaseline?.bodyMeasurementEstimate,
+              let later = comparisonLatest?.bodyMeasurementEstimate else {
+            return [ProgressPhotoChange(
+                id: "measurements-unavailable",
+                title: "Measurements unavailable",
+                detail: "Both photos need saved visual measurement estimates before size changes can be calculated."
+            )]
+        }
+
+        let values: [(String, String, Double?, Double?)] = [
+            ("chest-measurement", "Chest", earlier.chestCentimeters, later.chestCentimeters),
+            ("waist-measurement", "Waist", earlier.waistCentimeters, later.waistCentimeters),
+            ("hips-measurement", "Hips", earlier.hipCentimeters, later.hipCentimeters),
+            ("arms-measurement", "Upper arms", earlier.upperArmCentimeters, later.upperArmCentimeters),
+            ("thighs-measurement", "Thighs", earlier.thighCentimeters, later.thighCentimeters),
+            ("calves-measurement", "Calves", earlier.calfCentimeters, later.calfCentimeters)
+        ]
+
+        let changes = values.compactMap { id, title, earlier, later in
+            makeMeasurementChange(id: id, title: title, earlier: earlier, later: later)
+        }
+
+        return changes.isEmpty
+            ? [ProgressPhotoChange(id: "measurements-same", title: "Measurements", detail: "The estimated measurements look the same in both photos.")]
+            : changes
     }
 
     var saveButtonTitle: String {
@@ -1057,6 +1110,30 @@ final class ProgressPhotosViewModel: ObservableObject {
             : "\(direction.capitalized) by \(differenceText) percentage points: \(earlierText)% to \(laterText)%"
 
         return ProgressPhotoChange(id: id, title: title, detail: detail)
+    }
+
+    private func makeMeasurementChange(
+        id: String,
+        title: String,
+        earlier: Double?,
+        later: Double?
+    ) -> ProgressPhotoChange? {
+        guard let earlier, let later else { return nil }
+
+        let difference = later - earlier
+        let earlierText = earlier.formatted(.number.precision(.fractionLength(1)))
+        let laterText = later.formatted(.number.precision(.fractionLength(1)))
+        if abs(difference) < 0.5 {
+            return ProgressPhotoChange(id: id, title: title, detail: "No meaningful change: \(earlierText) cm to \(laterText) cm")
+        }
+
+        let direction = difference < 0 ? "down" : "up"
+        let differenceText = abs(difference).formatted(.number.precision(.fractionLength(1)))
+        return ProgressPhotoChange(
+            id: id,
+            title: title,
+            detail: "Estimated \(direction) by \(differenceText) cm: \(earlierText) cm to \(laterText) cm"
+        )
     }
 
     private func parsedEstimate(_ value: String) -> Double? {
