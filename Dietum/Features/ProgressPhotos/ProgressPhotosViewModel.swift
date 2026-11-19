@@ -41,8 +41,11 @@ private struct ProgressPhotoBodyMetrics {
     let bodyWidthRatio: Double
     let shoulderWidthRatio: Double
     let hipWidthRatio: Double
+    let chestWidthRatio: Double
     let waistSilhouetteRatio: Double
     let hipSilhouetteRatio: Double
+    let thighWidthRatio: Double
+    let calfWidthRatio: Double
     let definitionScore: Double
     let chestDefinitionScore: Double
     let armDefinitionScore: Double
@@ -143,8 +146,11 @@ private enum ProgressPhotoComparisonAnalyzer {
             bodyWidthRatio: bodyWidthRatio,
             shoulderWidthRatio: shoulderWidthRatio,
             hipWidthRatio: hipWidthRatio,
+            chestWidthRatio: silhouette?.chestWidthRatio ?? bodyWidthRatio,
             waistSilhouetteRatio: silhouette?.waistWidthRatio ?? bodyWidthRatio,
             hipSilhouetteRatio: silhouette?.hipWidthRatio ?? hipWidthRatio,
+            thighWidthRatio: silhouette?.thighWidthRatio ?? bodyWidthRatio * 0.55,
+            calfWidthRatio: silhouette?.calfWidthRatio ?? bodyWidthRatio * 0.35,
             definitionScore: surfaceDefinitionScore(image, bodyBounds: bodyBounds),
             chestDefinitionScore: regionDefinitionScore(image, bodyBounds: bodyBounds, x: 0.25...0.75, y: 0.35...0.65),
             armDefinitionScore: regionDefinitionScore(image, bodyBounds: bodyBounds, x: 0.05...0.95, y: 0.25...0.65),
@@ -164,7 +170,15 @@ private enum ProgressPhotoComparisonAnalyzer {
         return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
     }
 
-    private static func silhouetteMetrics(for image: CGImage) -> (bodyWidthRatio: Double, waistWidthRatio: Double, hipWidthRatio: Double, bodyBounds: CGRect)? {
+    private static func silhouetteMetrics(for image: CGImage) -> (
+        bodyWidthRatio: Double,
+        chestWidthRatio: Double,
+        waistWidthRatio: Double,
+        hipWidthRatio: Double,
+        thighWidthRatio: Double,
+        calfWidthRatio: Double,
+        bodyBounds: CGRect
+    )? {
         let request = VNGeneratePersonSegmentationRequest()
         request.qualityLevel = .accurate
         request.outputPixelFormat = kCVPixelFormatType_OneComponent8
@@ -227,8 +241,11 @@ private enum ProgressPhotoComparisonAnalyzer {
             return Double(row.maxX - row.minX + 1) / bodyHeight
         }
 
-        guard let waistWidthRatio = widthRatio(at: 0.52),
-              let hipWidthRatio = widthRatio(at: 0.65) else {
+        guard let chestWidthRatio = widthRatio(at: 0.36),
+              let waistWidthRatio = widthRatio(at: 0.52),
+              let hipWidthRatio = widthRatio(at: 0.65),
+              let thighWidthRatio = widthRatio(at: 0.75),
+              let calfWidthRatio = widthRatio(at: 0.86) else {
             return nil
         }
 
@@ -247,9 +264,37 @@ private enum ProgressPhotoComparisonAnalyzer {
         )
         return (
             bodyWidthRatio: Double(widestRow.maxX - widestRow.minX + 1) / bodyHeight,
+            chestWidthRatio: chestWidthRatio,
             waistWidthRatio: waistWidthRatio,
             hipWidthRatio: hipWidthRatio,
+            thighWidthRatio: thighWidthRatio,
+            calfWidthRatio: calfWidthRatio,
             bodyBounds: bodyBounds
+        )
+    }
+
+    static func estimatedMeasurements(for image: CGImage, referenceHeightCentimeters: Double = 170) -> BodyMeasurementEstimate? {
+        guard let bodyMetrics = metrics(for: image), referenceHeightCentimeters > 0 else {
+            return nil
+        }
+
+        // A front-facing silhouette gives width/height ratios, not absolute size.
+        // Convert those ratios using a generic height reference and label the result as estimated.
+        func circumference(from widthRatio: Double, ellipseFactor: Double = 0.85) -> Double {
+            max(1, widthRatio * referenceHeightCentimeters * .pi * ellipseFactor)
+        }
+
+        let armWidthRatio = min(bodyMetrics.shoulderWidthRatio * 0.18, bodyMetrics.bodyWidthRatio * 0.16)
+        let thighWidthRatio = bodyMetrics.thighWidthRatio * 0.42
+        let calfWidthRatio = bodyMetrics.calfWidthRatio * 0.55
+
+        return BodyMeasurementEstimate(
+            chestCentimeters: circumference(from: bodyMetrics.chestWidthRatio),
+            waistCentimeters: circumference(from: bodyMetrics.waistSilhouetteRatio),
+            hipCentimeters: circumference(from: bodyMetrics.hipSilhouetteRatio),
+            upperArmCentimeters: circumference(from: armWidthRatio, ellipseFactor: 0.75),
+            thighCentimeters: circumference(from: thighWidthRatio, ellipseFactor: 0.75),
+            calfCentimeters: circumference(from: calfWidthRatio, ellipseFactor: 0.75)
         )
     }
 
@@ -426,6 +471,7 @@ final class ProgressPhotosViewModel: ObservableObject {
     @Published var legsBodyFatText: String = ""
     @Published var backBodyFatText: String = ""
     @Published var visceralBodyFatText: String = ""
+    @Published private(set) var measurementEstimate: BodyMeasurementEstimate?
     @Published var selectedBodyFatReferenceID: String?
     @Published var stagedPhotos: [ProgressPhotoAngle: PhotoMetadata] = [:]
     @Published var photoDate: Date = .now
@@ -509,7 +555,8 @@ final class ProgressPhotosViewModel: ObservableObject {
                     photo: photo,
                     notes: noteText.isEmpty ? nil : noteText,
                     bodyFatPercentage: bodyFatPercentage,
-                    bodyFatBreakdown: bodyFatBreakdown
+                    bodyFatBreakdown: bodyFatBreakdown,
+                    bodyMeasurementEstimate: measurementEstimate
                 )
                 try await progressPhotoRepository.saveProgressPhoto(metadata)
             }
@@ -518,6 +565,7 @@ final class ProgressPhotosViewModel: ObservableObject {
             notes = ""
             bodyFatPercentageText = ""
             clearBodyFatBreakdown()
+            measurementEstimate = nil
             selectedBodyFatReferenceID = nil
             bodyAnalysisState = .idle
             saveState = .saved(Date())
@@ -534,6 +582,7 @@ final class ProgressPhotosViewModel: ObservableObject {
         notes = ""
         bodyFatPercentageText = ""
         clearBodyFatBreakdown()
+        measurementEstimate = nil
         selectedBodyFatReferenceID = nil
         bodyAnalysisState = .idle
         saveState = .idle
@@ -616,18 +665,23 @@ final class ProgressPhotosViewModel: ObservableObject {
             return
         }
 
-        let detectedCount = await Task.detached(priority: .userInitiated) {
-            Self.detectedHumanBodyCount(in: imageData)
+        let analysis = await Task.detached(priority: .userInitiated) {
+            let detectedCount = Self.detectedHumanBodyCount(in: imageData)
+            let measurements = imageData
+                .compactMap { UIImage(data: $0)?.cgImage }
+                .compactMap { ProgressPhotoComparisonAnalyzer.estimatedMeasurements(for: $0) }
+            return (detectedCount, Self.averageMeasurements(measurements))
         }.value
+        measurementEstimate = analysis.1
 
-        if detectedCount == 0 {
+        if analysis.0 == 0 {
             applySuggestedBodyFatBreakdown()
             let photoWord = validImageCount == 1 ? "photo was" : "photos were"
-            bodyAnalysisState = .analyzed("The \(photoWord) loaded, but pose detection was inconclusive. Review the automatic regional composition estimates below; they remain editable before saving.")
+            bodyAnalysisState = .analyzed("The \(photoWord) loaded, but pose detection was inconclusive. Review the automatic regional composition and measurement estimates below before saving.")
         } else {
             applySuggestedBodyFatBreakdown()
-            let photoWord = detectedCount == 1 ? "photo" : "photos"
-            bodyAnalysisState = .analyzed("Body detected in \(detectedCount) \(photoWord). Review the automatic non-clinical regional estimates before saving.")
+            let photoWord = analysis.0 == 1 ? "photo" : "photos"
+            bodyAnalysisState = .analyzed("Body detected in \(analysis.0) \(photoWord). Review the automatic non-clinical regional and measurement estimates before saving.")
         }
     }
 
@@ -1018,6 +1072,25 @@ final class ProgressPhotosViewModel: ObservableObject {
         legsBodyFatText = ""
         backBodyFatText = ""
         visceralBodyFatText = ""
+    }
+
+    private static func averageMeasurements(_ values: [BodyMeasurementEstimate]) -> BodyMeasurementEstimate? {
+        guard !values.isEmpty else { return nil }
+
+        func average(_ component: (BodyMeasurementEstimate) -> Double?) -> Double? {
+            let numbers = values.compactMap(component)
+            guard !numbers.isEmpty else { return nil }
+            return numbers.reduce(0, +) / Double(numbers.count)
+        }
+
+        return BodyMeasurementEstimate(
+            chestCentimeters: average(\.chestCentimeters),
+            waistCentimeters: average(\.waistCentimeters),
+            hipCentimeters: average(\.hipCentimeters),
+            upperArmCentimeters: average(\.upperArmCentimeters),
+            thighCentimeters: average(\.thighCentimeters),
+            calfCentimeters: average(\.calfCentimeters)
+        )
     }
 
     private func applySuggestedBodyFatBreakdown() {

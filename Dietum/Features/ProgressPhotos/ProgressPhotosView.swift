@@ -132,6 +132,26 @@ struct ProgressPhotosView: View {
                             bodyFatEstimateCard(title: "Visceral", value: viewModel.visceralBodyFatText)
                         }
 
+                        AppSectionHeader(
+                            title: "Estimated measurements",
+                            message: "Visual circumference estimates in centimeters. They are normalized to a generic 170 cm reference height, so camera distance, pose, clothing, and perspective can change the result."
+                        )
+
+                        if let measurements = viewModel.measurementEstimate {
+                            LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
+                                measurementCard(title: "Chest", value: measurements.chestCentimeters)
+                                measurementCard(title: "Waist", value: measurements.waistCentimeters)
+                                measurementCard(title: "Hips", value: measurements.hipCentimeters)
+                                measurementCard(title: "Upper arm", value: measurements.upperArmCentimeters)
+                                measurementCard(title: "Thigh", value: measurements.thighCentimeters)
+                                measurementCard(title: "Calf", value: measurements.calfCentimeters)
+                            }
+                        } else {
+                            Text("Upload a body photo to generate visual measurement estimates.")
+                                .font(.caption)
+                                .foregroundStyle(AppPalette.textSecondary)
+                        }
+
                         VStack(alignment: .leading, spacing: AppSpacing.small) {
                             Text("Reference guide")
                                 .font(.subheadline.weight(.semibold))
@@ -445,6 +465,26 @@ struct ProgressPhotosView: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.card / 2, style: .continuous))
     }
+
+    private func measurementCard(title: String, value: Double?) -> some View {
+        VStack(alignment: .leading, spacing: AppSpacing.small) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(AppPalette.textSecondary)
+
+            Text(value.map { "\($0.formatted(.number.precision(.fractionLength(0...1)))) cm" } ?? "—")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(AppPalette.textPrimary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(AppSpacing.item)
+        .background(AppPalette.surface)
+        .overlay(
+            RoundedRectangle(cornerRadius: AppRadius.card / 2, style: .continuous)
+                .stroke(AppPalette.surfaceBorder, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.card / 2, style: .continuous))
+    }
 }
 
 private struct ComparisonDateMenu: View {
@@ -631,6 +671,15 @@ private struct ProgressPhotoRow: View {
                         .font(.caption2)
                         .foregroundStyle(AppPalette.textSecondary)
                 }
+
+                if let measurements = photo.bodyMeasurementEstimate {
+                    Text("Estimated measurements: chest (formatCentimeters(measurements.chestCentimeters)) · waist (formatCentimeters(measurements.waistCentimeters)) · hips (formatCentimeters(measurements.hipCentimeters))")
+                        .font(.caption2)
+                        .foregroundStyle(AppPalette.textSecondary)
+                    Text("Arms (formatCentimeters(measurements.upperArmCentimeters)) · thighs (formatCentimeters(measurements.thighCentimeters)) · calves (formatCentimeters(measurements.calfCentimeters))")
+                        .font(.caption2)
+                        .foregroundStyle(AppPalette.textSecondary)
+                }
             }
 
             Spacer(minLength: 0)
@@ -646,6 +695,10 @@ private struct ProgressPhotoRow: View {
 
     private func format(_ value: Double?) -> String {
         value.map { $0.formatted(.number.precision(.fractionLength(1))) } ?? "—"
+    }
+
+    private func formatCentimeters(_ value: Double?) -> String {
+        value.map { $0.formatted(.number.precision(.fractionLength(0...1))) + " cm" } ?? "—"
     }
 }
 

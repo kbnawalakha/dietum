@@ -367,6 +367,7 @@ struct ProgressPhotoMetadata: Identifiable, Codable, Hashable, Sendable {
     var notes: String?
     var bodyFatPercentage: Double?
     var bodyFatBreakdown: BodyFatEstimateBreakdown?
+    var bodyMeasurementEstimate: BodyMeasurementEstimate?
 
     init(
         id: UUID = UUID(),
@@ -375,7 +376,8 @@ struct ProgressPhotoMetadata: Identifiable, Codable, Hashable, Sendable {
         photo: PhotoMetadata,
         notes: String? = nil,
         bodyFatPercentage: Double? = nil,
-        bodyFatBreakdown: BodyFatEstimateBreakdown? = nil
+        bodyFatBreakdown: BodyFatEstimateBreakdown? = nil,
+        bodyMeasurementEstimate: BodyMeasurementEstimate? = nil
     ) {
         self.id = id
         self.capturedAt = capturedAt
@@ -384,6 +386,25 @@ struct ProgressPhotoMetadata: Identifiable, Codable, Hashable, Sendable {
         self.notes = notes
         self.bodyFatPercentage = bodyFatPercentage
         self.bodyFatBreakdown = bodyFatBreakdown
+        self.bodyMeasurementEstimate = bodyMeasurementEstimate
+    }
+}
+
+struct BodyMeasurementEstimate: Codable, Hashable, Sendable {
+    var chestCentimeters: Double?
+    var waistCentimeters: Double?
+    var hipCentimeters: Double?
+    var upperArmCentimeters: Double?
+    var thighCentimeters: Double?
+    var calfCentimeters: Double?
+
+    var isEmpty: Bool {
+        chestCentimeters == nil
+            && waistCentimeters == nil
+            && hipCentimeters == nil
+            && upperArmCentimeters == nil
+            && thighCentimeters == nil
+            && calfCentimeters == nil
     }
 }
 
