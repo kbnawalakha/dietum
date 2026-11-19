@@ -11,9 +11,9 @@ struct WeeklyCheckInView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppSpacing.section) {
                 AppHeroCard(
-                    eyebrow: "Weekly check-in",
-                    title: "Review the trend, confirm the weight, and note how the week felt.",
-                    message: "A local-first checkpoint for body weight, energy, hunger, and training context."
+                    eyebrow: "Daily check-in",
+                    title: "Record today's weight before you track.",
+                    message: "A local-first checkpoint for today's body weight, with optional notes about energy, hunger, and training."
                 )
 
                 AppSurfaceCard {
@@ -49,7 +49,7 @@ struct WeeklyCheckInView: View {
                         )
 
                         VStack(alignment: .leading, spacing: AppSpacing.small) {
-                            Text("Weekly weight")
+                            Text("Today's weight")
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(AppPalette.textSecondary)
 
@@ -152,7 +152,7 @@ struct WeeklyCheckInView: View {
             .padding(.bottom, AppSpacing.screen * 1.5)
         }
         .scrollIndicators(.hidden)
-        .navigationTitle("Weekly Check-In")
+        .navigationTitle("Daily Check-In")
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await viewModel.loadSummary()

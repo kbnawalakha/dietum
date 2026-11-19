@@ -1,6 +1,26 @@
 import Foundation
 import SwiftUI
 
+enum ProgressChartRange: String, CaseIterable, Identifiable, Sendable {
+    case week = "1W"
+    case month = "1M"
+    case threeMonths = "3M"
+    case sixMonths = "6M"
+    case year = "1Y"
+
+    var id: String { rawValue }
+
+    var days: Int {
+        switch self {
+        case .week: return 7
+        case .month: return 30
+        case .threeMonths: return 90
+        case .sixMonths: return 180
+        case .year: return 365
+        }
+    }
+}
+
 @MainActor
 final class ProgressChartsViewModel: ObservableObject {
     enum LoadState: Equatable {
@@ -25,6 +45,7 @@ final class ProgressChartsViewModel: ObservableObject {
     @Published private(set) var loadState: LoadState = .idle
     @Published private(set) var weightPoints: [WeightChartPoint] = []
     @Published private(set) var nutritionPoints: [NutritionChartPoint] = []
+    @Published var selectedRange: ProgressChartRange = .threeMonths
 
     private let weightLogRepository: any WeightLogRepository
     private let recommendationService: any NutritionAdjustmentRecommendationService
@@ -61,7 +82,7 @@ final class ProgressChartsViewModel: ObservableObject {
         loadState = .loading
 
         do {
-            let start = Calendar.current.date(byAdding: .day, value: -90, to: .now) ?? .now
+            let start = Calendar.current.date(byAdding: .day, value: -selectedRange.days, to: .now) ?? .now
             let window = DateInterval(start: start, end: .now)
             let logs = try await weightLogRepository.fetchWeightLogs(in: window)
             let sortedLogs = logs.sorted { $0.recordedAt < $1.recordedAt }
@@ -81,6 +102,11 @@ final class ProgressChartsViewModel: ObservableObject {
             nutritionPoints = []
             loadState = .failed("Unable to load progress charts right now.")
         }
+    }
+
+    func setRange(_ range: ProgressChartRange) {
+        guard selectedRange != range else { return }
+        selectedRange = range
     }
 
     var heroHeadline: String {

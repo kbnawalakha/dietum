@@ -34,7 +34,7 @@ enum AppRoute: Hashable {
         case .nutritionInsights:
             return "Nutrition Insights"
         case .weeklyCheckIn:
-            return "Weekly Check-In"
+            return "Daily Check-In"
         case .progressPhotos:
             return "Progress Photos"
         case .progressCharts:

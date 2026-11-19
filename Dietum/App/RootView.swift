@@ -11,7 +11,7 @@ struct RootView: View {
 
     var body: some View {
         NavigationStack(path: $viewModel.path) {
-            DashboardView()
+            DashboardView(viewModel: container.makeDashboardViewModel())
                 .navigationTitle("Dietum")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
@@ -56,7 +56,7 @@ struct RootView: View {
                     case .nutritionAdjustment:
                         NutritionAdjustmentView(viewModel: container.makeNutritionAdjustmentViewModel())
                     case .dashboard:
-                        DashboardView()
+                        DashboardView(viewModel: container.makeDashboardViewModel())
                     }
                 }
                 .fullScreenCover(isPresented: $viewModel.shouldPresentOnboarding) {
@@ -112,6 +112,13 @@ final class RootViewModel: ObservableObject {
 struct SettingsView: View {
     let container: AppContainer
     let onAccount: () -> Void
+    @StateObject private var readinessViewModel: DashboardViewModel
+
+    init(container: AppContainer, onAccount: @escaping () -> Void) {
+        self.container = container
+        self.onAccount = onAccount
+        _readinessViewModel = StateObject(wrappedValue: container.makeDashboardViewModel())
+    }
 
     var body: some View {
         ScrollView {
@@ -121,6 +128,21 @@ struct SettingsView: View {
                     title: "Keep setup in one place.",
                     message: "Your profile is collected once at launch. Use Settings whenever you want to review or change it."
                 )
+
+                if readinessViewModel.readinessItems.contains(where: { !$0.isComplete }) {
+                    AppSurfaceCard {
+                        VStack(alignment: .leading, spacing: AppSpacing.item) {
+                            AppSectionHeader(
+                                title: "Readiness",
+                                message: "Finish these items before relying on the tracker."
+                            )
+
+                            ForEach(readinessViewModel.readinessItems.filter { !$0.isComplete }) { item in
+                                AppChecklistItem(text: item.title)
+                            }
+                        }
+                    }
+                }
 
                 settingsSection(
                     title: "Profile",
@@ -137,13 +159,13 @@ struct SettingsView: View {
                 settingsSection(
                     title: "History",
                     message: "Review saved meal photos and progress records by date.",
-                    routes: [.mealHistory, .progressPhotos, .progressCharts]
+                    routes: [.mealHistory, .progressPhotos]
                 )
 
                 settingsSection(
                     title: "Insights",
                     message: "Review local trends and user-approved recommendations.",
-                    routes: [.nutritionInsights, .nutritionAdjustment, .habitAdherence]
+                    routes: [.progressCharts, .nutritionInsights, .nutritionAdjustment, .habitAdherence]
                 )
 
                 AppSurfaceCard {
@@ -169,6 +191,9 @@ struct SettingsView: View {
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
         .appScreenBackground()
+        .task {
+            await readinessViewModel.loadDailyCheckIn()
+        }
     }
 
     private func settingsSection(title: String, message: String, routes: [AppRoute]) -> some View {

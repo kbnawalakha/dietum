@@ -30,7 +30,7 @@ final class WeeklyCheckInViewModel: ObservableObject {
     func saveCheckIn() async {
         let validation = validateDraft()
         guard validation.isValid, let weight = parsedWeeklyWeight else {
-            saveState = .failed(validation.primaryIssue?.message ?? "Enter your weekly weight using numbers only.")
+            saveState = .failed(validation.primaryIssue?.message ?? "Enter today's weight using numbers only.")
             return
         }
 
@@ -48,18 +48,18 @@ final class WeeklyCheckInViewModel: ObservableObject {
             await refreshLogs()
             saveState = .saved(Date())
         } catch {
-            saveState = .failed("Unable to save the weekly check-in right now.")
+            saveState = .failed("Unable to save today's weight right now.")
         }
     }
 
     var headline: String {
         switch recentLogs.count {
         case 0:
-            return "Review the week, confirm your current weight, and add notes before saving locally."
+            return "Confirm today's weight and add optional notes before saving locally."
         case 1:
-            return "One weekly check-in is stored locally. Add another to make the trend more useful."
+            return "Today's weight is stored locally. Keep checking in daily to build a useful trend."
         default:
-            return "You have \(recentLogs.count) weekly entries stored locally."
+            return "You have \(recentLogs.count) recent daily weight entries stored locally."
         }
     }
 
@@ -106,7 +106,7 @@ final class WeeklyCheckInViewModel: ObservableObject {
         case .failed:
             return "Try again"
         case .idle:
-            return "Save weekly check-in"
+            return "Save today's weight"
         }
     }
 

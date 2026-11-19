@@ -16,6 +16,36 @@ struct DashboardView: View {
                     message: viewModel.headline
                 )
 
+                AppSurfaceCard {
+                    VStack(alignment: .leading, spacing: AppSpacing.item) {
+                        AppSectionHeader(
+                            title: "Daily check-in",
+                            message: viewModel.dailyCheckInHeadline
+                        )
+
+                        NavigationLink(value: AppRoute.weeklyCheckIn) {
+                            Label(
+                                viewModel.hasCompletedDailyCheckIn ? "Update today's weight" : "Enter today's weight",
+                                systemImage: "scalemass.fill"
+                            )
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.appProminent)
+                    }
+                }
+
+                if !viewModel.hasCompletedDailyCheckIn {
+                    AppSurfaceCard {
+                        ContentUnavailableView(
+                            "Daily check-in required",
+                            systemImage: "lock.fill",
+                            description: Text("Enter today's weight to unlock meal tracking, progress history, and insights.")
+                        )
+                    }
+                }
+
+                if viewModel.hasCompletedDailyCheckIn {
+
                 VStack(alignment: .leading, spacing: AppSpacing.item) {
                     AppSectionHeader(
                         title: "Today",
@@ -99,69 +129,6 @@ struct DashboardView: View {
                 AppSurfaceCard {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
-                            title: "Readiness",
-                            message: viewModel.readinessSummaryText
-                        )
-
-                        Text(viewModel.readinessDetailText)
-                            .font(.subheadline)
-                            .foregroundStyle(AppPalette.textSecondary)
-
-                        VStack(alignment: .leading, spacing: AppSpacing.small) {
-                            ForEach(viewModel.readinessItems) { item in
-                                HStack(alignment: .top, spacing: AppSpacing.small) {
-                                    Image(systemName: item.isComplete ? "checkmark.circle.fill" : "circle")
-                                        .foregroundStyle(item.isComplete ? AppPalette.accent : AppPalette.textSecondary)
-
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(item.title)
-                                            .font(.subheadline.weight(.semibold))
-                                            .foregroundStyle(AppPalette.textPrimary)
-
-                                        Text(item.detail)
-                                            .font(.caption)
-                                            .foregroundStyle(AppPalette.textSecondary)
-                                    }
-
-                                    Spacer(minLength: 0)
-                                }
-                                .accessibilityElement(children: .combine)
-                                .accessibilityLabel(item.title)
-                                .accessibilityValue(item.isComplete ? "Complete" : "Needs attention")
-                            }
-                        }
-                    }
-                }
-
-                AppSurfaceCard {
-                    VStack(alignment: .leading, spacing: AppSpacing.item) {
-                        AppSectionHeader(
-                            title: "Progress charts",
-                            message: viewModel.progressHeadline
-                        )
-
-                        LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
-                            ForEach(viewModel.trendCards) { card in
-                                AppMetricCard(
-                                    title: card.title,
-                                    value: card.value,
-                                    detail: card.detail,
-                                    symbolName: card.symbolName
-                                )
-                            }
-                        }
-
-                        NavigationLink(value: AppRoute.progressCharts) {
-                            Label("Open progress charts", systemImage: "chart.line.uptrend.xyaxis")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .buttonStyle(.appToolbar)
-                    }
-                }
-
-                AppSurfaceCard {
-                    VStack(alignment: .leading, spacing: AppSpacing.item) {
-                        AppSectionHeader(
                             title: "Progress photos",
                             message: viewModel.photosHeadline
                         )
@@ -185,30 +152,6 @@ struct DashboardView: View {
                     }
                 }
 
-                AppSurfaceCard {
-                    VStack(alignment: .leading, spacing: AppSpacing.item) {
-                        AppSectionHeader(
-                            title: "Nutrition adjustment",
-                            message: viewModel.nutritionHeadline
-                        )
-
-                        LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
-                            ForEach(viewModel.nutritionCards) { card in
-                                AppMetricCard(
-                                    title: card.title,
-                                    value: card.value,
-                                    detail: card.detail,
-                                    symbolName: card.symbolName
-                                )
-                            }
-                        }
-
-                        NavigationLink(value: AppRoute.nutritionAdjustment) {
-                            Label("Open nutrition adjustment", systemImage: "arrow.right.circle.fill")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .buttonStyle(.appToolbar)
-                    }
                 }
             }
             .padding(.horizontal, AppSpacing.screen)
@@ -218,7 +161,11 @@ struct DashboardView: View {
         .scrollIndicators(.hidden)
         .appScreenBackground()
         .task {
+            await viewModel.loadDailyCheckIn()
             await viewModel.loadSleepInsights()
+        }
+        .onAppear {
+            Task { await viewModel.loadDailyCheckIn() }
         }
     }
 }

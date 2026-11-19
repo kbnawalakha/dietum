@@ -30,6 +30,10 @@ struct AppContainer {
         WeeklyCheckInViewModel(weightLogRepository: weightLogRepository)
     }
 
+    func makeDashboardViewModel() -> DashboardViewModel {
+        DashboardViewModel(weightLogRepository: weightLogRepository)
+    }
+
     func makeProgressPhotosViewModel() -> ProgressPhotosViewModel {
         ProgressPhotosViewModel(progressPhotoRepository: progressPhotoRepository)
     }

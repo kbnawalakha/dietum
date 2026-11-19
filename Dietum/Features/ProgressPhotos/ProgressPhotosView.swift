@@ -31,6 +31,13 @@ struct ProgressPhotosView: View {
                             message: viewModel.headline
                         )
 
+                        DatePicker(
+                            "Photo date",
+                            selection: $viewModel.photoDate,
+                            displayedComponents: [.date, .hourAndMinute]
+                        )
+                        .datePickerStyle(.compact)
+
                         LazyVGrid(columns: AppGrid.columns, spacing: AppSpacing.item) {
                             ForEach(ProgressPhotoAngle.allCases, id: \.self) { angle in
                                 Menu {

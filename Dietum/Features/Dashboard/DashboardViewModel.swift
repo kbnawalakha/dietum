@@ -41,11 +41,14 @@ final class DashboardViewModel: ObservableObject {
     @Published var progressPhotosCount: Int
     @Published var latestPhotoAngle: ProgressPhotoAngle?
     @Published var readinessItems: [DashboardReadinessItem]
+    @Published private(set) var hasCompletedDailyCheckIn: Bool
+    @Published private(set) var isLoadingDailyCheckIn = false
     @Published private(set) var sleepSummary = DashboardSleepSummary.empty
     @Published private(set) var sleepInsightsStatus = "Sleep insights have not been imported yet."
     @Published private(set) var isLoadingSleepInsights = false
 
     private let sleepHealthImporter: any SleepHealthImporting
+    private let weightLogRepository: (any WeightLogRepository)?
 
     init(
         todayCaloriesTarget: Int = 2_400,
@@ -62,7 +65,8 @@ final class DashboardViewModel: ObservableObject {
             DashboardReadinessItem(title: "Goal review ready", detail: "The latest calorie recommendation is available for approval.", isComplete: true),
             DashboardReadinessItem(title: "Photo tracking ready", detail: "Progress photo history is stored locally.", isComplete: true)
         ],
-        sleepHealthImporter: any SleepHealthImporting = HealthKitSleepService()
+        sleepHealthImporter: any SleepHealthImporting = HealthKitSleepService(),
+        weightLogRepository: (any WeightLogRepository)? = nil
     ) {
         self.todayCaloriesTarget = todayCaloriesTarget
         self.plannedMeals = plannedMeals
@@ -74,6 +78,8 @@ final class DashboardViewModel: ObservableObject {
         self.latestPhotoAngle = latestPhotoAngle
         self.readinessItems = readinessItems
         self.sleepHealthImporter = sleepHealthImporter
+        self.weightLogRepository = weightLogRepository
+        self.hasCompletedDailyCheckIn = weightLogRepository == nil
     }
 
     var headline: String {
@@ -98,6 +104,32 @@ final class DashboardViewModel: ObservableObject {
 
     var sleepInsightsHeadline: String {
         "Refresh Apple Health sleep intervals here; phone totals need Screen Time capability setup."
+    }
+
+    var dailyCheckInHeadline: String {
+        hasCompletedDailyCheckIn
+            ? "Today's weight is recorded. Your tracking tools are ready."
+            : "Record today's weight before opening the rest of the tracker."
+    }
+
+    func loadDailyCheckIn() async {
+        guard let weightLogRepository else {
+            hasCompletedDailyCheckIn = true
+            return
+        }
+
+        guard !isLoadingDailyCheckIn else { return }
+        isLoadingDailyCheckIn = true
+        defer { isLoadingDailyCheckIn = false }
+
+        do {
+            let start = Calendar.current.startOfDay(for: .now)
+            let end = Calendar.current.date(byAdding: .day, value: 1, to: start) ?? .now
+            let logs = try await weightLogRepository.fetchWeightLogs(in: DateInterval(start: start, end: end))
+            hasCompletedDailyCheckIn = !logs.isEmpty
+        } catch {
+            hasCompletedDailyCheckIn = false
+        }
     }
 
     var sleepInsightCards: [DashboardStatCard] {

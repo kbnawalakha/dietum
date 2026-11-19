@@ -428,6 +428,7 @@ final class ProgressPhotosViewModel: ObservableObject {
     @Published var visceralBodyFatText: String = ""
     @Published var selectedBodyFatReferenceID: String?
     @Published var stagedPhotos: [ProgressPhotoAngle: PhotoMetadata] = [:]
+    @Published var photoDate: Date = .now
     @Published var recentPhotos: [ProgressPhotoMetadata] = []
     @Published var comparisonAngle: ProgressPhotoAngle = .front
     @Published var comparisonBaselineID: UUID?
@@ -470,7 +471,7 @@ final class ProgressPhotosViewModel: ObservableObject {
         let storageIdentifier = "progress-photo-\(angle.rawValue)-\(String(format: "%02d", captureSequence))"
         stagedPhotos[angle] = PhotoMetadata(
             storageIdentifier: storageIdentifier,
-            capturedAt: .now,
+            capturedAt: photoDate,
             imageData: imageData
         )
         photoSelectionError = nil
@@ -528,6 +529,7 @@ final class ProgressPhotosViewModel: ObservableObject {
 
     func clearStagedPhotos() {
         stagedPhotos.removeAll()
+        photoDate = .now
         photoSelectionError = nil
         notes = ""
         bodyFatPercentageText = ""

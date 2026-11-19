@@ -20,6 +20,29 @@ struct ProgressChartsView: View {
                 AppSurfaceCard {
                     VStack(alignment: .leading, spacing: AppSpacing.item) {
                         AppSectionHeader(
+                            title: "Time range",
+                            message: "Compare saved weight and nutrition changes across a useful time window."
+                        )
+
+                        Picker("Time range", selection: Binding(
+                            get: { viewModel.selectedRange },
+                            set: { range in
+                                viewModel.setRange(range)
+                                Task { await viewModel.loadCharts() }
+                            }
+                        )) {
+                            ForEach(ProgressChartRange.allCases) { range in
+                                Text(range.rawValue).tag(range)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .accessibilityLabel("Progress chart time range")
+                    }
+                }
+
+                AppSurfaceCard {
+                    VStack(alignment: .leading, spacing: AppSpacing.item) {
+                        AppSectionHeader(
                             title: "Snapshot",
                             message: viewModel.chartNotes
                         )
